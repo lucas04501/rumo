@@ -2,12 +2,15 @@ import {
   CalendarClock,
   ChartNoAxesCombined,
   ChevronRight,
+  Medal,
   NotebookPen,
+  Search,
   Timer,
   type LucideIcon,
 } from 'lucide-react'
 import { Link } from 'react-router'
 import { authClient } from '../data/authClient'
+import { openLayer } from '../data/layers'
 import { clearDevice } from '../data/store'
 import { settleUndo } from '../data/undo'
 import { Screen } from '../ui/Screen'
@@ -18,6 +21,7 @@ type Area = { to: string; label: string; icon: LucideIcon }
 const AREAS: Area[] = [
   { to: '/rotina', label: 'Rotina', icon: CalendarClock },
   { to: '/evolucao', label: 'Evolução', icon: ChartNoAxesCombined },
+  { to: '/conquistas', label: 'Conquistas', icon: Medal },
   { to: '/notas', label: 'Notas', icon: NotebookPen },
   { to: '/foco', label: 'Foco', icon: Timer },
 ]
@@ -38,7 +42,17 @@ export function Mais() {
         </h1>
 
         <nav aria-label="Outras áreas" className="mt-3 lg:hidden">
-          <ul className="divide-y divide-white/8">
+          <ul className="divide-y divide-line">
+            <li>
+              <button
+                type="button"
+                className="flex min-h-14 w-full items-center gap-3 text-left text-[17px]"
+                onClick={() => openLayer('buscar')}
+              >
+                <Search size={20} strokeWidth={1.75} className="shrink-0 text-mist" aria-hidden />
+                Buscar
+              </button>
+            </li>
             {AREAS.map(({ to, label, icon: Icon }) => (
               <li key={to}>
                 <Link to={to} className="flex min-h-14 items-center gap-3 text-[17px]">

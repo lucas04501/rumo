@@ -2,17 +2,23 @@
 name: Rumo
 description: Metas, hábitos e o mês como uma viagem. O dia é uma maré que sobe.
 colors:
-  abyss: "#06161c"
-  sea-1: "#0a2630"
-  sea-2: "#0c2f39"
-  sea-3: "#0f3843"
+  abyss: "#050809"
+  sea-1: "#0b1113"
+  sea-2: "#121a1d"
+  sea-3: "#1a2529"
+  water-1: "#0a2a2e"
+  water-2: "#0d3a3e"
+  water-3: "#114a4e"
   wash-mid: "#125059"
   wash: "#1a6f76"
-  foam: "#e9f3f1"
-  mist: "#9db6ba"
-  tide: "#4fd8c4"
-  tide-ink: "#052a29"
-  sun: "#f6b25e"
+  foam: "#f3f8f7"
+  mist: "#aebdc0"
+  haze: "#7d8e92"
+  tide: "#2fd6bd"
+  tide-ink: "#03211f"
+  sun: "#ffb23e"
+  chart-task: "#5a8dff"
+  chart-focus: "#ff5c8a"
 typography:
   display:
     fontFamily: "Bricolage Grotesque Variable, ui-sans-serif, system-ui, sans-serif"
@@ -58,7 +64,7 @@ components:
     height: "44px"
     padding: "0 18px"
   button-primary-hover:
-    backgroundColor: "#6ce3d1"
+    backgroundColor: "#5be6d1"
   button-ghost:
     textColor: "{colors.foam}"
     rounded: "{rounded.control}"
@@ -86,47 +92,62 @@ components:
 
 **Creative North Star: "A Maré do Dia"**
 
-O dia é uma maré. A água sobe atrás da lista a cada item concluído, e o progresso se sente no ambiente, não em um medidor. A tela inteira é o mar ao anoitecer: céu escuro, três camadas de água, um sol de pôr do sol no canto. A interface fica leve por cima disso, com listas sem cartão e poucos controles preenchidos.
+O dia é uma maré. A água sobe a cada item concluído, e o progresso se sente em um lugar só, a faixa do topo da tela Hoje. O resto do app é a noite no mar: fundo quase preto, texto forte e nada atrás da leitura.
 
-O sistema é calmo na repetição e grande nos raros momentos de chegada. Quem abre o app várias vezes ao dia, com uma mão, muitas vezes à noite, precisa de marcar rápido e de um ambiente que recompense sem cansar.
+O sistema é calmo na repetição e grande nos raros momentos de chegada. Quem abre o app várias vezes ao dia, com uma mão, muitas vezes à noite, precisa de marcar rápido e de ler sem esforço.
 
 Recusa os anéis de progresso e os cartões de estatística comuns nessa categoria.
 
 **Key Characteristics:**
 
-- Tema único, escuro.
-- Progresso mostrado pelo ambiente: maré, sol e barco.
-- Cor com significado: teal age, âmbar recompensa.
-- Listas abertas, separadas por linhas finas, sem cartões.
+- Tema único, escuro, com fundo quase preto.
+- A identidade de viagem fica concentrada: faixa da maré, rota, barco e onda dos grandes momentos.
+- Cor com significado: teal age, âmbar recompensa, e nos gráficos cada coisa tem a sua cor.
+- Listas abertas no celular. No computador, painéis separados por um passo de tom.
 - Movimento proporcional à raridade do momento.
 
 ## Colors
 
-Azul-petróleo quase preto, com um teal vivo para agir e um âmbar guardado para recompensar.
+Preto azulado, com um teal vivo para agir e um âmbar guardado para recompensar.
 
 ### Primary
 
-- **Teal Maré** (`tide`): ação e progresso. Botão principal, check concluído, aba ativa, rota percorrida e campo em foco.
+- **Teal Maré** (`tide`): ação e progresso. Botão principal, check concluído, aba ativa, rota percorrida, campo em foco e gráficos de hábitos e de andamento do dia.
 - **Tinta Funda** (`tide-ink`): texto e traço sobre o teal.
 
 ### Secondary
 
-- **Âmbar Sol** (`sun`): só recompensa. XP subindo, barra de patente, avisos de vento, marco e patente, sequência marcante, destino da rota e texto "Dia perfeito".
+- **Âmbar Sol** (`sun`): só recompensa. XP subindo, barra de patente, avisos de vento, marco e patente, medalhas ganhas, sequência marcante, destino da rota e texto "Dia perfeito".
+
+### Chart
+
+Só dentro de gráficos, e a cor segue a coisa medida, em qualquer tela.
+
+- **Azul Tarefa** (`chart-task`): tarefas concluídas.
+- **Rosa Foco** (`chart-focus`): tempo de foco.
+- Hábitos e andamento do dia usam `tide`. XP usa `sun`.
+- A carta de consistência é uma rampa de uma cor só: `#115a53`, `#16806f`, `#20a892` e `tide`.
+
+Validação com `validate_palette.js`, sobre `#0a0f11`, em todos os pares: daltonismo com ΔE 8,8, visão normal com ΔE 23 e contraste de pelo menos 3:1. A rampa passa em `--ordinal`. O teste de faixa de claridade reprova as quatro cores porque ele pede até 0,67, e elas vão de 0,69 a 0,82. É uma escolha: cumprir esse limite apagaria as cores, e o pedido é de gráfico forte em fundo quase preto. Texto nunca usa cor de gráfico.
 
 ### Neutral
 
-- **Abismo** (`abyss`): céu, fundo do app, navegação, campos e avisos.
-- **Mar 1, 2 e 3** (`sea-1`, `sea-2`, `sea-3`): as três camadas de água. O primeiro é também o fundo das folhas, e o terceiro marca o item ativo do seletor.
+- **Abismo** (`abyss`): fundo do app, navegação, campos e avisos.
+- **Mar 1, 2 e 3** (`sea-1`, `sea-2`, `sea-3`): degraus de superfície. O primeiro é painel, coluna e folha. O segundo é cartão e item ativo da navegação. O terceiro é seleção e fantasma do arraste.
+- **Água** (`water-1`, `water-2`, `water-3`): as camadas da maré. Só existem na faixa da Hoje, no foco, no login e na onda.
 - **Onda** (`wash-mid`, `wash`): camadas da onda em tela cheia.
-- **Espuma** (`foam`): texto principal. A 70% de opacidade, item concluído.
-- **Névoa** (`mist`): texto secundário e ícones em repouso.
-- Linhas e bordas usam espuma com pouca opacidade: 8% entre itens, de 16% a 22% em campos e botões secundários.
+- **Espuma** (`foam`): texto principal.
+- **Névoa** (`mist`): texto secundário e ícones em repouso, 10:1 sobre o fundo.
+- **Bruma** (`haze`): o mínimo legível, 5,5:1 sobre painel. Item concluído, dia sem marca e medalha ainda não ganha.
+- Linhas usam `line` (espuma a 10%) entre itens e `line-strong` (espuma a 20%) em campos e botões secundários.
 
 ### Named Rules
 
 **The Sun Rule.** Âmbar é só recompensa. Se a cor aparece em algo que não foi conquistado, ela perde o sentido. Excluir, alertar ou decorar nunca usa âmbar.
 
-**The Legible Sunset Rule.** O texto sobre o sol e sobre a maré cheia mantém 4,5:1. Por isso o sol tem o centro no canto da tela e um tom mais laranja: com o mesmo destaque visual, ele clareia menos que um amarelo.
+**The Clean Reading Rule.** Nada se mexe atrás de texto de leitura. A maré fica na sua faixa e o foco tem pouco texto, com contraste medido.
+
+**The Legible Sunset Rule.** O texto mantém 4,5:1 com a maré cheia, medido nos pixels. O sol tem o centro no canto da faixa, longe do texto.
 
 ## Typography
 
@@ -137,11 +158,11 @@ Azul-petróleo quase preto, com um teal vivo para agir e um âmbar guardado para
 
 ### Hierarchy
 
-- **Display** (saudação da tela Hoje): cresce para 56 px no computador. Só uma por tela.
+- **Display** (saudação da tela Hoje): 38 px, 44 px no computador. Só uma por tela.
 - **Headline** (título das outras telas).
 - **Title** (título de seção). Folhas usam 24 px no título.
-- **Frase do dia** (Bricolage, 21 px, peso 500, altura 1,3): sempre em até duas linhas em 320 px.
-- **Body** (itens, parágrafos e campos): limite de 42 a 52 caracteres por linha nos textos corridos.
+- **Frase do dia** (Bricolage, 17 px, peso 500, em névoa): sempre em até duas linhas em 320 px.
+- **Body** (itens, parágrafos e campos): peso 450 nos itens de lista, porque texto claro sobre preto parece mais fino. Limite de 42 a 52 caracteres por linha nos textos corridos.
 - **Body Small** (contagens, datas, prévias e ajuda).
 - **Label** (abas da navegação no celular).
 
@@ -149,13 +170,13 @@ Azul-petróleo quase preto, com um teal vivo para agir e um âmbar guardado para
 
 **The 16px Field Rule.** Campo de digitação nunca tem menos de 16 px. Abaixo disso, o iPhone aproxima a tela ao focar.
 
-**The Tabular Rule.** Figtree usa números tabulares em todo o app, para que XP, datas e contagens não dancem ao mudar.
+**The Tabular Rule.** Figtree usa números tabulares em todo o app, para que XP, datas e contagens não dancem ao mudar. A exceção é o número grande da Evolução, proporcional, porque dígitos de largura igual ficam frouxos nesse tamanho.
 
 ## Layout
 
-Coluna única no celular, com margem lateral de 20 px, que cresce sob o notch com o aparelho deitado. A partir de 1024 px, a navegação vira coluna lateral de 224 px, e o conteúdo vai a até 1024 px com margem de 40 px.
+Coluna única no celular, com margem lateral de 20 px, que cresce sob o notch com o aparelho deitado. A partir de 1024 px, a navegação vira coluna lateral de 224 px, e o conteúdo vai a até 1024 px com margem de 40 px. Hoje e Quadro vão a até 1280 px.
 
-Hoje, Meta, Notas, Mês e Evolução usam duas colunas no computador, na proporção 5 para 4, com 64 px entre elas. Hábitos e Metas ficam em uma coluna de até 672 px, e o título acompanha essa largura.
+A Hoje é o painel geral: dois painéis a partir de 1024 px e três a partir de 1280 px, com hábitos, tarefas, meta e semana. No celular, a mesma ordem vira uma coluna aberta, com hábitos e tarefas antes da meta, porque marcar é o trabalho principal da tela. Meta, Notas, Mês, Evolução e Conquistas usam duas colunas no computador. Hábitos e Metas ficam em uma coluna de até 672 px, e o título acompanha essa largura.
 
 O app é uma tela só: altura em `dvh`, com rolagem dentro da área principal e das folhas. A página nunca rola.
 
@@ -163,13 +184,13 @@ Linhas de lista têm ao menos 56 px, e alvos de toque têm 44 px. A exceção s�
 
 ## Elevation & Depth
 
-O sistema é plano. A profundidade vem das camadas de água e do contraste de tom entre fundo e folha. Folhas ficam em `sea-1` sobre um véu escuro, e avisos em `abyss` com borda âmbar fina.
+O sistema é plano. A profundidade vem de um passo de tom: fundo, painel e cartão. Folhas ficam em `sea-1` sobre um véu escuro, e avisos em `abyss` com borda fina.
 
-A única sombra do app é o brilho do sol na onda de tela cheia. Ela faz parte desse momento, não é um recurso de interface.
+Há duas sombras no app: o brilho do sol na onda de tela cheia, que faz parte desse momento, e a do fantasma do cartão, porque ele está de fato acima de tudo enquanto é arrastado. O botão de criar tem um anel da cor do fundo, sem sombra.
 
 ## Shapes
 
-Cantos suaves em tudo o que é controle (12 px), um pouco mais em avisos (14 px) e folhas (16 px, só em cima no celular). Círculos ficam para check, dia da semana e estações da rota. A forma orgânica vem das cristas e da rota ondulada, nunca dos controles.
+Cantos suaves em tudo o que é controle e cartão (12 px), um pouco mais em avisos (14 px), e 16 px em painéis, faixa da maré e folhas (só em cima no celular). Círculos ficam para check, dia da semana, estações da rota, medalhas e o botão de criar. A forma orgânica vem das cristas e da rota ondulada, nunca dos controles.
 
 ## Components
 
@@ -190,7 +211,15 @@ Cantos suaves em tudo o que é controle (12 px), um pouco mais em avisos (14 px)
 
 ### Navigation
 
-Cinco abas no rodapé do celular, sobre `abyss`, com a marca teal deslizando até a aba ativa: Hoje, Hábitos, Metas, Mês e Mais. A aba Mais reúne Rotina, Evolução, Notas, Foco e Ajustes, e fica ativa nessas telas. Item sem tela pronta não entra nela. No computador, vira coluna lateral com a marca vertical, com todas essas áreas direto na lista.
+Cinco abas no rodapé do celular, sobre `abyss`, com a marca teal deslizando até a aba ativa: Hoje, Hábitos, Metas, Plano e Mais. Plano reúne Mês, Semana e Quadro, em `/mes`, `/semana` e `/quadro`, com um seletor no topo. Mais reúne Buscar, Rotina, Evolução, Conquistas, Notas, Foco e Ajustes, e fica ativa nessas telas. Item sem tela pronta não entra nela. No computador, vira coluna lateral com Criar e Buscar no topo e todas as áreas direto na lista, com o item ativo em `sea-2`.
+
+### Create
+
+Um ponto só para criar qualquer coisa de qualquer tela: botão redondo acima das abas no celular, Criar na coluna lateral e a tecla `N` no computador. A folha abre com o campo da adição rápida, que salva tarefa ou repetição. Hábito, Meta, Nota, Repetição e Passo da rotina abrem a folha de sempre, com o texto já escrito. O botão some no foco, para não disputar com o relógio.
+
+### Search
+
+`Ctrl K`, `Cmd K` ou `/` no computador, e Buscar em Mais no celular. Procura em tarefas, hábitos, metas, repetições e notas, sem diferenciar acento, e leva às telas. A última linha cria com o texto digitado. Abre e fecha sem animação, porque atalho de teclado se repete muitas vezes ao dia. Atalhos não valem dentro de campos nem com folha aberta.
 
 ### Sheets
 
@@ -198,13 +227,21 @@ Folha inferior no celular e janela central de 460 px no computador, com o `<dial
 
 ### Item Row
 
-Check redondo, ícone opcional, título e informação à direita. Ao concluir: mola no check, ondulação, XP subindo em âmbar, som curto e maré subindo. Nada disso bloqueia o próximo toque.
+Check redondo, ícone opcional, título e informação à direita. Ao concluir: mola no check, ondulação, XP subindo em âmbar, som curto e maré subindo. Item concluído fica em `haze`, riscado. Nada disso bloqueia o próximo toque.
 
-Na tarefa, a marca de prioridade fica antes do título: bandeira cheia em espuma para alta, seta em névoa para baixa, nada para normal. Prioridade não é ação nem recompensa, então não usa teal nem âmbar. À direita ficam o ícone de repetição, a contagem de subtarefas e o botão de detalhes, que abre a folha com prioridade, subtarefas, repetição e excluir.
+Na tarefa, a marca de prioridade fica antes do título: bandeira cheia em espuma para alta, seta em névoa para baixa, nada para normal. Prioridade não é ação nem recompensa, então não usa teal nem âmbar. À direita ficam a palavra Fazendo em teal, o ícone de repetição, a contagem de subtarefas e o botão de detalhes, que abre a folha com prioridade, andamento, data, subtarefas, repetição e excluir.
 
 Deslizar a linha para a direita conclui, pelo mesmo caminho do check. Para a esquerda, adia para amanhã, ou pula quando a tarefa repete. Vale passar de 96 px ou um toque rápido. Abaixo disso, a linha volta sem agir.
 
 A adição rápida da Hoje lê data, prioridade e repetição no fim do texto ("pagar luz sexta !alta") e mostra chips do que entendeu antes de salvar, com a opção Ignorar. Só no fim do texto, para "Segunda via do boleto" continuar sendo um título.
+
+### Board
+
+Três colunas fixas: A fazer, Fazendo e Feito. Mostra o dia, os atrasos, os próximos 7 dias e o que foi concluído nos últimos 7. Hoje vem primeiro, depois o atraso mais recente e os próximos dias. Dentro disso, a prioridade ordena: não há ordem manual.
+
+No computador, as colunas ficam lado a lado em `sea-1`, e arrastar começa ao mover o mouse. No celular, o seletor mostra uma coluna por vez. Segurar o cartão por 220 ms com vibração inicia o arraste e abre três alvos grandes acima das abas. Deslizar sem segurar continua rolando a tela. O fantasma acompanha o dedo, um pouco inclinado, e Esc cancela. Quem não arrasta muda o andamento na folha da tarefa.
+
+Concluir no quadro passa pelo mesmo caminho do check: som, vibração e XP em âmbar. O XP vem dos dados, então mover não conta duas vezes.
 
 ### Day Sheet
 
@@ -220,19 +257,23 @@ Aviso neutro no rodapé por 5 s, em `abyss` com borda de espuma e Desfazer em te
 
 ### Charts
 
-Uma cor só, teal, porque tudo mede a mesma coisa: progresso. Sem cartões de estatística: números em lista aberta com linhas finas, e um único número grande por tela. A maré do período usa curva com média móvel nos períodos longos, e a legenda diz isso. A carta de consistência usa cinco profundidades de teal, e o dia cheio é teal sólido. Tocar lê o valor em uma linha acima do gráfico, sem balão, e abre o dia. Âmbar só em XP ganho. Quando não há dados, a seção some ou diz o que falta, e nunca mostra zero como se fosse resultado.
+A cor segue a coisa medida, como descrito em Chart. Marca fina e cor cheia: linha de 2,5 px, colunas de até 24 px com cantos de 4 px em cima, e área com lavagem de 34% a 0. A coluna selecionada ganha uma tampa em espuma. Sem cartões de estatística: números em lista aberta com linhas finas, e um único número grande por tela. A maré do período usa curva com média móvel nos períodos longos, e a legenda diz isso. Tocar lê o valor em uma linha acima do gráfico, sem balão, e abre o dia. Quando não há dados, a seção some ou diz o que falta, e nunca mostra zero como se fosse resultado.
 
 ### Focus
 
-Uma tarefa, um relógio e dois botões. No celular, a navegação some enquanto há um bloco. O relógio usa Figtree com números tabulares, para não dançar a cada segundo, e tem de 76 a 112 px. Nesta tela, a maré mede o bloco: sobe durante o foco e desce na pausa. Sem âmbar: foco não dá XP.
+Uma tarefa, um relógio e dois botões. No celular, a navegação some enquanto há um bloco. O relógio usa Figtree com números tabulares, para não dançar a cada segundo, e tem de 76 a 112 px. Esta é a única tela do app logado com maré cheia na tela toda, porque ali ela é o medidor do bloco: sobe durante o foco e desce na pausa. Sem âmbar: foco não dá XP.
 
 ### Reward Toast
 
-Aviso no rodapé por 3,2 s, com título em âmbar: vento a favor, marco e patente. Um por vez, em fila, esperando a onda e o barco.
+Aviso no rodapé por 3,2 s, com título em âmbar: vento a favor, marco, patente e conquista. Um por vez, em fila, esperando a onda e o barco.
+
+### Medals
+
+Conquistas em lista aberta, por grupo: sequência, dias perfeitos, hábitos, tarefas, foco, marcos e metas. Medalha ganha fica em âmbar, com ícone e anel. Medalha que falta fica em `haze`, com contagem e barra teal. A animação toca uma vez, no aviso: uma mola curta na medalha, com o som de chegada. O que já estava alcançado ao atualizar o app ou chegou de outro aparelho entra em silêncio. Medalha ganha não se perde.
 
 ### Tide, Route, WaveWash
 
-Os elementos de assinatura. A maré ocupa a tela inteira atrás do conteúdo. A rota é uma linha ondulada com estações, horizontal na tela Hoje e vertical no detalhe da meta, e o barco deixa um check para trás. A onda cobre a tela só em Dia perfeito e Meta concluída, em cerca de 3 s, e fecha com um toque.
+Os elementos de assinatura. A maré mora na faixa de 104 px da tela Hoje, com crista baixa e o sol no canto, e o texto do dia em cima. O login e o foco a usam em tela cheia, sem lista por trás. A rota é uma linha ondulada com estações, horizontal na tela Hoje e vertical no detalhe da meta, e o barco deixa um check para trás. A onda cobre a tela só em Dia perfeito e Meta concluída, em cerca de 3 s, e fecha com um toque.
 
 ## Do's and Don'ts
 
@@ -244,10 +285,13 @@ Os elementos de assinatura. A maré ocupa a tela inteira atrás do conteúdo. A 
 - **Do** respeitar `prefers-reduced-motion`: fica o que explica, sai o que só balança.
 - **Do** respeitar as áreas seguras do aparelho em tudo o que encosta nas bordas da tela.
 - **Do** garantir 4,5:1 com a maré cheia, não só com a tela vazia.
+- **Do** usar `lg:hidden` só em elementos sem classe própria de `display`: o CSS de `voyage.css` fica fora das camadas do Tailwind e vence a classe.
 
 ### Don't:
 
 - **Don't** usar âmbar fora de recompensa, nem teal em decoração.
+- **Don't** colocar maré, sol ou gradiente atrás de texto de leitura.
+- **Don't** criar cor nova de gráfico sem rodar o validador.
 - **Don't** usar anéis de progresso, cartões de estatística ou cartões dentro de cartões.
 - **Don't** usar a onda em tela cheia para transições comuns. Em um app aberto todo dia, isso cansa e atrasa.
 - **Don't** colocar `:hover` sem `@media (hover: hover) and (pointer: fine)`.

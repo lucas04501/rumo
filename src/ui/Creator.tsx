@@ -1,0 +1,169 @@
+import {
+  CalendarClock,
+  Compass,
+  ListChecks,
+  NotebookPen,
+  Repeat,
+  type LucideIcon,
+} from 'lucide-react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { useDay } from '../data/DayProvider'
+import { closeLayer } from '../data/layers'
+import { useSnapshot } from '../data/store'
+import { weekdayOf } from '../lib/dates'
+import { newId } from '../lib/ids'
+import { nameOfDay, stepCount, stepsOn, suggestTime } from '../lib/routine'
+import { GoalSheet } from './GoalSheet'
+import { HabitSheet } from './HabitSheet'
+import { NoteSheet } from './NoteSheet'
+import { QuickChips, useQuickAdd } from './QuickAdd'
+import { StepSheet } from './RoutineSheets'
+import { RuleSheet } from './RuleSheet'
+import { Sheet } from './Sheet'
+
+type Kind = 'habit' | 'goal' | 'note' | 'rule' | 'step'
+
+const KINDS: { kind: Kind; label: string; icon: LucideIcon }[] = [
+  { kind: 'habit', label: 'Hábito', icon: ListChecks },
+  { kind: 'goal', label: 'Meta', icon: Compass },
+  { kind: 'note', label: 'Nota', icon: NotebookPen },
+  { kind: 'rule', label: 'Repetição', icon: Repeat },
+  { kind: 'step', label: 'Passo da rotina', icon: CalendarClock },
+]
+
+/** Ponto único de criar. O campo é a adição rápida; o resto abre a folha certa com o texto já escrito. */
+export function Creator({ draft = '' }: { draft?: string }) {
+  const { date } = useDay()
+  const { data: snapshot } = useSnapshot()
+  const [form, setForm] = useState<{ kind: Kind; title: string } | null>(null)
+
+  if (!snapshot) return null
+  if (!form) return <QuickSheet draft={draft} onPick={(kind, title) => setForm({ kind, title })} />
+
+  const { kind, title } = form
+  const shared = { today: date, onClosed: closeLayer }
+
+  if (kind === 'habit') {
+    return (
+      <HabitSheet habit={null} initialTitle={title} position={snapshot.habits.length} {...shared} />
+    )
+  }
+  if (kind === 'goal') {
+    return (
+      <GoalSheet
+        goal={null}
+        milestones={[]}
+        initialTitle={title}
+        position={snapshot.goals.length}
+        {...shared}
+      />
+    )
+  }
+  if (kind === 'rule') {
+    return (
+      <RuleSheet rule={null} initialTitle={title} position={snapshot.taskRules.length} {...shared} />
+    )
+  }
+  if (kind === 'note') {
+    return (
+      <NoteSheet note={null} initialTitle={title} goals={snapshot.goals} onClosed={closeLayer} />
+    )
+  }
+
+  const weekday = weekdayOf(date)
+  const step = {
+    id: newId(),
+    weekday,
+    time: suggestTime(stepsOn(snapshot.routineSteps, weekday)),
+    title,
+    position: stepCount(snapshot.routineSteps, weekday),
+  }
+  return (
+    <StepSheet
+      step={step}
+      snapshot={snapshot}
+      sheetTitle={`Passo de ${nameOfDay(weekday).toLowerCase()}`}
+      isNew
+      onClosed={closeLayer}
+    />
+  )
+}
+
+type QuickSheetProps = { draft: string; onPick: (kind: Kind, title: string) => void }
+
+function QuickSheet({ draft, onPick }: QuickSheetProps) {
+  const { title, setTitle, labels, ignore, save } = useQuickAdd(draft)
+  const field = useRef<HTMLInputElement>(null)
+  // O aviso de Desfazer entra na folha do topo: salvar espera esta folha fechar.
+  const afterClose = useRef<(() => void) | null>(null)
+
+  // Roda depois de a folha abrir, que move o foco para o botão de fechar.
+  useEffect(() => field.current?.focus(), [])
+
+  return (
+    <Sheet
+      title="Criar"
+      onClosed={() => {
+        const next = afterClose.current
+        if (next) next()
+        else closeLayer()
+      }}
+    >
+      {(close) => {
+        const leave = (action: () => void) => {
+          afterClose.current = action
+          close()
+        }
+
+        const submit = (event: FormEvent) => {
+          event.preventDefault()
+          if (!title.trim()) return
+          leave(() => {
+            save()
+            closeLayer()
+          })
+        }
+
+        return (
+          <>
+            <form onSubmit={submit} className="mt-3 grid gap-2">
+              <label className="grid gap-1.5 text-[15px] text-mist">
+                Tarefa
+                <input
+                  ref={field}
+                  className="field"
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  placeholder="pagar luz sexta !alta"
+                  maxLength={300}
+                  enterKeyHint="done"
+                  autoComplete="off"
+                />
+              </label>
+              {labels.length > 0 && <QuickChips labels={labels} onIgnore={ignore} />}
+              <button type="submit" className="action min-h-12" disabled={!title.trim()}>
+                Criar tarefa
+              </button>
+            </form>
+
+            <h3 className="mt-6 text-[15px] text-mist">Ou criar outra coisa</h3>
+            <ul className="mt-1 divide-y divide-line">
+              {KINDS.map(({ kind, label, icon: Icon }) => (
+                <li key={kind}>
+                  <button
+                    type="button"
+                    className="flex min-h-12 w-full items-center gap-3 text-left text-[17px]"
+                    onClick={() => leave(() => onPick(kind, title.trim()))}
+                  >
+                    <Icon size={20} strokeWidth={1.75} className="shrink-0 text-mist" aria-hidden />
+                    {label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </>
+        )
+      }}
+    </Sheet>
+  )
+}

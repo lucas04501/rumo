@@ -1,5 +1,6 @@
 import { createContext, use, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { FRASES_VENTO, pick } from '../content/frases'
+import { placeOn, type Column } from '../lib/board'
 import { diffDays } from '../lib/dates'
 import {
   haptic,
@@ -25,6 +26,7 @@ import { completeNextMilestone } from './goalActions'
 import { commit, useSnapshot } from './store'
 import { saveTask } from './taskActions'
 import type { Snapshot, Task } from './types'
+import { useAchievements } from './useAchievements'
 import { useRankUp } from './useRankUp'
 import { useToday } from './useToday'
 
@@ -37,6 +39,7 @@ export type Reward = {
   title: string
   detail: string
   isRank?: boolean
+  isMedal?: boolean
   /** Toca quando o aviso aparece, e não quando entra na fila. */
   sound?: () => void
 }
@@ -58,6 +61,8 @@ type Day = {
   celebration: Celebration | null
   toggleHabit: (id: string) => number
   toggleTask: (task: Task) => number
+  /** Move no quadro e devolve o XP ganho, como o check. */
+  moveCard: (task: Task, column: Column) => number
   completeMilestone: (goal: GoalInFocus) => void
   arriveAtStation: (goal: GoalInFocus, station: number) => void
   dismissReward: () => void
@@ -102,6 +107,10 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
       isRank: true,
       sound: soundArrival,
     }),
+  )
+
+  useAchievements(snapshot, date, ({ title, detail }) =>
+    addReward({ title: `Conquista: ${title}`, detail, isMedal: true, sound: soundArrival }),
   )
 
   useEffect(() => {
@@ -167,6 +176,23 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
     [done],
   )
 
+  const moveCard = useCallback(
+    (task: Task, column: Column) => {
+      const moved = placeOn(task, column, now())
+      if (moved === task) return 0
+      saveTask(moved)
+      haptic()
+
+      if (moved.doneAt && !task.doneAt) {
+        soundCheck(done)
+        return XP.task
+      }
+      if (task.doneAt) soundUncheck()
+      return 0
+    },
+    [done],
+  )
+
   const completeMilestone = useCallback((target: GoalInFocus) => {
     haptic()
     if (target.reached + 1 === target.milestones.length) setArrivingGoalId(target.id)
@@ -209,6 +235,7 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
     celebration,
     toggleHabit,
     toggleTask,
+    moveCard,
     completeMilestone,
     arriveAtStation,
     dismissReward: useCallback(() => setRewards((current) => current.slice(1)), []),

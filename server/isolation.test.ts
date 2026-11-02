@@ -135,6 +135,8 @@ describe('sem sessão', () => {
     ['GET', '/routine-checks'],
     ['PUT', `/routine-checks/${randomUUID()}`],
     ['DELETE', `/routine-checks/${randomUUID()}`],
+    ['GET', '/achievements'],
+    ['PUT', '/achievements/habitos-1'],
     ['GET', '/snapshot'],
     ['GET', `/checks?${RANGE}`],
     ['GET', `/days?${RANGE}`],
@@ -193,6 +195,45 @@ describe('isolamento entre usuários', () => {
     for (const key of lists.filter((name) => name !== 'days')) {
       expect(ofBia[key], key).toHaveLength(0)
     }
+  })
+
+  it('conquista vista é de cada usuário, e repetir o envio não muda nada', async () => {
+    type Seen = { id: string }[]
+    const seenBy = async (person: Person) =>
+      (await (await call(person, 'GET', '/achievements')).json()) as Seen
+    const photo = async (person: Person) =>
+      ((await (await call(person, 'GET', '/snapshot')).json()) as { achievementsSeen: string[] })
+        .achievementsSeen
+
+    expect((await call(ana, 'PUT', '/achievements/habitos-1')).status).toBe(204)
+    expect((await call(ana, 'PUT', '/achievements/habitos-1')).status).toBe(204)
+
+    expect(await seenBy(ana)).toHaveLength(1)
+    expect(await seenBy(bia)).toHaveLength(0)
+    expect(await photo(ana)).toEqual(['habitos-1'])
+    expect(await photo(bia)).toEqual([])
+
+    expect((await call(bia, 'PUT', '/achievements/habitos-1')).status).toBe(204)
+    expect(await seenBy(ana)).toHaveLength(1)
+    expect(await seenBy(bia)).toHaveLength(1)
+  })
+
+  it('recusa identificador de conquista inválido', async () => {
+    expect((await call(ana, 'PUT', '/achievements/Nada%20Disso')).status).toBe(400)
+  })
+
+  it('guarda o começo da tarefa e devolve na foto', async () => {
+    const startedAt = '2026-11-02T12:00:00.000Z'
+    const id = randomUUID()
+    const body = { title: 'Fazendo', date: DATE, startedAt, editedAt: startedAt }
+    expect((await call(ana, 'PUT', `/tasks/${id}`, body)).status).toBe(200)
+
+    const { tasks } = (await (await call(ana, 'GET', '/snapshot')).json()) as {
+      tasks: { id: string; startedAt: string | null; doneAt: string | null }[]
+    }
+    expect(tasks.find((task) => task.id === id)).toMatchObject({ doneAt: null })
+    expect(new Date(tasks.find((task) => task.id === id)?.startedAt ?? 0).toISOString()).toBe(startedAt)
+    expect((await call(ana, 'DELETE', `/tasks/${id}`)).status).toBe(204)
   })
 
   it('a foto traz a nota com o vínculo à meta e deixa de trazer depois de excluída', async () => {

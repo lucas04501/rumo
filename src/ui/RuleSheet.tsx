@@ -8,13 +8,14 @@ import { Sheet } from './Sheet'
 
 type RuleSheetProps = {
   rule: TaskRule | null
+  initialTitle?: string
   position: number
   today: string
   onClosed: () => void
 }
 
-export function RuleSheet({ rule, position, today, onClosed }: RuleSheetProps) {
-  const [title, setTitle] = useState(rule?.title ?? '')
+export function RuleSheet({ rule, initialTitle = '', position, today, onClosed }: RuleSheetProps) {
+  const [title, setTitle] = useState(rule?.title ?? initialTitle)
   const [priority, setPriority] = useState<Priority>(rule?.priority ?? 'normal')
   const [schedule, setSchedule] = useState<Schedule>({
     weekdays: rule?.weekdays ?? EVERY_DAY,
@@ -97,7 +98,7 @@ function StopRule({ rule, today, onStopped }: StopRuleProps) {
   const [confirming, setConfirming] = useState(false)
 
   return (
-    <div className="mt-6 border-t border-white/8 pt-3">
+    <div className="mt-6 border-t border-line pt-3">
       {confirming ? (
         <div className="flex items-center justify-between gap-3">
           <p className="text-[15px]">Parar de repetir? O que já passou continua como foi.</p>

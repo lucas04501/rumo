@@ -89,7 +89,7 @@ export function Rotina() {
           </p>
         )}
 
-        <ul className="mt-1 divide-y divide-white/8">
+        <ul className="mt-1 divide-y divide-line">
           {steps.map((step) => (
             <li key={step.id}>
               <StepRow

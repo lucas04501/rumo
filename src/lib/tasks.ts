@@ -14,7 +14,15 @@ export type Schedule = Pick<TaskRule, 'weekdays' | 'monthDay'>
 
 export const newTask = (
   fields: Pick<Task, 'id' | 'date' | 'title' | 'position'> & Partial<Task>,
-): Task => ({ goalId: null, doneAt: null, priority: 'normal', ruleId: null, skippedAt: null, ...fields })
+): Task => ({
+  goalId: null,
+  doneAt: null,
+  priority: 'normal',
+  ruleId: null,
+  skippedAt: null,
+  startedAt: null,
+  ...fields,
+})
 
 export function occursOn(rule: TaskRule, date: string): boolean {
   if (date < rule.startDate) return false
@@ -39,7 +47,7 @@ function occurrence(rule: TaskRule, date: string): Task {
   return newTask({ id: occurrenceId(id, date), date, title, goalId, position, priority, ruleId: id })
 }
 
-const byPriority = (a: Task, b: Task) =>
+export const byPriority = (a: Task, b: Task) =>
   PRIORITY_ORDER[a.priority] - PRIORITY_ORDER[b.priority] || a.position - b.position
 
 /** Junta as linhas do dia às ocorrências ainda sem linha. Uma linha pulada segura a regra. */

@@ -14,6 +14,7 @@ import {
   taskRules,
   tasks,
 } from './db/schema.js'
+import { achievements } from './routes/achievements.js'
 import { checks } from './routes/checks.js'
 import { days } from './routes/days.js'
 import { resource } from './routes/resource.js'
@@ -56,6 +57,7 @@ const data = new Hono<AuthedEnv>()
   .route('/routine-checks', resource(routineChecks, routineCheckFields))
   .route('/notes', resource(notes, noteFields))
   .route('/checks', checks)
+  .route('/achievements', achievements)
   .route('/days', days)
 
 export const app = new Hono()

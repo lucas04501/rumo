@@ -34,8 +34,13 @@ PWA de metas, hábitos e planner mensal, em português do Brasil. Uso pessoal ag
 - Em produção, verificação é só leitura. Nunca confirme "cadastro fechado" tentando cadastrar: use `GET /api/signup-status`. Depois de um deploy, o endereço principal leva alguns segundos para apontar para a versão nova.
 - Cadastro fechado por padrão no código (`ALLOW_SIGNUP`). Em produção, está aberto a qualquer pessoa desde 2026-11-02, por decisão do Lucas, ainda sem confirmação de e-mail nem recuperação de senha. O limite de tentativas fica no banco, em `rate_limit`, e só liga em produção. Para fechar: remova a variável na Vercel e publique de novo.
 - Deploy em produção: `npx vercel deploy --prod --yes`. Autorizado pelo Lucas em 2026-11-02. Sem o `--prod`, o deploy vira pré-visualização.
-- Teal é ação e progresso. Âmbar é só recompensa.
+- Teal é ação e progresso. Âmbar é só recompensa. Azul e rosa existem só em gráficos: tarefa e foco.
+- A coluna do Quadro vem dos dados, em `columnOf()`. Concluir é só `doneAt`, e `startedAt` não dá XP. Toda mudança de coluna passa por `placeOn()`.
+- Conquista é calculada dos mesmos agregados da Evolução. `achievements_seen` só impede a animação de repetir.
+- A maré fica na faixa da Hoje. Atrás de texto de leitura, nada se mexe.
 - O que acontece muitas vezes ao dia fica discreto. A onda em tela cheia fica para os grandes momentos.
+- Atalho de teclado abre sem animação.
+- Elemento com `position: fixed` que precisa ficar acima das abas vai por portal para o `body`, porque `main` cria um contexto de empilhamento.
 - Sempre respeitar `prefers-reduced-motion` e gatear `:hover`.
 - Nada de segredo no cliente. A conexão com o banco vive só no servidor.
 - Todo som passa por `pluck()` em `src/lib/feedback.ts`. A preferência de som fica no aparelho, de propósito, e não vai para o banco.

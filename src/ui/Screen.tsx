@@ -1,8 +1,12 @@
 import type { ReactNode } from 'react'
 
-export function Screen({ children }: { children: ReactNode }) {
+export function Screen({ children, wide }: { children: ReactNode; wide?: boolean }) {
   return (
-    <div className="mx-auto max-w-xl pt-[calc(env(safe-area-inset-top,0px)+16px)] pr-[max(20px,env(safe-area-inset-right,0px))] pb-10 pl-[max(20px,env(safe-area-inset-left,0px))] lg:max-w-5xl lg:px-10 lg:pt-8">
+    <div
+      className={`mx-auto max-w-xl pt-[calc(env(safe-area-inset-top,0px)+16px)] pr-[max(20px,env(safe-area-inset-right,0px))] pb-24 pl-[max(20px,env(safe-area-inset-left,0px))] lg:px-10 lg:pt-8 lg:pb-10 ${
+        wide ? 'lg:max-w-7xl' : 'lg:max-w-5xl'
+      }`}
+    >
       {children}
     </div>
   )

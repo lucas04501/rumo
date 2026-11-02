@@ -13,7 +13,7 @@ export function Quote() {
   }, [])
 
   return (
-    <div className="mt-5 min-h-[2lh] font-display text-[21px]/[1.3] font-medium text-foam/90">
+    <div className="mt-4 min-h-[2lh] font-display text-[17px]/[1.35] font-medium text-mist sm:min-h-[1lh]">
       <AnimatePresence mode="wait" initial={false}>
         <motion.p
           key={quote}

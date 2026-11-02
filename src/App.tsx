@@ -5,6 +5,7 @@ import { DayProvider } from './data/DayProvider'
 import { persistOptions, resumeWrites, store } from './data/store'
 import { AuthGate } from './ui/AuthGate'
 import { Shell } from './ui/Shell'
+import { Conquistas } from './screens/Conquistas'
 import { Evolucao } from './screens/Evolucao'
 import { Foco } from './screens/Foco'
 import { Habitos } from './screens/Habitos'
@@ -34,9 +35,12 @@ export function App() {
                   <Route path="metas" element={<Metas />} />
                   <Route path="metas/:id" element={<Meta />} />
                   <Route path="mes" element={<Mes />} />
+                  <Route path="semana" element={<Mes />} />
+                  <Route path="quadro" element={<Mes />} />
                   <Route path="notas" element={<Notas />} />
                   <Route path="rotina" element={<Rotina />} />
                   <Route path="evolucao" element={<Evolucao />} />
+                  <Route path="conquistas" element={<Conquistas />} />
                   <Route path="foco" element={<Foco />} />
                   <Route path="mais" element={<Mais />} />
                 </Route>

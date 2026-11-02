@@ -47,6 +47,7 @@ const snapshot = (overrides: Partial<Snapshot> = {}): Snapshot => ({
   focusSessions: [],
   routineSteps: [],
   routineChecks: [],
+  achievementsSeen: [],
   notes: [],
   days: [],
   ...overrides,

@@ -23,8 +23,7 @@ import {
   type Range,
 } from '../lib/evolution'
 import { goalProgress, paceSentence } from '../lib/goals'
-import { indexSnapshot, summarizeDay, withMilestones } from '../lib/progress'
-import { overdueTasks } from '../lib/tasks'
+import { indexSnapshot, withMilestones } from '../lib/progress'
 import { DaySheet } from '../ui/DaySheet'
 import { Bars, DepthChart, Meter, TideChart } from '../ui/EvolutionCharts'
 import { iconFor } from '../ui/habitIcons'
@@ -102,7 +101,7 @@ export function Evolucao() {
             </p>
             <p className="mt-1 text-[17px]">{headline(stats.score, delta)}</p>
 
-            <dl className="mt-4 divide-y divide-white/8">
+            <dl className="mt-4 divide-y divide-line">
               <Figure
                 label="Hábitos"
                 value={stats.habitRate === null ? '—' : `${stats.habitRate}%`}
@@ -155,8 +154,6 @@ export function Evolucao() {
         </div>
 
         <div className="mt-9 lg:mt-0">
-          <TodayPanel snapshot={snapshot} today={today} />
-
           {lines.length > 0 && (
             <section aria-labelledby="padroes" className={SECTION}>
               <h2 id="padroes" className={HEADING}>
@@ -175,7 +172,7 @@ export function Evolucao() {
               <h2 id="habitos-evolucao" className={HEADING}>
                 Hábitos
               </h2>
-              <ul className="mt-1 divide-y divide-white/8">
+              <ul className="mt-1 divide-y divide-line">
                 {trends.map((trend) => (
                   <HabitLine key={trend.id} trend={trend} />
                 ))}
@@ -191,13 +188,14 @@ export function Evolucao() {
               <Bars
                 key={range}
                 label="Tarefas concluídas"
+                color="task"
                 items={buckets(dates, tasksDoneOn(index), (value) =>
                   value === 1 ? '1 tarefa' : `${value} tarefas`,
                 )}
               />
             </div>
             {(focus.high.total > 0 || focus.repeating.total > 0) && (
-              <dl className="mt-3 divide-y divide-white/8">
+              <dl className="mt-3 divide-y divide-line">
                 {focus.high.total > 0 && (
                   <Figure
                     label="Prioridade alta"
@@ -223,6 +221,7 @@ export function Evolucao() {
                 <Bars
                   key={range}
                   label="Tempo de foco"
+                  color="focus"
                   items={buckets(dates, focusMinutesOn(snapshot), formatMinutes)}
                 />
               </div>
@@ -257,29 +256,6 @@ function Figure({ label, value, note, reward }: FigureProps) {
         <span className={`font-semibold ${reward ? 'text-sun' : ''}`}>{value}</span>
       </dd>
     </div>
-  )
-}
-
-function TodayPanel({ snapshot, today }: { snapshot: Snapshot; today: string }) {
-  const { habits, tasks } = summarizeDay(snapshot, today)
-  const habitsDone = habits.filter((habit) => habit.done).length
-  const pending = tasks.filter((task) => !task.doneAt).length
-  const overdue = overdueTasks(snapshot.tasks, today).length
-
-  return (
-    <section aria-labelledby="hoje-evolucao" className={SECTION}>
-      <h2 id="hoje-evolucao" className={HEADING}>
-        Hoje
-      </h2>
-      <dl className="mt-1 divide-y divide-white/8">
-        <Figure label="Hábitos" value={`${habitsDone} de ${habits.length}`} />
-        <Figure
-          label="Tarefas pendentes"
-          value={String(pending + overdue)}
-          note={overdue > 0 ? `${overdue} para trás` : undefined}
-        />
-      </dl>
-    </section>
   )
 }
 
@@ -329,7 +305,7 @@ function Goals({ snapshot, today }: { snapshot: Snapshot; today: string }) {
       <h2 id="metas-evolucao" className={HEADING}>
         Metas
       </h2>
-      <ul className="mt-1 divide-y divide-white/8">
+      <ul className="mt-1 divide-y divide-line">
         {goals.map((goal, position) => {
           const progress = goalProgress(goal.milestones, goal.targetDate, today)
           const pace = paceSentence(progress)

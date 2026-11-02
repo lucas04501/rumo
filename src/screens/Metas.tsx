@@ -37,7 +37,7 @@ export function Metas() {
       )}
 
       {active.length > 0 && (
-        <ul className="mt-4 max-w-2xl divide-y divide-white/8">
+        <ul className="mt-4 max-w-2xl divide-y divide-line">
           {active.map((goal, index) => (
             <li key={goal.id}>
               <GoalItem goal={goal} snapshot={snapshot} today={date} main={index === 0} />
@@ -51,7 +51,7 @@ export function Metas() {
           <h2 id="portos" className="font-display text-xl font-semibold">
             Portos alcançados
           </h2>
-          <ul className="mt-2 divide-y divide-white/8">
+          <ul className="mt-2 divide-y divide-line">
             {arrived.map((goal) => (
               <li key={goal.id}>
                 <Link

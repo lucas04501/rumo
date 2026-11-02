@@ -94,7 +94,7 @@ function Setup({ snapshot, today }: { snapshot: Snapshot; today: string }) {
 
       <fieldset className="mt-5">
         <legend className="font-display text-xl font-semibold">No que você vai focar?</legend>
-        <ul className="mt-1 divide-y divide-white/8">
+        <ul className="mt-1 divide-y divide-line">
           {open.map((task) => (
             <li key={task.id}>
               <label className="link-row">

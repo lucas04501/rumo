@@ -1,7 +1,7 @@
 import type { Day, Note } from '../data/types'
 
 /** Compara sem diferenciar maiúsculas nem acentos: "mare" encontra "Maré". */
-function normalize(text: string): string {
+export function normalize(text: string): string {
   return text.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().trim()
 }
 

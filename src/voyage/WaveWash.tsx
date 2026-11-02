@@ -21,9 +21,9 @@ const FADE = {
 }
 
 const LAYERS = [
-  { top: 'var(--color-sea-3)', bottom: 'var(--color-sea-3)', phase: 2.6, delay: 0 },
+  { top: 'var(--color-water-3)', bottom: 'var(--color-water-3)', phase: 2.6, delay: 0 },
   { top: 'var(--color-wash-mid)', bottom: 'var(--color-wash-mid)', phase: 4.2, delay: 0.09 },
-  { top: 'var(--color-wash)', bottom: 'var(--color-sea-3)', phase: 1.1, delay: 0.18 },
+  { top: 'var(--color-wash)', bottom: 'var(--color-water-3)', phase: 1.1, delay: 0.18 },
 ]
 
 type WaveWashProps = {

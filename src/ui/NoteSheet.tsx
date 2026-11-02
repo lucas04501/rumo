@@ -10,10 +10,10 @@ import { useAutosave } from './useAutosave'
 const MAX_TITLE = 300
 const MAX_BODY = 100_000
 
-const blankNote = (goalId: string | null): Note => ({
+const blankNote = (goalId: string | null, title: string): Note => ({
   id: newId(),
   goalId,
-  title: '',
+  title,
   body: '',
   pinned: false,
   updatedAt: '',
@@ -26,12 +26,13 @@ type NoteSheetProps = {
   /** Sem nota, abre uma nova. Ela só passa a existir quando tiver conteúdo. */
   note: Note | null
   goalId?: string | null
+  initialTitle?: string
   goals: Goal[]
   onClosed: () => void
 }
 
-export function NoteSheet({ note, goalId = null, goals, onClosed }: NoteSheetProps) {
-  const [draft, setDraft] = useState(() => note ?? blankNote(goalId))
+export function NoteSheet({ note, goalId = null, initialTitle = '', goals, onClosed }: NoteSheetProps) {
+  const [draft, setDraft] = useState(() => note ?? blankNote(goalId, initialTitle))
   const [saved, setSaved] = useState(draft)
   const [exists, setExists] = useState(note !== null)
   const stopped = useRef(false)
@@ -150,7 +151,7 @@ function DeleteNote({ onDelete }: { onDelete: () => void }) {
   const [confirming, setConfirming] = useState(false)
 
   return (
-    <div className="border-t border-white/8 pt-3">
+    <div className="border-t border-line pt-3">
       {confirming ? (
         <div className="flex items-center justify-between gap-3">
           <p className="text-[15px]">Excluir esta nota?</p>

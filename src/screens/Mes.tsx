@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router'
 import { useDay } from '../data/DayProvider'
 import { useSnapshot } from '../data/store'
 import type { Snapshot } from '../data/types'
@@ -7,17 +8,23 @@ import { addDays, formatLongDate, weekOf } from '../lib/dates'
 import { calendarMarks } from '../lib/dayReport'
 import { monthGrid, monthInsights, monthName, monthOf, shiftMonth } from '../lib/month'
 import { dayProgress, indexedTasks, indexSnapshot, type SnapshotIndex } from '../lib/progress'
+import { Board } from '../ui/Board'
 import { DaySheet } from '../ui/DaySheet'
 import { Screen } from '../ui/Screen'
 
 const WEEK_LETTERS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
 
-type View = 'mes' | 'semana'
+const VIEWS = [
+  { path: '/mes', label: 'Mês' },
+  { path: '/semana', label: 'Semana' },
+  { path: '/quadro', label: 'Quadro' },
+]
 
 export function Mes() {
   const { date: today } = useDay()
   const { data: snapshot } = useSnapshot()
-  const [view, setView] = useState<View>('mes')
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
   const [month, setMonth] = useState(() => monthOf(today))
   const [weekStart, setWeekStart] = useState(() => weekOf(today)[0])
   const [opened, setOpened] = useState<string | null>(null)
@@ -26,37 +33,43 @@ export function Mes() {
   if (!snapshot || !index) return null
 
   return (
-    <Screen>
-      <div className="flex items-center justify-between gap-4 pt-3 lg:pt-8">
+    <Screen wide={pathname === '/quadro'}>
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pt-3 lg:pt-8">
         <h1 className="font-display text-4xl font-semibold tracking-[-0.02em]">
-          {view === 'mes' ? 'Mês' : 'Semana'}
+          {VIEWS.find((view) => view.path === pathname)?.label}
         </h1>
         <div className="segmented" role="group" aria-label="Visualização">
-          <button type="button" aria-pressed={view === 'mes'} onClick={() => setView('mes')}>
-            Mês
-          </button>
-          <button type="button" aria-pressed={view === 'semana'} onClick={() => setView('semana')}>
-            Semana
-          </button>
+          {VIEWS.map(({ path, label }) => (
+            <button
+              key={path}
+              type="button"
+              aria-pressed={pathname === path}
+              onClick={() => void navigate(path)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {view === 'mes' ? (
-        <MonthView
-          month={month}
-          today={today}
-          snapshot={snapshot}
-          index={index}
-          onMonth={setMonth}
-          onOpen={setOpened}
-        />
-      ) : (
+      {pathname === '/quadro' && <Board snapshot={snapshot} today={today} />}
+      {pathname === '/semana' && (
         <WeekView
           weekStart={weekStart}
           today={today}
           snapshot={snapshot}
           index={index}
           onWeek={setWeekStart}
+          onOpen={setOpened}
+        />
+      )}
+      {pathname === '/mes' && (
+        <MonthView
+          month={month}
+          today={today}
+          snapshot={snapshot}
+          index={index}
+          onMonth={setMonth}
           onOpen={setOpened}
         />
       )}
@@ -212,7 +225,7 @@ function WeekView({ weekStart, today, snapshot, index, onWeek, onOpen }: WeekVie
         onNext={() => onWeek(addDays(weekStart, 7))}
       />
 
-      <ul className="mt-2 divide-y divide-white/8">
+      <ul className="mt-2 divide-y divide-line">
         {days.map((date) => {
           const tasks = indexedTasks(index, date)
           const progress = dayProgress(index, date)

@@ -84,7 +84,7 @@ export function DaySheet({ date, today, snapshot, onClosed }: DaySheetProps) {
                   {habitsDone} de {habits.length}
                 </p>
               </div>
-              <ul className="mt-1 divide-y divide-white/8">
+              <ul className="mt-1 divide-y divide-line">
                 {habits.map((habit) => {
                   const Icon = iconFor(habit.icon)
                   const done = checksOf(habit.id, snapshot).has(date)
@@ -119,7 +119,7 @@ export function DaySheet({ date, today, snapshot, onClosed }: DaySheetProps) {
                 </p>
               )}
             </div>
-            <ul className="mt-1 divide-y divide-white/8">
+            <ul className="mt-1 divide-y divide-line">
               {tasks.map((task) => (
                 <li key={task.id}>
                   {isPlanned(task, today, snapshot.tasks) ? (

@@ -9,6 +9,7 @@ import { Sheet } from './Sheet'
 type GoalSheetProps = {
   goal: Goal | null
   milestones: Milestone[]
+  initialTitle?: string
   position: number
   today: string
   onClosed: () => void
@@ -18,11 +19,18 @@ type Draft = { id: string; title: string }
 
 const emptyDraft = (): Draft => ({ id: newId(), title: '' })
 
-export function GoalSheet({ goal, milestones, position, today, onClosed }: GoalSheetProps) {
+export function GoalSheet({
+  goal,
+  milestones,
+  initialTitle = '',
+  position,
+  today,
+  onClosed,
+}: GoalSheetProps) {
   const done = milestones.filter((milestone) => milestone.doneAt)
   const pending = milestones.filter((milestone) => !milestone.doneAt)
 
-  const [title, setTitle] = useState(goal?.title ?? '')
+  const [title, setTitle] = useState(goal?.title ?? initialTitle)
   const [why, setWhy] = useState(goal?.why ?? '')
   const [targetDate, setTargetDate] = useState(goal?.targetDate ?? '')
   const [drafts, setDrafts] = useState<Draft[]>(
@@ -207,7 +215,7 @@ function RemoveGoal({ id }: { id: string }) {
   const [confirming, setConfirming] = useState(false)
 
   return (
-    <div className="mt-6 border-t border-white/8 pt-3">
+    <div className="mt-6 border-t border-line pt-3">
       {confirming ? (
         <div className="flex items-center justify-between gap-3">
           <p className="text-[15px]">Excluir esta meta? Hábitos e tarefas continuam.</p>

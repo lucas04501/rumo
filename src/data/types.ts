@@ -50,6 +50,8 @@ export type Task = {
   priority: Priority
   ruleId: string | null
   skippedAt: string | null
+  /** Preenchido, a tarefa está em Fazendo no quadro. Concluir continua sendo só `doneAt`. */
+  startedAt: string | null
 }
 
 export type TaskRule = {
@@ -128,4 +130,6 @@ export type Snapshot = {
   routineChecks: RoutineCheck[]
   notes: Note[]
   days: Day[]
+  /** Conquistas cuja animação já tocou, em qualquer aparelho. */
+  achievementsSeen: string[]
 }

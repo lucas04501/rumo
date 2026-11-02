@@ -1,3 +1,4 @@
+import { Medal } from 'lucide-react'
 import { AnimatePresence, motion } from 'motion/react'
 import { useEffect } from 'react'
 import type { Reward } from '../data/DayProvider'
@@ -30,8 +31,17 @@ export function RewardToast({ reward, onDone }: RewardToastProps) {
             exit={{ opacity: 0, transform: 'translateY(100%)' }}
             transition={{ duration: 0.28, ease: [0.23, 1, 0.32, 1] }}
           >
-            <p className="font-display text-lg font-semibold text-sun">{reward.title}</p>
-            <p className="mt-0.5 text-[15px] text-foam/90">{reward.detail}</p>
+            <div className="flex items-center gap-3">
+              {reward.isMedal && (
+                <span className="medal medal-pop" data-earned="true">
+                  <Medal size={20} strokeWidth={1.75} aria-hidden />
+                </span>
+              )}
+              <div className="min-w-0">
+                <p className="font-display text-lg font-semibold text-sun">{reward.title}</p>
+                <p className="mt-0.5 text-[15px]">{reward.detail}</p>
+              </div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

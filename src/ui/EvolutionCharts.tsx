@@ -84,8 +84,8 @@ export function TideChart({ points, window, onOpen }: TideChartProps) {
         <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="chart-reveal">
           <defs>
             <linearGradient id="tide-fill" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0" stopColor="var(--color-tide)" stopOpacity="0.3" />
-              <stop offset="1" stopColor="var(--color-tide)" stopOpacity="0.02" />
+              <stop offset="0" stopColor="var(--color-tide)" stopOpacity="0.34" />
+              <stop offset="1" stopColor="var(--color-tide)" stopOpacity="0" />
             </linearGradient>
           </defs>
           {coordinates.length > 1 && (
@@ -95,7 +95,7 @@ export function TideChart({ points, window, onOpen }: TideChartProps) {
                 d={line}
                 fill="none"
                 stroke="var(--color-tide)"
-                strokeWidth="2"
+                strokeWidth="2.5"
                 strokeLinecap="round"
                 vectorEffect="non-scaling-stroke"
               />
@@ -181,11 +181,15 @@ export function DepthChart({ weeks, today, onOpen }: DepthChartProps) {
 type BarsProps = {
   items: Bucket[]
   label: string
+  /** Cor da coisa medida: tarefa é azul e foco é rosa, em qualquer tela. */
+  color: 'tide' | 'task' | 'focus'
+  /** Coluna lida ao abrir, se não for a última. */
+  selected?: string
 }
 
 /** Colunas simples: a última fica selecionada, e tocar lê as outras. */
-export function Bars({ items, label }: BarsProps) {
-  const [picked, setPicked] = useState<string | null>(null)
+export function Bars({ items, label, color, selected: initial }: BarsProps) {
+  const [picked, setPicked] = useState(initial ?? null)
   const max = Math.max(...items.map((item) => item.value), 1)
   const selected = items.find((item) => item.key === picked) ?? items[items.length - 1]
   const showEvery = items.length > 7 ? 3 : 1
@@ -193,7 +197,12 @@ export function Bars({ items, label }: BarsProps) {
   return (
     <figure>
       <p className="chart-readout text-[15px]">{selected.detail}</p>
-      <div className="bars" role="group" aria-label={label}>
+      <div
+        className="bars"
+        role="group"
+        aria-label={label}
+        data-color={color}
+      >
         {items.map((item) => (
           <button
             key={item.key}

@@ -4,42 +4,53 @@ import { Link } from 'react-router'
 import { useDay, type HabitToday } from '../data/DayProvider'
 import { useFocusTimer } from '../data/focusTimer'
 import { useSnapshot } from '../data/store'
-import { addQuick, bringToToday } from '../data/taskActions'
+import { bringToToday } from '../data/taskActions'
 import { useNow } from '../data/useNow'
-import { formatLongDate, weekdayOf } from '../lib/dates'
-import { periodDates, periodStats } from '../lib/evolution'
+import { formatLongDate, weekdayOf, weekOf } from '../lib/dates'
+import { buckets, focusMinutesOn, formatMinutes, periodDates, periodStats } from '../lib/evolution'
 import { formatClock, isOver, leftMs } from '../lib/focus'
 import { deadlineLabel } from '../lib/goals'
-import { indexSnapshot } from '../lib/progress'
-import { parseQuickAdd } from '../lib/quickAdd'
+import { dayProgress, indexSnapshot, type SnapshotIndex } from '../lib/progress'
 import { clockOf, currentStep, nextStep, stepsOn } from '../lib/routine'
 import { isStreakMark } from '../lib/streaks'
 import { overdueTasks } from '../lib/tasks'
 import { XP } from '../lib/xp'
+import { Bars } from '../ui/EvolutionCharts'
 import { iconFor } from '../ui/habitIcons'
 import { ItemRow } from '../ui/ItemRow'
+import { QuickChips, useQuickAdd } from '../ui/QuickAdd'
 import { Quote } from '../ui/Quote'
 import { Screen } from '../ui/Screen'
 import { SoundToggle } from '../ui/SoundToggle'
 import { TaskRow } from '../ui/TaskRow'
 import { Ticker } from '../ui/Ticker'
 import { Route } from '../voyage/Route'
+import { TideBand } from '../voyage/TideBand'
 
 export function Hoje() {
   return (
-    <Screen>
-      <TopBar />
-      <div className="lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)] lg:gap-16">
-        <div>
-          <Greeting />
-          <Quote />
+    <Screen wide>
+      <div className="relative">
+        <TopBar />
+        <Greeting />
+      </div>
+      <DayTide />
+      <Quote />
+      <div className="mt-6 grid grid-cols-1 gap-9 lg:grid-cols-2 lg:items-start lg:gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
+        <div className="panel grid grid-cols-1 gap-6">
           <RoutineShortcut />
-          <FocusGoal />
-          <EvolutionShortcut />
-        </div>
-        <div className="lg:pt-8">
           <Habits />
+        </div>
+        <div className="panel">
           <Tasks />
+        </div>
+        <div className="grid grid-cols-1 gap-9 lg:col-span-2 lg:grid-cols-2 lg:items-start lg:gap-5 xl:col-span-1 xl:grid-cols-1">
+          <div className="panel">
+            <FocusGoal />
+          </div>
+          <div className="panel">
+            <Week />
+          </div>
         </div>
       </div>
     </Screen>
@@ -57,8 +68,8 @@ function TopBar() {
   }, [xp])
 
   return (
-    <header className="flex items-start justify-between">
-      <p className="font-display text-[22px] font-semibold lg:invisible">Rumo</p>
+    <header className="flex items-start justify-between lg:absolute lg:top-0 lg:right-0">
+      <p className="font-display text-[22px] font-semibold lg:hidden">Rumo</p>
       <div className="flex items-start">
         <div className="text-right">
           <p className="text-sm leading-tight whitespace-nowrap">
@@ -75,7 +86,7 @@ function TopBar() {
             role="progressbar"
             aria-label="Avanço até a próxima patente"
             aria-valuenow={Math.round(rank.progress * 100)}
-            className="relative mt-1.5 ml-auto h-[3px] w-28 overflow-hidden rounded-full bg-white/12"
+            className="relative mt-1.5 ml-auto h-[3px] w-28 overflow-hidden rounded-full bg-line-strong"
           >
             <div
               className="h-full origin-left rounded-full bg-sun transition-transform duration-500 ease-out"
@@ -104,18 +115,35 @@ function tideSentence(remaining: number, isEmpty: boolean): string {
 }
 
 function Greeting() {
-  const { date, name, habits, tasks, remaining } = useDay()
+  const { date, name } = useDay()
   const firstName = name.trim().split(/\s+/)[0]
 
   return (
-    <div className="pt-7 lg:pt-8">
-      <h1 className="font-display text-[42px]/[1.05] font-semibold tracking-[-0.025em] lg:text-[56px]">
+    <div className="pt-6 lg:pt-0">
+      <h1 className="font-display text-[38px]/[1.05] font-semibold tracking-[-0.025em] lg:text-[44px]">
         {greetingFor(new Date().getHours())}, {firstName}.
       </h1>
-      <p className="mt-3 text-[17px]/snug text-mist">{formatLongDate(date)}</p>
-      <p className="text-[17px]/snug">
-        {tideSentence(remaining, habits.length + tasks.length === 0)}
-      </p>
+      <p className="mt-2 text-[17px]/snug text-mist">{formatLongDate(date)}</p>
+    </div>
+  )
+}
+
+function DayTide() {
+  const { habits, tasks, level, remaining } = useDay()
+  const total = habits.length + tasks.length
+
+  return (
+    <div className="mt-5">
+      <TideBand level={level}>
+        <p className="min-w-0 font-display text-xl/tight font-semibold">
+          {tideSentence(remaining, total === 0)}
+        </p>
+        {total > 0 && (
+          <p className="shrink-0 text-[15px] font-medium">
+            {total - remaining} de {total}
+          </p>
+        )}
+      </TideBand>
     </div>
   )
 }
@@ -125,7 +153,7 @@ function FocusGoal() {
 
   if (!goal || goal.milestones.length === 0) {
     return (
-      <section aria-label="Metas" className="mt-7">
+      <section aria-label="Metas">
         <p className="text-[17px] text-mist">Sem destino por enquanto.</p>
         <Link to="/metas" className="ghost mt-2 inline-grid place-items-center">
           Traçar uma rota
@@ -138,7 +166,7 @@ function FocusGoal() {
   const next = goal.milestones[goal.reached]?.title
 
   return (
-    <section aria-labelledby="meta-em-foco" className="mt-7">
+    <section aria-labelledby="meta-em-foco">
       <div className="flex items-baseline justify-between gap-4">
         <h2 id="meta-em-foco" className="min-w-0 font-display text-xl font-semibold">
           <Link to={`/metas/${goal.id}`}>{goal.title}</Link>
@@ -179,7 +207,7 @@ function Habits() {
   const done = habits.filter((habit) => habit.done).length
 
   return (
-    <section aria-labelledby="habitos-de-hoje" className="mt-8 lg:mt-0">
+    <section aria-labelledby="habitos-de-hoje">
       <div className="flex items-baseline justify-between">
         <h2 id="habitos-de-hoje" className="font-display text-xl font-semibold">
           Hábitos de hoje
@@ -192,7 +220,7 @@ function Habits() {
       </div>
 
       {habits.length > 0 ? (
-        <ul className="mt-2 divide-y divide-white/8">
+        <ul className="mt-2 divide-y divide-line">
           {habits.map((habit) => (
             <li key={habit.id}>
               <HabitRow habit={habit} />
@@ -271,7 +299,7 @@ function RoutineShortcut() {
   const next = nextStep(steps, clock)
 
   return (
-    <Link to="/rotina" className="mt-5 flex min-h-11 items-center justify-between gap-3 text-[15px]">
+    <Link to="/rotina" className="flex min-h-11 items-center justify-between gap-3 text-[15px]">
       <span className="min-w-0">
         {current && (
           <span className="block truncate">
@@ -290,27 +318,57 @@ function RoutineShortcut() {
   )
 }
 
-function EvolutionShortcut() {
+const percentOn = (index: SnapshotIndex) => (date: string) =>
+  Math.round(dayProgress(index, date).level * 100)
+
+/** A semana de relance. A análise do período fica na Evolução, e aqui só o que orienta o dia. */
+function Week() {
   const { date } = useDay()
   const { data: snapshot } = useSnapshot()
-  const score = useMemo(
-    () =>
-      snapshot ? periodStats(snapshot, indexSnapshot(snapshot), periodDates(date, 7)).score : null,
-    [snapshot, date],
-  )
+  const view = useMemo(() => {
+    if (!snapshot) return null
+    const index = indexSnapshot(snapshot)
+    const week = weekOf(date)
+    const focus = focusMinutesOn(snapshot)
+    return {
+      score: periodStats(snapshot, index, periodDates(date, 7)).score,
+      bars: buckets(week, percentOn(index), (value) => `${value}% do dia`),
+      focusMinutes: week.reduce((sum, day) => sum + focus(day), 0),
+      overdue: overdueTasks(snapshot.tasks, date).length,
+    }
+  }, [snapshot, date])
 
-  if (score === null) return null
+  if (!view) return null
+  const { score, bars, focusMinutes, overdue } = view
 
   return (
-    <Link
-      to="/evolucao"
-      className="mt-5 flex min-h-11 items-center justify-between gap-3 text-[15px] text-mist"
-    >
-      <span>
-        Últimos 7 dias: <span className="text-foam">{score}% do combinado</span>
-      </span>
-      <ChevronRight size={18} strokeWidth={1.75} aria-hidden />
-    </Link>
+    <section aria-labelledby="semana">
+      <div className="flex items-baseline justify-between gap-4">
+        <h2 id="semana" className="font-display text-xl font-semibold">
+          Semana
+        </h2>
+        <Link to="/evolucao" className="text-[15px] text-mist underline underline-offset-4">
+          Evolução
+        </Link>
+      </div>
+      <div className="mt-1">
+        <Bars items={bars} label="Parte de cada dia concluída" color="tide" selected={date} />
+      </div>
+      <dl className="mt-2 divide-y divide-line">
+        <WeekFigure label="Últimos 7 dias" value={score === null ? '—' : `${score}% do combinado`} />
+        <WeekFigure label="Foco na semana" value={formatMinutes(focusMinutes)} />
+        {overdue > 0 && <WeekFigure label="Ficaram para trás" value={String(overdue)} />}
+      </dl>
+    </section>
+  )
+}
+
+function WeekFigure({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex min-h-11 items-baseline justify-between gap-4 py-2 text-[15px]">
+      <dt className="text-mist">{label}</dt>
+      <dd className="font-semibold">{value}</dd>
+    </div>
   )
 }
 
@@ -322,7 +380,7 @@ function Overdue() {
   if (overdue.length === 0) return null
 
   return (
-    <div className="flex min-h-14 items-center gap-3 border-b border-white/8 py-2">
+    <div className="flex min-h-14 items-center gap-3 border-b border-line py-2">
       <div className="min-w-0 flex-1">
         <p className="text-[15px]">
           {overdue.length === 1 ? '1 ficou para trás' : `${overdue.length} ficaram para trás`}
@@ -339,31 +397,17 @@ function Overdue() {
 }
 
 function Tasks() {
-  const { date, tasks } = useDay()
-  const { data: snapshot } = useSnapshot()
-  const [title, setTitle] = useState('')
+  const { tasks } = useDay()
+  const { title, setTitle, labels, ignore, save } = useQuickAdd()
   const [focused, setFocused] = useState(false)
-  // "Ignorar" guarda o texto ignorado: ao digitar algo novo, a leitura volta.
-  const [literal, setLiteral] = useState<string | null>(null)
-
-  const intent = useMemo(() => parseQuickAdd(title, date), [title, date])
-  const understood = literal !== title && intent.labels.length > 0
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
-    const clean = title.trim()
-    if (!clean || !snapshot) return
-    addQuick(
-      understood ? intent : { ...intent, title: clean, date, priority: 'normal', repeat: null },
-      date,
-      snapshot,
-    )
-    setTitle('')
-    setLiteral(null)
+    save()
   }
 
   return (
-    <section aria-labelledby="tarefas-de-hoje" className="mt-9">
+    <section aria-labelledby="tarefas-de-hoje">
       <div className="flex items-center justify-between gap-4">
         <h2 id="tarefas-de-hoje" className="font-display text-xl font-semibold">
           Tarefas
@@ -371,7 +415,7 @@ function Tasks() {
         <FocusShortcut />
       </div>
       <Overdue />
-      <ul className="mt-1 divide-y divide-white/8">
+      <ul className="mt-1 divide-y divide-line">
         {tasks.map((task) => (
           <li key={task.id}>
             <TaskRow task={task} />
@@ -393,22 +437,8 @@ function Tasks() {
                 className="min-w-0 flex-1 bg-transparent py-3 outline-none"
               />
             </div>
-            {understood ? (
-              <div className="flex flex-wrap items-center gap-2 pb-3 pl-[37px]">
-                {intent.labels.map((label) => (
-                  <span key={label} className="quick-chip">
-                    {label}
-                  </span>
-                ))}
-                <button
-                  type="button"
-                  className="min-h-8 px-1 text-sm text-mist underline underline-offset-4"
-                  onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => setLiteral(title)}
-                >
-                  Ignorar
-                </button>
-              </div>
+            {labels.length > 0 ? (
+              <QuickChips labels={labels} onIgnore={ignore} className="pb-3 pl-[37px]" />
             ) : (
               focused &&
               !title && (

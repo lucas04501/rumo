@@ -1,23 +1,35 @@
 @import 'tailwindcss';
 
 @theme {
-  /* Céu e água, do mais profundo ao mais claro */
-  --color-abyss: #06161c;
-  --color-sea-1: #0a2630;
-  --color-sea-2: #0c2f39;
-  --color-sea-3: #0f3843;
+  /* Fundo quase preto. Profundidade é um passo de tom, nunca camadas por trás do texto. */
+  --color-abyss: #050809;
+  --color-sea-1: #0b1113;
+  --color-sea-2: #121a1d;
+  --color-sea-3: #1a2529;
+  --color-line: rgb(243 248 247 / 0.1);
+  --color-line-strong: rgb(243 248 247 / 0.2);
+
+  /* A água só existe na faixa da maré, no foco e na onda dos grandes momentos. */
   --color-crest: rgb(132 232 216 / 0.22);
+  --color-water-1: #0a2a2e;
+  --color-water-2: #0d3a3e;
+  --color-water-3: #114a4e;
   --color-wash-mid: #125059;
   --color-wash: #1a6f76;
 
-  /* Texto */
-  --color-foam: #e9f3f1;
-  --color-mist: #9db6ba;
+  /* Texto: principal, secundário e o mínimo legível, para o que está em repouso */
+  --color-foam: #f3f8f7;
+  --color-mist: #aebdc0;
+  --color-haze: #7d8e92;
 
   /* Teal é ação e progresso. Âmbar é só recompensa. */
-  --color-tide: #4fd8c4;
-  --color-tide-ink: #052a29;
-  --color-sun: #f6b25e;
+  --color-tide: #2fd6bd;
+  --color-tide-ink: #03211f;
+  --color-sun: #ffb23e;
+
+  /* Só em gráficos: cada cor é uma coisa. Tarefa é azul, foco é rosa e XP é âmbar. */
+  --color-chart-task: #5a8dff;
+  --color-chart-focus: #ff5c8a;
 
   --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Figtree Variable', ui-sans-serif, system-ui, sans-serif;
@@ -84,7 +96,7 @@
   }
 
   ::selection {
-    background: rgb(79 216 196 / 0.3);
+    background: rgb(47 214 189 / 0.3);
     color: var(--color-foam);
   }
 

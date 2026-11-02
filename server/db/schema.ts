@@ -266,6 +266,8 @@ export const tasks = pgTable(
     ruleId: uuid('rule_id'),
     // Ocorrência pulada: a linha fica, para a regra não recriar a tarefa nesse dia.
     skippedAt: moment('skipped_at'),
+    // Em andamento no quadro. Concluir continua sendo só `done_at`, de onde sai o XP.
+    startedAt: moment('started_at'),
     ...lifecycle(),
   },
   (table) => [
@@ -365,6 +367,18 @@ export const routineChecks = pgTable(
     }),
     index('routine_checks_user_date_idx').on(table.userId, table.date),
   ],
+)
+
+// Conquista cuja animação já tocou. O que foi conquistado é calculado dos dados:
+// esta tabela só impede que a animação se repita, em qualquer aparelho.
+export const achievementsSeen = pgTable(
+  'achievements_seen',
+  {
+    userId: owner(),
+    achievementId: text('achievement_id').notNull(),
+    seenAt: moment('seen_at').notNull().defaultNow(),
+  },
+  (table) => [primaryKey({ columns: [table.userId, table.achievementId] })],
 )
 
 export const notes = pgTable(

@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
-const SEA = '#06161c'
+const SEA = '#050809'
 
 const BUILD_TIME = new Date().toLocaleString('pt-BR', {
   timeZone: 'America/Sao_Paulo',

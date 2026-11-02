@@ -2,6 +2,7 @@ import { and, asc, desc, eq, isNotNull, isNull } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { db } from '../db/client.js'
 import {
+  achievementsSeen,
   days,
   focusSessions,
   goals,
@@ -42,6 +43,7 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
     routineCheckRows,
     noteRows,
     dayRows,
+    seenRows,
   ] = await Promise.all([
     db.select({ name: user.name }).from(user).where(eq(user.id, userId)),
     db
@@ -108,6 +110,10 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
       .where(and(eq(notes.userId, userId), isNull(notes.deletedAt)))
       .orderBy(desc(notes.updatedAt)),
     db.select().from(days).where(eq(days.userId, userId)),
+    db
+      .select({ id: achievementsSeen.achievementId })
+      .from(achievementsSeen)
+      .where(eq(achievementsSeen.userId, userId)),
   ])
 
   return c.json({
@@ -125,5 +131,6 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
     routineChecks: routineCheckRows,
     notes: noteRows,
     days: dayRows,
+    achievementsSeen: seenRows.map((row) => row.id),
   })
 })

@@ -8,10 +8,19 @@ import { Sheet } from './Sheet'
 type StepSheetProps = {
   step: RoutineStep
   snapshot: Snapshot
+  /** Passo que só passa a existir ao salvar: não tem o que excluir. */
+  isNew?: boolean
+  sheetTitle?: string
   onClosed: () => void
 }
 
-export function StepSheet({ step, snapshot, onClosed }: StepSheetProps) {
+export function StepSheet({
+  step,
+  snapshot,
+  isNew,
+  sheetTitle = 'Passo da rotina',
+  onClosed,
+}: StepSheetProps) {
   const [title, setTitle] = useState(step.title)
   const [time, setTime] = useState(step.time)
   const [alsoOn, setAlsoOn] = useState<number[]>([])
@@ -24,7 +33,7 @@ export function StepSheet({ step, snapshot, onClosed }: StepSheetProps) {
   const canSave = title.trim().length > 0 && time !== ''
 
   return (
-    <Sheet title="Passo da rotina" onClosed={onClosed}>
+    <Sheet title={sheetTitle} onClosed={onClosed}>
       {(close) => {
         const submit = (event: FormEvent) => {
           event.preventDefault()
@@ -94,18 +103,20 @@ export function StepSheet({ step, snapshot, onClosed }: StepSheetProps) {
               </button>
             </form>
 
-            <div className="mt-6 border-t border-white/8 pt-3">
-              <button
-                type="button"
-                className="min-h-11 text-[15px] text-mist underline underline-offset-4"
-                onClick={() => {
-                  removeStep(step)
-                  close()
-                }}
-              >
-                Excluir passo
-              </button>
-            </div>
+            {!isNew && (
+              <div className="mt-6 border-t border-line pt-3">
+                <button
+                  type="button"
+                  className="min-h-11 text-[15px] text-mist underline underline-offset-4"
+                  onClick={() => {
+                    removeStep(step)
+                    close()
+                  }}
+                >
+                  Excluir passo
+                </button>
+              </div>
+            )}
           </>
         )
       }}
@@ -135,7 +146,7 @@ export function CopyDaySheet({ weekday, snapshot, onClosed }: CopyDaySheetProps)
               . Dá para desfazer em seguida.
             </p>
           )}
-          <ul className="mt-2 divide-y divide-white/8">
+          <ul className="mt-2 divide-y divide-line">
             {sources.map(({ day, name }) => {
               const count = stepCount(snapshot.routineSteps, day)
               return (

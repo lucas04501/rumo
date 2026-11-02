@@ -7,6 +7,7 @@ type AddedLater =
   | 'focusSessions'
   | 'routineSteps'
   | 'routineChecks'
+  | 'achievementsSeen'
 
 type OldSnapshot = Omit<Snapshot, AddedLater | 'tasks'> &
   Partial<Pick<Snapshot, AddedLater>> & {
@@ -18,9 +19,7 @@ type OldSnapshot = Omit<Snapshot, AddedLater | 'tasks'> &
  * que abre o app até a próxima busca, então os campos novos precisam existir.
  */
 export function complete(snapshot: OldSnapshot): Snapshot {
-  if (snapshot.routineChecks && snapshot.focusSessions && snapshot.notes) {
-    return snapshot as Snapshot
-  }
+  if (snapshot.achievementsSeen) return snapshot as Snapshot
 
   return {
     ...snapshot,
@@ -29,6 +28,7 @@ export function complete(snapshot: OldSnapshot): Snapshot {
       priority: 'normal',
       ruleId: null,
       skippedAt: null,
+      startedAt: null,
       ...task,
     })),
     taskRules: snapshot.taskRules ?? [],
@@ -36,5 +36,6 @@ export function complete(snapshot: OldSnapshot): Snapshot {
     focusSessions: snapshot.focusSessions ?? [],
     routineSteps: snapshot.routineSteps ?? [],
     routineChecks: snapshot.routineChecks ?? [],
+    achievementsSeen: [],
   }
 }

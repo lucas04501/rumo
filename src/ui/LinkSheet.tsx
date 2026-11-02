@@ -28,7 +28,7 @@ export function LinkSheet({ goal, snapshot, today, onClosed }: LinkSheetProps) {
           {habits.length === 0 ? (
             <p className="mt-1 text-[15px] text-mist">Você ainda não criou hábitos.</p>
           ) : (
-            <ul className="mt-1 divide-y divide-white/8">
+            <ul className="mt-1 divide-y divide-line">
               {habits.map((habit) => {
                 const Icon = iconFor(habit.icon)
                 const other = goalName(habit.goalId)
@@ -59,7 +59,7 @@ export function LinkSheet({ goal, snapshot, today, onClosed }: LinkSheetProps) {
           {tasks.length === 0 ? (
             <p className="mt-1 text-[15px] text-mist">Nenhuma tarefa aberta para hoje.</p>
           ) : (
-            <ul className="mt-1 divide-y divide-white/8">
+            <ul className="mt-1 divide-y divide-line">
               {tasks.map((task) => (
                 <li key={task.id}>
                   <label className="link-row">

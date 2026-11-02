@@ -39,6 +39,36 @@ export function currentStreak(habit: HabitPlan, checks: Set<string>, today: stri
   return { days, anchorUsed }
 }
 
+/**
+ * A maior sequência já feita, com a mesma âncora de `currentStreak`, em uma passada
+ * só: chamar aquela função dia a dia seria quadrático. Duas faltas próximas recomeçam
+ * a contagem a partir da mais antiga delas.
+ */
+export function bestStreak(habit: HabitPlan, checks: Set<string>, today: string): number {
+  let best = 0
+  let run = 0
+  let sinceMiss = 0
+  let lastMiss: string | null = null
+
+  for (let date = habit.startDate; date <= today; date = addDays(date, 1)) {
+    if (!isScheduled(habit, date)) continue
+
+    if (checks.has(date)) {
+      run += 1
+      sinceMiss += 1
+      best = Math.max(best, run)
+      continue
+    }
+
+    if (date === today) continue
+    if (lastMiss && diffDays(date, lastMiss) < ANCHOR_WINDOW_DAYS) run = sinceMiss
+    sinceMiss = 0
+    lastMiss = date
+  }
+
+  return best
+}
+
 const STREAK_MARKS = new Set([7, 14, 21, 30, 60, 100, 200, 365])
 
 /** Sequências que merecem um destaque na lista. */

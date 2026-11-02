@@ -5,6 +5,7 @@ import { useDay } from '../data/DayProvider'
 import { useSnapshot } from '../data/store'
 import { postponeTask } from '../data/taskActions'
 import type { Task } from '../data/types'
+import { columnOf } from '../lib/board'
 import { haptic } from '../lib/feedback'
 import { ItemRow } from './ItemRow'
 import { TaskSheet } from './TaskSheet'
@@ -31,6 +32,7 @@ export function TaskRow({ task }: { task: Task }) {
 
   const subtasks = snapshot?.subtasks.filter((subtask) => subtask.taskId === task.id) ?? []
   const subtasksDone = subtasks.filter((subtask) => subtask.doneAt).length
+  const doing = columnOf(task) === 'doing'
 
   const swiped = ({ offset, velocity }: PanInfo) => {
     const far = Math.abs(offset.x) >= SWIPE_DISTANCE
@@ -105,8 +107,9 @@ export function TaskRow({ task }: { task: Task }) {
             onToggle={() => toggleTask(task)}
             leading={<PriorityMark priority={task.priority} />}
             trailing={
-              (task.ruleId || subtasks.length > 0) && (
+              (task.ruleId || subtasks.length > 0 || doing) && (
                 <span className="flex shrink-0 items-center gap-1.5 text-[15px] text-mist">
+                  {doing && <span className="text-tide">Fazendo</span>}
                   {task.ruleId && <Repeat size={14} strokeWidth={1.75} aria-label="Repete" />}
                   {subtasks.length > 0 && (
                     <span aria-label={`${subtasksDone} de ${subtasks.length} subtarefas`}>

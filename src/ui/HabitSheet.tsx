@@ -21,13 +21,14 @@ const DEFAULT_PAUSE_DAYS = 6
 
 type HabitSheetProps = {
   habit: Habit | null
+  initialTitle?: string
   position: number
   today: string
   onClosed: () => void
 }
 
-export function HabitSheet({ habit, position, today, onClosed }: HabitSheetProps) {
-  const [title, setTitle] = useState(habit?.title ?? '')
+export function HabitSheet({ habit, initialTitle = '', position, today, onClosed }: HabitSheetProps) {
+  const [title, setTitle] = useState(habit?.title ?? initialTitle)
   const [icon, setIcon] = useState(habit?.icon ?? DEFAULT_HABIT_ICON)
   const [weekdays, setWeekdays] = useState(habit?.weekdays ?? EVERY_DAY)
 
@@ -137,7 +138,7 @@ function Pauses({ habitId, today }: { habitId: string; today: string }) {
   const valid = startDate !== '' && endDate !== '' && endDate >= startDate
 
   return (
-    <section aria-labelledby="pausas" className="mt-7 border-t border-white/8 pt-5">
+    <section aria-labelledby="pausas" className="mt-7 border-t border-line pt-5">
       <h3 id="pausas" className="font-display text-lg font-semibold">
         Pausar
       </h3>
@@ -203,7 +204,7 @@ function RemoveHabit({ habit, onRemoved }: { habit: Habit; onRemoved: () => void
   const [confirming, setConfirming] = useState(false)
 
   return (
-    <div className="mt-6 border-t border-white/8 pt-3">
+    <div className="mt-6 border-t border-line pt-3">
       {confirming ? (
         <div className="flex items-center justify-between gap-3">
           <p className="text-[15px]">Excluir este hábito? O XP já ganho continua.</p>

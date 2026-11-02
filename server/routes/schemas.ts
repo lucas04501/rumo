@@ -53,6 +53,7 @@ export const taskFields = z.object({
   priority,
   ruleId: uuid.nullable().default(null),
   skippedAt: instant,
+  startedAt: instant,
 })
 
 export const taskRuleFields = z.object({

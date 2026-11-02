@@ -93,7 +93,7 @@ function NoteList({ snapshot, query }: { snapshot: Snapshot; query: string }) {
       </div>
 
       {notes.length > 0 ? (
-        <ul className="mt-1 divide-y divide-white/8">
+        <ul className="mt-1 divide-y divide-line">
           {notes.map((note) => (
             <li key={note.id}>
               <NoteRow
@@ -138,7 +138,7 @@ function Journal({ snapshot, today, query }: JournalProps) {
       </div>
 
       {entries.length > 0 ? (
-        <ul className="divide-y divide-white/8">
+        <ul className="divide-y divide-line">
           {entries.map(({ date, note }) => (
             <li key={date}>
               <button

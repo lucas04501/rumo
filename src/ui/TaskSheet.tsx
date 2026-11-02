@@ -7,6 +7,7 @@ import {
   addSubtask,
   deleteSubtask,
   ensureTask,
+  moveTask,
   postponeTask,
   removeTask,
   saveTask,
@@ -15,8 +16,9 @@ import {
   toggleSubtask,
 } from '../data/taskActions'
 import type { Snapshot, Task } from '../data/types'
+import { BOARD_COLUMNS, columnOf } from '../lib/board'
 import { formatShortDate } from '../lib/dates'
-import { describeRule, type Schedule } from '../lib/tasks'
+import { describeRule, isPlanned, type Schedule } from '../lib/tasks'
 import { ItemRow } from './ItemRow'
 import { RuleSheet } from './RuleSheet'
 import { EVERY_DAY, isValidSchedule, PriorityPicker, SchedulePicker } from './SchedulePicker'
@@ -25,7 +27,7 @@ import { Sheet } from './Sheet'
 type TaskSheetProps = { task: Task; onClosed: () => void }
 
 export function TaskSheet({ task, onClosed }: TaskSheetProps) {
-  const { date: today } = useDay()
+  const { date: today, moveCard } = useDay()
   const { data: snapshot } = useSnapshot()
   const navigate = useNavigate()
   const [title, setTitle] = useState(task.title)
@@ -73,6 +75,38 @@ export function TaskSheet({ task, onClosed }: TaskSheetProps) {
               />
             </div>
 
+            {!isPlanned(task, today, snapshot.tasks) && (
+              <div className="grid gap-1.5 text-[15px] text-mist">
+                Andamento
+                <div className="segmented segmented-wide" role="group" aria-label="Andamento">
+                  {BOARD_COLUMNS.map(({ id, label }) => (
+                    <button
+                      key={id}
+                      type="button"
+                      aria-pressed={columnOf(task) === id}
+                      onClick={() => moveCard(edited, id)}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {!task.ruleId && (
+              <label className="grid gap-1.5 text-[15px] text-mist">
+                Data
+                <input
+                  type="date"
+                  className="field"
+                  value={task.date}
+                  onChange={(event) => {
+                    if (event.target.value) moveTask(edited, event.target.value)
+                  }}
+                />
+              </label>
+            )}
+
             <Subtasks task={task} snapshot={snapshot} />
             <Repetition
               task={edited}
@@ -95,7 +129,7 @@ export function TaskSheet({ task, onClosed }: TaskSheetProps) {
               </button>
             )}
 
-            <div className="flex flex-wrap gap-x-6 border-t border-white/8 pt-3">
+            <div className="flex flex-wrap gap-x-6 border-t border-line pt-3">
               {!task.ruleId && !task.doneAt && (
                 <button
                   type="button"
@@ -142,7 +176,7 @@ function Subtasks({ task, snapshot }: { task: Task; snapshot: Snapshot }) {
       <h3 id="subtarefas" className="font-display text-lg font-semibold">
         Subtarefas
       </h3>
-      <ul className="mt-1 divide-y divide-white/8">
+      <ul className="mt-1 divide-y divide-line">
         {subtasks.map((subtask) => (
           <li key={subtask.id} className="flex items-center gap-1">
             <div className="min-w-0 flex-1">

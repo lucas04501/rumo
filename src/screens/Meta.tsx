@@ -213,7 +213,7 @@ function LinkedHabits({ goal, snapshot, today, onLink }: LinkedHabitsProps) {
           Ligue os hábitos que levam a este destino e acompanhe a consistência aqui.
         </p>
       ) : (
-        <ul className="mt-1 divide-y divide-white/8">
+        <ul className="mt-1 divide-y divide-line">
           {habits.map((habit) => (
             <li key={habit.id}>
               <LinkedHabit habit={habit} snapshot={snapshot} today={today} />
@@ -258,7 +258,7 @@ function GoalTasks({ goal, snapshot, today }: { goal: GoalInFocus; snapshot: Sna
       <h2 id="tarefas-da-meta" className="font-display text-xl font-semibold">
         Tarefas da meta
       </h2>
-      <ul className="mt-1 divide-y divide-white/8">
+      <ul className="mt-1 divide-y divide-line">
         {tasks.map((task) => (
           <li key={task.id}>
             <TaskRow task={task} />
@@ -306,7 +306,7 @@ function GoalNotes({ goal, snapshot }: { goal: GoalInFocus; snapshot: Snapshot }
           Guarde aqui o que você aprende e decide no caminho até este destino.
         </p>
       ) : (
-        <ul className="mt-1 divide-y divide-white/8">
+        <ul className="mt-1 divide-y divide-line">
           {notes.map((note) => (
             <li key={note.id}>
               <NoteRow note={note} onOpen={() => setOpened({ note })} />

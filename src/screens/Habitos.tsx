@@ -42,7 +42,7 @@ export function Habitos() {
           Crie um hábito uma vez e ele aparece sozinho nos dias que você escolher.
         </p>
       ) : (
-        <ul className="mt-4 max-w-2xl divide-y divide-white/8">
+        <ul className="mt-4 max-w-2xl divide-y divide-line">
           {habits.map((habit) => (
             <li key={habit.id}>
               <HabitItem
@@ -91,7 +91,7 @@ function RepeatingTasks({ snapshot, today }: { snapshot: Snapshot; today: string
           Conta, faxina, relatório: crie uma vez e a tarefa aparece sozinha no dia.
         </p>
       ) : (
-        <ul className="mt-1 divide-y divide-white/8">
+        <ul className="mt-1 divide-y divide-line">
           {rules.map((rule) => (
             <li key={rule.id}>
               <button
