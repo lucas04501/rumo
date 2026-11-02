@@ -1,0 +1,31 @@
+# Dependências e builds
+node_modules/
+dist/
+dev-dist/
+*.tsbuildinfo
+
+# Segredos
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Logs e caches
+*.log
+.cache/
+.vercel/
+
+# Sistema e editor
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# Claude e ferramentas de design (locais)
+.claude/settings.local.json
+.playwright-mcp/
+.impeccable/config.local.json
+.impeccable/review/
+.impeccable/mocks/

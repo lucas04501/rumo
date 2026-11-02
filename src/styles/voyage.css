@@ -1,0 +1,23 @@
+/* Troca de aba: frequente, então é quase imperceptível */
+.screen-in {
+  animation: screen-in 160ms var(--ease-out);
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .screen-in {
+    animation-name: screen-fade;
+  }
+
+  @keyframes screen-fade {
+    from {
+      opacity: 0;
+    }
+  }
+}

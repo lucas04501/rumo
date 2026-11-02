@@ -1,0 +1,93 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Céu e água, do mais profundo ao mais claro */
+  --color-abyss: #06161c;
+  --color-sea-1: #0a2630;
+  --color-sea-2: #0c2f39;
+  --color-sea-3: #0f3843;
+  --color-crest: rgb(132 232 216 / 0.22);
+
+  /* Texto */
+  --color-foam: #e9f3f1;
+  --color-mist: #9db6ba;
+
+  /* Teal é ação e progresso. Âmbar é só recompensa. */
+  --color-tide: #4fd8c4;
+  --color-tide-ink: #052a29;
+  --color-sun: #f6b25e;
+
+  --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Figtree Variable', ui-sans-serif, system-ui, sans-serif;
+
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+@layer base {
+  html {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-text-size-adjust: 100%;
+    overscroll-behavior: none;
+    color-scheme: dark;
+    scrollbar-color: var(--color-sea-3) transparent;
+    scrollbar-width: thin;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    background: var(--color-abyss);
+    color: var(--color-foam);
+    font-family: var(--font-sans);
+    font-feature-settings: 'tnum' 1;
+    overflow: hidden;
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: balance;
+  }
+
+  button,
+  a,
+  [role='button'],
+  [role='checkbox'] {
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+  }
+
+  button {
+    cursor: pointer;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px;
+    caret-color: var(--color-tide);
+  }
+
+  ::placeholder {
+    color: var(--color-mist);
+    opacity: 1;
+  }
+
+  ::selection {
+    background: rgb(79 216 196 / 0.3);
+    color: var(--color-foam);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-tide);
+    outline-offset: 2px;
+  }
+}
