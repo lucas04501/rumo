@@ -8,6 +8,7 @@ import { HABIT_ICONS } from '../ui/habitIcons'
 import { ItemRow } from '../ui/ItemRow'
 import { Quote } from '../ui/Quote'
 import { Screen } from '../ui/Screen'
+import { SoundToggle } from '../ui/SoundToggle'
 import { Ticker } from '../ui/Ticker'
 import { Route } from '../voyage/Route'
 
@@ -39,24 +40,27 @@ function TopBar() {
   return (
     <header className="flex items-start justify-between">
       <p className="font-display text-[22px] font-semibold lg:invisible">Rumo</p>
-      <div className="text-right">
-        <p className="text-sm leading-tight">
-          <span className="text-mist">{rank.name} · </span>
-          <span className="font-semibold">
-            <Ticker value={xp} /> XP
-          </span>
-        </p>
-        <div
-          role="progressbar"
-          aria-label="Avanço até a próxima patente"
-          aria-valuenow={Math.round(rank.progress * 100)}
-          className="mt-1.5 ml-auto h-[3px] w-28 overflow-hidden rounded-full bg-white/12"
-        >
+      <div className="flex items-start">
+        <div className="text-right">
+          <p className="text-sm leading-tight">
+            <span className="text-mist">{rank.name} · </span>
+            <span className="font-semibold">
+              <Ticker value={xp} /> XP
+            </span>
+          </p>
           <div
-            className="h-full origin-left rounded-full bg-sun transition-transform duration-500 ease-out"
-            style={{ transform: `scaleX(${rank.progress})` }}
-          />
+            role="progressbar"
+            aria-label="Avanço até a próxima patente"
+            aria-valuenow={Math.round(rank.progress * 100)}
+            className="mt-1.5 ml-auto h-[3px] w-28 overflow-hidden rounded-full bg-white/12"
+          >
+            <div
+              className="h-full origin-left rounded-full bg-sun transition-transform duration-500 ease-out"
+              style={{ transform: `scaleX(${rank.progress})` }}
+            />
+          </div>
         </div>
+        <SoundToggle />
       </div>
     </header>
   )

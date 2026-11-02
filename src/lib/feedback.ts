@@ -9,9 +9,45 @@ const PARTIALS = [
   [3.01, 0.08],
 ]
 
-let audio: AudioContext | null = null
+const MUTED_KEY = 'rumo:sons-desligados'
 
+function readMuted(): boolean {
+  try {
+    return localStorage.getItem(MUTED_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+let audio: AudioContext | null = null
+let muted = readMuted()
+const mutedListeners = new Set<() => void>()
+
+export function isMuted(): boolean {
+  return muted
+}
+
+export function subscribeMuted(listener: () => void) {
+  mutedListeners.add(listener)
+  return () => {
+    mutedListeners.delete(listener)
+  }
+}
+
+export function setMuted(value: boolean) {
+  muted = value
+  try {
+    localStorage.setItem(MUTED_KEY, value ? '1' : '0')
+  } catch {
+    // Sem armazenamento, a escolha vale até fechar o app.
+  }
+  mutedListeners.forEach((listener) => listener())
+}
+
+// Todo som passa por aqui: este é o único portão do "sem som".
 function pluck(semitones: number, delay = 0, peak = 0.14) {
+  if (muted) return
+
   audio ??= new AudioContext()
   if (audio.state === 'suspended') void audio.resume()
 
@@ -41,6 +77,10 @@ export function soundCheck(step: number) {
 
 export function soundUncheck() {
   pluck(-5, 0, 0.05)
+}
+
+export function soundUnmute() {
+  pluck(7, 0, 0.07)
 }
 
 export function soundWind() {
