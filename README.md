@@ -25,7 +25,8 @@ Em desenvolvimento ativo.
 | Banco, API e login | Concluída e publicada |
 | Hábitos com dados reais e uso offline | Concluída e publicada |
 | Metas, marcos e vínculos com hábitos e tarefas | Concluída e publicada |
-| Planner do mês, notas | Planejadas |
+| Calendário do mês, semana e insights | Concluída e publicada |
+| Notas e diário | Planejadas |
 | Produtividade, evolução, conquistas, treinos | Planejadas |
 
 ## Stack

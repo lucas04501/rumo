@@ -51,11 +51,58 @@ export function summarizeDay(snapshot: Snapshot, date: string) {
   }
 }
 
+export type SnapshotIndex = {
+  plans: { id: string; plan: HabitPlan }[]
+  checks: Map<string, Set<string>>
+  tasks: Map<string, Snapshot['tasks']>
+}
+
+/** Prepara a foto para consultar muitos dias sem refazer as buscas a cada dia. */
+export function indexSnapshot(snapshot: Snapshot): SnapshotIndex {
+  const checks = new Map<string, Set<string>>()
+  for (const { habitId, date } of snapshot.checks) {
+    if (!checks.has(habitId)) checks.set(habitId, new Set())
+    checks.get(habitId)?.add(date)
+  }
+
+  const tasks = new Map<string, Snapshot['tasks']>()
+  for (const task of snapshot.tasks) {
+    tasks.set(task.date, [...(tasks.get(task.date) ?? []), task])
+  }
+
+  return {
+    plans: snapshot.habits.map((habit) => ({ id: habit.id, plan: planOf(habit, snapshot) })),
+    checks,
+    tasks,
+  }
+}
+
+export function dayProgress({ plans, checks, tasks }: SnapshotIndex, date: string) {
+  const scheduled = plans.filter(({ plan }) => isScheduled(plan, date))
+  const habitDone = scheduled.filter(({ id }) => checks.get(id)?.has(date)).length
+  const dayTasks = tasks.get(date) ?? []
+  const done = habitDone + dayTasks.filter((task) => task.doneAt).length
+  const total = scheduled.length + dayTasks.length
+
+  return {
+    habitDone,
+    habitTotal: scheduled.length,
+    done,
+    total,
+    level: total === 0 ? 0 : done / total,
+    perfect: total > 0 && done === total,
+  }
+}
+
 export function xpOf(snapshot: Snapshot): number {
+  const index = indexSnapshot(snapshot)
+
   return totalXp({
     checks: snapshot.checks,
     tasksDone: snapshot.tasks.filter((task) => task.doneAt).length,
-    perfectDays: snapshot.days.filter((day) => day.completedAt).length,
+    // Marcar o dia à mão registra o dia, mas o bônus é só de quem chegou a 100%.
+    perfectDays: snapshot.days.filter((day) => day.completedAt && dayProgress(index, day.date).perfect)
+      .length,
     milestonesDone: snapshot.milestones.filter((milestone) => milestone.doneAt).length,
     goalsDone: snapshot.goals.filter((goal) => goal.status === 'done').length,
   })

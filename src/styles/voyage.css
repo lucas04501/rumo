@@ -330,6 +330,77 @@ button.day-cell:active {
   text-decoration: line-through;
 }
 
+/* Calendário: cada dia é uma pequena maré */
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.cal-day {
+  position: relative;
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgb(233 243 241 / 0.1);
+  border-radius: 12px;
+  color: var(--color-foam);
+  font-size: 15px;
+  font-weight: 600;
+  transition: transform 120ms var(--ease-out);
+}
+
+.cal-day:active {
+  transform: scale(0.94);
+}
+
+.cal-fill {
+  position: absolute;
+  inset: 0;
+  background: rgb(79 216 196 / 0.3);
+  transform-origin: bottom;
+}
+
+.cal-number {
+  position: relative;
+}
+
+.cal-day[data-done='true'] {
+  border-color: var(--color-tide);
+  background: var(--color-tide);
+  color: var(--color-tide-ink);
+}
+
+.cal-day[data-today='true'] {
+  border: 2px solid var(--color-foam);
+}
+
+.cal-day[data-future='true'] {
+  color: var(--color-mist);
+}
+
+.segmented {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid rgb(233 243 241 / 0.16);
+  border-radius: 12px;
+}
+
+.segmented button {
+  min-height: 38px;
+  padding-inline: 16px;
+  border-radius: 9px;
+  color: var(--color-mist);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.segmented button[aria-pressed='true'] {
+  background: var(--color-sea-3);
+  color: var(--color-foam);
+}
+
 /* Vínculos e edição de marcos */
 .link-row {
   display: flex;

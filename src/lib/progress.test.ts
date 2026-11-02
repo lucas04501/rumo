@@ -96,8 +96,9 @@ describe('xpOf', () => {
   it('soma checks, tarefas, dias perfeitos, marcos e metas', () => {
     const habitId = 'a'
     const data = snapshot({
+      habits: [habit(habitId)],
       checks: [{ habitId, date: MONDAY }],
-      tasks: [task('feita', MONDAY, '2026-11-02T12:00:00Z'), task('aberta', MONDAY)],
+      tasks: [task('feita', MONDAY, '2026-11-02T12:00:00Z')],
       days: [
         { date: MONDAY, completedAt: '2026-11-02T12:00:00Z', note: null },
         { date: '2026-11-01', completedAt: null, note: 'só uma nota' },
@@ -105,6 +106,16 @@ describe('xpOf', () => {
     })
     const wind = hasTailwind(habitId, MONDAY) ? XP.tailwind : 0
     expect(xpOf(data)).toBe(XP.habit + wind + XP.task + XP.perfectDay)
+  })
+})
+
+describe('xpOf com dia marcado à mão', () => {
+  it('não dá o bônus de dia perfeito sem 100%', () => {
+    const data = snapshot({
+      habits: [habit('a')],
+      days: [{ date: MONDAY, completedAt: '2026-11-02T12:00:00Z', note: null }],
+    })
+    expect(xpOf(data)).toBe(0)
   })
 })
 

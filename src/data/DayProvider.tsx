@@ -20,6 +20,7 @@ import {
 } from '../lib/progress'
 import { XP, hasTailwind, rankFor, type Rank } from '../lib/xp'
 import { ConnectionNeeded } from '../ui/ConnectionNeeded'
+import { setDayCompleted } from './dayActions'
 import { completeNextMilestone } from './goalActions'
 import { commit, useSnapshot } from './store'
 import type { Snapshot, Task } from './types'
@@ -73,32 +74,24 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
   const [arrivingGoalId, setArrivingGoalId] = useState<string | null>(null)
 
   const { habits, tasks, done, level, remaining, perfect } = summarizeDay(snapshot, date)
+  const wasPerfect = useRef(perfect)
   const arriving = snapshot.goals.find((item) => item.id === arrivingGoalId)
   const goal = arriving ? withMilestones(arriving, snapshot) : goalInFocus(snapshot, date)
   const xp = xpOf(snapshot)
   const completedAt = snapshot.days.find((day) => day.date === date)?.completedAt ?? null
 
   useEffect(() => {
-    if (perfect === Boolean(completedAt)) return
+    const reopened = wasPerfect.current && !perfect
+    const reachedFull = perfect && !wasPerfect.current
+    wasPerfect.current = perfect
 
-    // O dia acompanha o progresso: fecha ao chegar a 100% e reabre se algo for desmarcado.
-    const value = perfect ? now() : null
-    commit(
-      (current) => ({
-        ...current,
-        days: [
-          ...current.days.filter((day) => day.date !== date),
-          {
-            date,
-            completedAt: value,
-            note: current.days.find((day) => day.date === date)?.note ?? null,
-          },
-        ],
-      }),
-      [{ method: 'PUT', path: `/days/${date}`, body: { completedAt: value, editedAt: now() } }],
-    )
+    // Fecha ao chegar a 100% e reabre se algo for desmarcado. Fora isso, o dia
+    // fica como o usuário deixou, inclusive marcado à mão com menos de 100%.
+    if (reopened && completedAt) setDayCompleted(date, null)
+    if (perfect && !completedAt) setDayCompleted(date, now())
 
-    if (perfect && celebratedOn.current !== date) {
+    // A festa é por chegar a 100%, mesmo que o dia já estivesse marcado à mão.
+    if (reachedFull && celebratedOn.current !== date) {
       celebratedOn.current = date
       soundCelebration()
       setCelebration({ title: 'Dia perfeito', detail: `Maré cheia. Mais ${XP.perfectDay} XP.` })
