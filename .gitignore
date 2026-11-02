@@ -29,3 +29,7 @@ Thumbs.db
 .impeccable/config.local.json
 .impeccable/review/
 .impeccable/mocks/
+
+.vercel
+.env*
+!.env.example
