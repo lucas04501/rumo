@@ -9,8 +9,12 @@ const ONE_DAY = 60 * 60 * 24
 // Cadastro fechado por padrão. Abre só de propósito, para criar a primeira conta.
 export const signupOpen = process.env.ALLOW_SIGNUP === 'true'
 
+// Na Vercel o endereço vem do ambiente, então um domínio próprio não exige mudança aqui.
+const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL
+const baseURL = process.env.BETTER_AUTH_URL ?? (productionHost && `https://${productionHost}`)
+
 export const auth = betterAuth({
-  baseURL: process.env.BETTER_AUTH_URL,
+  baseURL,
   secret: process.env.BETTER_AUTH_SECRET,
   database: drizzleAdapter(db, {
     provider: 'pg',
