@@ -1,18 +1,88 @@
 # Rumo
 
-Suas metas, hábitos e o seu mês, como uma viagem. Cada meta é uma rota, cada marco é uma estação e o dia é uma maré que sobe.
+Metas, hábitos e planejamento do mês, tratados como uma viagem. Cada meta é uma rota, cada marco é uma estação e o dia é uma maré que sobe atrás da lista conforme você conclui as coisas.
+
+PWA em português, instalável no celular, com o mesmo dado no celular e no computador. Nasceu para uso pessoal, com a base pronta para virar produto por assinatura.
+
+**[Abrir o app](https://rumo-kappa-livid.vercel.app)** · O cadastro está fechado: o endereço mostra a tela de login.
+
+## Estado do projeto
+
+Em desenvolvimento ativo.
+
+| Etapa | Estado |
+|---|---|
+| Base, navegação e PWA | Concluída |
+| Núcleo visual e tela Hoje | Concluída |
+| Banco, API e login | Concluída e publicada |
+| Hábitos com dados reais | Em andamento |
+| Metas, planner do mês, notas | Planejadas |
+| Produtividade, evolução, conquistas, treinos | Planejadas |
+
+## Stack
+
+| Camada | Tecnologia |
+|---|---|
+| Interface | React 19, TypeScript, Vite, Tailwind CSS 4, Motion |
+| PWA | `vite-plugin-pwa` com Workbox |
+| API | Hono em Vercel Functions |
+| Login | Better Auth, com sessão em cookie primário |
+| Banco | Postgres no Neon, com Drizzle ORM e migrações em SQL |
+| Testes | Vitest, com testes de API contra um banco real |
+| Hospedagem | Vercel e Neon, ambos em São Paulo |
+
+## Arquitetura
+
+```mermaid
+flowchart TD
+    A[Telas React] --> B[Service worker: app abre sem internet]
+    A -->|mesmo domínio, cookie primário| C[Vercel: arquivos estáticos e /api]
+    C --> D[Hono + Better Auth]
+    D --> E[(Neon Postgres)]
+```
+
+App e API ficam no mesmo domínio de propósito: o cookie de sessão é primário e funciona no Safari do iPhone, onde cookies de outro domínio tendem a ser bloqueados.
+
+## Decisões técnicas que valem a leitura
+
+**Isolamento entre usuários em duas camadas.** Toda linha tem dono, e toda rota filtra pelo usuário da sessão. Além disso, os vínculos usam chaves estrangeiras compostas com `user_id`, então o próprio banco recusa ligar um marco à meta de outra pessoa, mesmo que uma rota erre.
+
+**IDs gerados no cliente, com proteção no `ON CONFLICT`.** Para a fila offline poder repetir uma escrita sem duplicar nada, o `PUT` é idempotente e o ID vem do aparelho. Isso abre um risco: alguém poderia enviar o ID de uma linha alheia. Por isso a condição do conflito exige o mesmo dono. Veja [`server/routes/resource.ts`](server/routes/resource.ts).
+
+**Sincronização sem conflito manual.** Exclusão suave impede que a fila de outro aparelho traga um item de volta, e a edição mais recente vence, com o horário limitado ao do servidor para um relógio adiantado não vencer para sempre.
+
+**XP derivado dos dados, nunca salvo.** O bônus surpresa vem de um hash de hábito e data, então desmarcar e remarcar não rende pontos, e não há placar para sincronizar. Veja [`src/lib/xp.ts`](src/lib/xp.ts).
+
+**Datas são dias locais.** Toda data é `YYYY-MM-DD` no fuso do usuário, vinda de uma única função. Com UTC, um hábito marcado às 22h no Brasil cairia no dia seguinte.
+
+**Sequência que perdoa.** Uma falta a cada 7 dias não quebra a sequência. Veja [`src/lib/streaks.ts`](src/lib/streaks.ts).
+
+**Animação proporcional à frequência.** O que acontece muitas vezes ao dia é quase imperceptível. A onda em tela cheia aparece só nos grandes momentos. Todo o movimento respeita `prefers-reduced-motion`.
+
+## Testes
+
+```bash
+npm test
+npm run test:server
+```
+
+`npm test` cobre a lógica pura: datas, sequência, XP, geometria da rota e preferência de som.
+
+`npm run test:server` roda contra um banco Postgres real, em uma branch separada. Dois usuários tentam ler, sobrescrever, excluir e vincular os dados um do outro, além de cobrir idempotência, exclusão suave e conflito de edição. Testes de isolamento só valem se falham quando a proteção some, então isso foi conferido removendo a proteção de propósito.
 
 ## Como rodar
 
-Precisa de Node 24.
+Precisa de Node 24 e de um banco Postgres no Neon.
 
 ```bash
 npm install
+cp .env.example .env
+npm run db:migrate
 npm run dev
 ```
 
-O app abre em `http://localhost:5173`. O terminal também mostra um endereço de rede, para abrir no celular conectado ao mesmo Wi-Fi.
+Preencha o `.env` antes de migrar. O app abre em `http://localhost:5173`.
 
-## Estado atual
+## Licença
 
-Por enquanto o app usa dados de demonstração e ainda não salva nada. O plano completo e os motivos de cada escolha estão em [docs/decisoes.md](docs/decisoes.md).
+Código publicado para consulta. Todos os direitos reservados.
