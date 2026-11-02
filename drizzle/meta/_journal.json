@@ -15,6 +15,13 @@
       "when": 1793604472257,
       "tag": "0001_nappy_la_nuit",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1793606741040,
+      "tag": "0002_glorious_scourge",
+      "breakpoints": true
     }
   ]
 }

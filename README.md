@@ -8,8 +8,8 @@ PWA em português, instalável no celular, com o mesmo dado no celular e no comp
 
 <p>
   <img src="docs/images/hoje.png" alt="Tela Hoje, com a maré cheia atrás da lista, a rota da meta e os hábitos concluídos" width="260" />
+  <img src="docs/images/meta.png" alt="Tela de uma meta, com a rota vertical e o barco na partida" width="260" />
   <img src="docs/images/habitos.png" alt="Tela de hábitos com a grade da semana" width="260" />
-  <img src="docs/images/novo-habito.png" alt="Folha para criar um hábito, com ícone e dias da semana" width="260" />
 </p>
 
 Imagens com dados fictícios.
@@ -24,7 +24,8 @@ Em desenvolvimento ativo.
 | Núcleo visual e tela Hoje | Concluída |
 | Banco, API e login | Concluída e publicada |
 | Hábitos com dados reais e uso offline | Concluída e publicada |
-| Metas, planner do mês, notas | Planejadas |
+| Metas, marcos e vínculos com hábitos e tarefas | Concluída e publicada |
+| Planner do mês, notas | Planejadas |
 | Produtividade, evolução, conquistas, treinos | Planejadas |
 
 ## Stack
@@ -66,6 +67,8 @@ App e API ficam no mesmo domínio de propósito: o cookie de sessão é primári
 **XP derivado dos dados, nunca salvo.** O bônus surpresa vem de um hash de hábito e data, então desmarcar e remarcar não rende pontos, e não há placar para sincronizar. Veja [`src/lib/xp.ts`](src/lib/xp.ts).
 
 **Datas são dias locais.** Toda data é `YYYY-MM-DD` no fuso do usuário, vinda de uma única função. Com UTC, um hábito marcado às 22h no Brasil cairia no dia seguinte.
+
+**Progresso que não engana.** O barco só anda com marco concluído, em ordem. Hábitos ligados à meta mostram consistência ao lado, sem empurrar a rota, então "quanto falta" nunca é inflado. Veja [`src/lib/goals.ts`](src/lib/goals.ts).
 
 **Sequência que perdoa.** Uma falta a cada 7 dias não quebra a sequência. Veja [`src/lib/streaks.ts`](src/lib/streaks.ts).
 

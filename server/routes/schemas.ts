@@ -45,6 +45,7 @@ export const pauseFields = z.object({
 export const taskFields = z.object({
   date: isoDate,
   title,
+  goalId: uuid.nullable().default(null),
   doneAt: instant,
   position,
 })

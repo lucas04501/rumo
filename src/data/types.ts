@@ -42,6 +42,7 @@ export type Task = {
   id: string
   date: string
   title: string
+  goalId: string | null
   doneAt: string | null
   position: number
 }

@@ -218,11 +218,19 @@ export const tasks = pgTable(
     userId: owner(),
     date: date('date').notNull(),
     title: text('title').notNull(),
+    goalId: uuid('goal_id'),
     doneAt: moment('done_at'),
     position: integer('position').notNull().default(0),
     ...lifecycle(),
   },
-  (table) => [index('tasks_user_date_idx').on(table.userId, table.date)],
+  (table) => [
+    foreignKey({
+      columns: [table.userId, table.goalId],
+      foreignColumns: [goals.userId, goals.id],
+      name: 'tasks_goal_owner_fk',
+    }),
+    index('tasks_user_date_idx').on(table.userId, table.date),
+  ],
 )
 
 export const notes = pgTable(

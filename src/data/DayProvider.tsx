@@ -13,12 +13,14 @@ import { newId } from '../lib/ids'
 import {
   goalInFocus,
   summarizeDay,
+  withMilestones,
   xpOf,
   type GoalInFocus,
   type HabitToday,
 } from '../lib/progress'
 import { XP, hasTailwind, rankFor, type Rank } from '../lib/xp'
 import { ConnectionNeeded } from '../ui/ConnectionNeeded'
+import { completeNextMilestone } from './goalActions'
 import { commit, useSnapshot } from './store'
 import type { Snapshot, Task } from './types'
 import { useToday } from './useToday'
@@ -45,8 +47,8 @@ type Day = {
   toggleHabit: (id: string) => number
   toggleTask: (id: string) => number
   addTask: (title: string) => void
-  completeMilestone: () => void
-  arriveAtStation: (station: number) => void
+  completeMilestone: (goal: GoalInFocus) => void
+  arriveAtStation: (goal: GoalInFocus, station: number) => void
   dismissWind: () => void
   dismissCelebration: () => void
 }
@@ -67,9 +69,12 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
   const [wind, setWind] = useState<string | null>(null)
   const [celebration, setCelebration] = useState<Celebration | null>(null)
   const celebratedOn = useRef<string | null>(null)
+  // Ao concluir o último marco, a meta continua na tela até o barco chegar.
+  const [arrivingGoalId, setArrivingGoalId] = useState<string | null>(null)
 
   const { habits, tasks, done, level, remaining, perfect } = summarizeDay(snapshot, date)
-  const goal = goalInFocus(snapshot, date)
+  const arriving = snapshot.goals.find((item) => item.id === arrivingGoalId)
+  const goal = arriving ? withMilestones(arriving, snapshot) : goalInFocus(snapshot, date)
   const xp = xpOf(snapshot)
   const completedAt = snapshot.days.find((day) => day.date === date)?.completedAt ?? null
 
@@ -157,7 +162,14 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
 
   const addTask = useCallback(
     (title: string) => {
-      const task: Task = { id: newId(), date, title, doneAt: null, position: snapshot.tasks.length }
+      const task: Task = {
+        id: newId(),
+        date,
+        title,
+        goalId: null,
+        doneAt: null,
+        position: snapshot.tasks.length,
+      }
       commit((current) => ({ ...current, tasks: [...current.tasks, task] }), [
         { method: 'PUT', path: `/tasks/${task.id}`, body: { ...task, editedAt: now() } },
       ])
@@ -165,57 +177,21 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
     [snapshot, date],
   )
 
-  const completeMilestone = useCallback(() => {
-    if (!goal) return
-    const next = goal.milestones[goal.reached]
-    if (!next) return
-
-    const doneAt = now()
-    const finished = goal.reached + 1 === goal.milestones.length
-    const finishedGoal = { ...goal, status: 'done' as const, doneAt }
-
+  const completeMilestone = useCallback((target: GoalInFocus) => {
     haptic()
-    commit(
-      (current) => ({
-        ...current,
-        milestones: current.milestones.map((item) =>
-          item.id === next.id ? { ...item, doneAt } : item,
-        ),
-        goals: finished
-          ? current.goals.map((item) => (item.id === goal.id ? finishedGoal : item))
-          : current.goals,
-      }),
-      [
-        {
-          method: 'PUT',
-          path: `/milestones/${next.id}`,
-          body: { ...next, doneAt, editedAt: doneAt },
-        },
-        ...(finished
-          ? [
-              {
-                method: 'PUT' as const,
-                path: `/goals/${goal.id}`,
-                body: { ...finishedGoal, editedAt: doneAt },
-              },
-            ]
-          : []),
-      ],
-    )
-  }, [goal])
+    if (target.reached + 1 === target.milestones.length) setArrivingGoalId(target.id)
+    completeNextMilestone(target)
+  }, [])
 
-  const arriveAtStation = useCallback(
-    (station: number) => {
-      if (!goal) return
-      if (station < goal.milestones.length) {
-        soundArrival()
-        return
-      }
-      soundCelebration()
-      setCelebration({ title: 'Meta concluída', detail: `${goal.title}. Mais ${XP.goal} XP.` })
-    },
-    [goal],
-  )
+  const arriveAtStation = useCallback((target: GoalInFocus, station: number) => {
+    if (station < target.milestones.length) {
+      soundArrival()
+      return
+    }
+    setArrivingGoalId(null)
+    soundCelebration()
+    setCelebration({ title: 'Meta concluída', detail: `${target.title}. Mais ${XP.goal} XP.` })
+  }, [])
 
   const value: Day = {
     date,

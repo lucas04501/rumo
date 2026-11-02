@@ -1,9 +1,10 @@
 import { animate, useMotionValue, useMotionValueEvent, useReducedMotion } from 'motion/react'
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { buildRoute } from './geometry'
+import { buildRoute, buildVerticalRoute } from './geometry'
 
 const WIDTH = 340
 const HEIGHT = 58
+const VERTICAL_WIDTH = 56
 const SAIL_SECONDS = 1.6
 const EASE_IN_OUT = [0.77, 0, 0.175, 1] as const
 // O barco acompanha só parte da inclinação da linha, para nunca parecer virando.
@@ -14,11 +15,23 @@ type RouteProps = {
   milestones: number
   reached: number
   label: string
+  /** Só é chamado quando o barco avança, não ao desfazer um marco. */
   onArrive?: (station: number) => void
+  /** Com altura de linha, a rota desce pela página, uma estação por linha. */
+  rowHeight?: number
 }
 
-export function Route({ milestones, reached, label, onArrive }: RouteProps) {
-  const route = useMemo(() => buildRoute(WIDTH, HEIGHT), [])
+export function Route({ milestones, reached, label, onArrive, rowHeight }: RouteProps) {
+  const route = useMemo(
+    () =>
+      rowHeight
+        ? buildVerticalRoute(milestones + 1, rowHeight, VERTICAL_WIDTH)
+        : buildRoute(WIDTH, HEIGHT),
+    [milestones, rowHeight],
+  )
+  const width = rowHeight ? VERTICAL_WIDTH : WIDTH
+  const height = rowHeight ? rowHeight * (milestones + 1) : HEIGHT
+  const previous = useRef(reached)
   const reduceMotion = useReducedMotion()
   const boat = useRef<SVGGElement>(null)
   const wake = useRef<SVGPathElement>(null)
@@ -44,14 +57,17 @@ export function Route({ milestones, reached, label, onArrive }: RouteProps) {
     const target = reached / milestones
     if (progress.get() === target) return
 
+    const forward = reached > previous.current
+    previous.current = reached
+
     setDocked(null)
-    setHasSailed(true)
+    setHasSailed(forward)
     const controls = animate(progress, target, {
       duration: reduceMotion ? 0 : SAIL_SECONDS,
       ease: EASE_IN_OUT,
       onComplete: () => {
         setDocked(reached)
-        arrive.current?.(reached)
+        if (forward) arrive.current?.(reached)
       },
     })
     return () => controls.stop()
@@ -59,8 +75,10 @@ export function Route({ milestones, reached, label, onArrive }: RouteProps) {
 
   return (
     <svg
-      viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-      className="block h-auto w-full overflow-visible"
+      viewBox={`0 0 ${width} ${height}`}
+      className={rowHeight ? 'absolute top-0 left-0 overflow-visible' : 'block h-auto w-full overflow-visible'}
+      width={rowHeight ? width : undefined}
+      height={rowHeight ? height : undefined}
       role="img"
       aria-label={label}
     >

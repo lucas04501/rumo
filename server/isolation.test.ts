@@ -172,11 +172,21 @@ describe('isolamento entre usuários', () => {
     expect(response.status).toBe(404)
   })
 
-  it('não vincula hábito nem nota à meta de outro usuário', async () => {
+  it('não vincula hábito, nota nem tarefa à meta de outro usuário', async () => {
     const habit = await call(bia, 'PUT', `/habits/${randomUUID()}`, { ...habitBody, goalId })
     const note = await call(bia, 'PUT', `/notes/${randomUUID()}`, { title: 'X', goalId })
+    const task = await call(bia, 'PUT', `/tasks/${randomUUID()}`, { title: 'X', date: DATE, goalId })
     expect(habit.status).toBe(404)
     expect(note.status).toBe(404)
+    expect(task.status).toBe(404)
+  })
+
+  it('vincula tarefa à meta do próprio usuário', async () => {
+    const id = randomUUID()
+    const response = await call(ana, 'PUT', `/tasks/${id}`, { title: 'Ligada', date: DATE, goalId })
+    expect(response.status).toBe(200)
+    expect(((await response.json()) as { goalId: string }).goalId).toBe(goalId)
+    await call(ana, 'DELETE', `/tasks/${id}`)
   })
 
   it('não marca nem desmarca check em hábito de outro usuário', async () => {

@@ -37,6 +37,7 @@ const task = (id: string, date: string, doneAt: string | null = null) => ({
   id,
   date,
   title: id,
+  goalId: null,
   doneAt,
   position: 0,
 })

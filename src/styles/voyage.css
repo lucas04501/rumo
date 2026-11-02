@@ -330,6 +330,31 @@ button.day-cell:active {
   text-decoration: line-through;
 }
 
+/* Vínculos e edição de marcos */
+.link-row {
+  display: flex;
+  min-height: 52px;
+  align-items: center;
+  gap: 12px;
+  padding-block: 6px;
+  cursor: pointer;
+}
+
+.link-check {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  accent-color: var(--color-tide);
+}
+
+.order-handle {
+  width: 32px;
+}
+
+.order-handle:disabled {
+  opacity: 0.3;
+}
+
 /* Folha inferior */
 .sheet {
   width: 100%;

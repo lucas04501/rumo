@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildRoute, wavePath } from './geometry'
+import { buildRoute, buildVerticalRoute, wavePath } from './geometry'
 
 describe('buildRoute', () => {
   const route = buildRoute(340, 60)
@@ -27,6 +27,32 @@ describe('buildRoute', () => {
     const ab = Math.hypot(b.x - a.x, b.y - a.y)
     const bc = Math.hypot(c.x - b.x, c.y - b.y)
     expect(Math.abs(ab - bc) / ab).toBeLessThan(0.15)
+  })
+})
+
+describe('buildVerticalRoute', () => {
+  const rows = 5
+  const rowHeight = 76
+  const route = buildVerticalRoute(rows, rowHeight, 56)
+
+  it('cada estação cai no centro da sua linha', () => {
+    for (let station = 0; station < rows; station += 1) {
+      const point = route.pointAt(station / (rows - 1))
+      expect(point.y).toBeCloseTo(rowHeight / 2 + station * rowHeight, 0)
+      expect(point.x).toBeCloseTo(28, 0)
+    }
+  })
+
+  it('o barco desce sem deitar', () => {
+    for (let t = 0; t <= 1; t += 0.05) {
+      expect(Math.abs(route.pointAt(t).angle)).toBeLessThan(45)
+    }
+  })
+
+  it('o barco para em pé nas estações', () => {
+    for (let station = 1; station < rows - 1; station += 1) {
+      expect(Math.abs(route.pointAt(station / (rows - 1)).angle)).toBeLessThan(6)
+    }
   })
 })
 

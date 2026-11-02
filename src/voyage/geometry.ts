@@ -36,11 +36,40 @@ export function buildRoute(width: number, height: number, margin = 12): RouteSha
   const xs = Array.from({ length: SAMPLES + 1 }, (_, i) => margin + (i / SAMPLES) * span)
   const ys = xs.map((_, i) => middle + amplitude * Math.sin((i / SAMPLES) * Math.PI * 3 + 0.5))
 
+  return shapeFrom(xs, ys)
+}
+
+const SAMPLES_PER_ROW = 24
+
+/**
+ * Rota de cima para baixo, curvando para um lado e para o outro entre as linhas.
+ * Todo trecho tem o mesmo comprimento, então cada estação cai no centro da sua
+ * linha. Nas estações a rota fica reta, para o barco parar em pé.
+ */
+export function buildVerticalRoute(rows: number, rowHeight: number, width: number): RouteShape {
+  const middle = width / 2
+  const amplitude = width * 0.28
+  const count = (rows - 1) * SAMPLES_PER_ROW
+
+  const ys = Array.from({ length: count + 1 }, (_, i) => rowHeight / 2 + (i / SAMPLES_PER_ROW) * rowHeight)
+  const xs = ys.map((_, i) => {
+    const u = i / SAMPLES_PER_ROW
+    const side = Math.floor(u) % 2 === 0 ? 1 : -1
+    return middle + side * amplitude * Math.sin(Math.PI * u) ** 2
+  })
+
+  // O barco desce de pé: a inclinação é medida a partir da vertical.
+  return shapeFrom(xs, ys, -90)
+}
+
+function shapeFrom(xs: number[], ys: number[], angleOffset = 0): RouteShape {
+  const last = xs.length - 1
+
   const lengths = [0]
-  for (let i = 1; i <= SAMPLES; i += 1) {
+  for (let i = 1; i <= last; i += 1) {
     lengths.push(lengths[i - 1] + Math.hypot(xs[i] - xs[i - 1], ys[i] - ys[i - 1]))
   }
-  const total = lengths[SAMPLES]
+  const total = lengths[last]
 
   function pointAt(t: number): RoutePoint {
     const distance = Math.min(Math.max(t, 0), 1) * total
@@ -53,7 +82,7 @@ export function buildRoute(width: number, height: number, margin = 12): RouteSha
     return {
       x: xs[i - 1] + dx * within,
       y: ys[i - 1] + dy * within,
-      angle: (Math.atan2(dy, dx) * 180) / Math.PI,
+      angle: (Math.atan2(dy, dx) * 180) / Math.PI + angleOffset,
     }
   }
 

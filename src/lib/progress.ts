@@ -61,6 +61,14 @@ export function xpOf(snapshot: Snapshot): number {
   })
 }
 
+export function withMilestones(goal: Goal, snapshot: Snapshot): GoalInFocus {
+  const milestones = snapshot.milestones
+    .filter((milestone) => milestone.goalId === goal.id)
+    .sort((a, b) => a.position - b.position)
+
+  return { ...goal, milestones, reached: milestones.filter((milestone) => milestone.doneAt).length }
+}
+
 /** Meta da tela Hoje: a primeira ativa, ou a concluída hoje, para o barco terminar a viagem. */
 export function goalInFocus(snapshot: Snapshot, date: string): GoalInFocus | null {
   const finishedToday = (goal: Goal) =>
@@ -68,11 +76,6 @@ export function goalInFocus(snapshot: Snapshot, date: string): GoalInFocus | nul
 
   const goal =
     snapshot.goals.find((item) => item.status === 'active') ?? snapshot.goals.find(finishedToday)
-  if (!goal) return null
 
-  const milestones = snapshot.milestones
-    .filter((milestone) => milestone.goalId === goal.id)
-    .sort((a, b) => a.position - b.position)
-
-  return { ...goal, milestones, reached: milestones.filter((milestone) => milestone.doneAt).length }
+  return goal ? withMilestones(goal, snapshot) : null
 }

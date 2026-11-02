@@ -5,6 +5,7 @@ import { authClient } from '../data/authClient'
 import { useDay, type HabitToday } from '../data/DayProvider'
 import { clearDevice } from '../data/store'
 import { formatLongDate } from '../lib/dates'
+import { deadlineLabel } from '../lib/goals'
 import { XP } from '../lib/xp'
 import { iconFor } from '../ui/habitIcons'
 import { ItemRow } from '../ui/ItemRow'
@@ -107,17 +108,19 @@ function Greeting() {
   )
 }
 
-function deadlineLabel(daysLeft: number | null, finished: boolean): string {
-  if (finished) return 'Concluída'
-  if (daysLeft === null) return ''
-  if (daysLeft > 1) return `Faltam ${daysLeft} dias`
-  if (daysLeft === 1) return 'Falta 1 dia'
-  return daysLeft === 0 ? 'Termina hoje' : 'Prazo encerrado'
-}
-
 function FocusGoal() {
   const { goal, daysLeft, completeMilestone, arriveAtStation } = useDay()
-  if (!goal || goal.milestones.length === 0) return null
+
+  if (!goal || goal.milestones.length === 0) {
+    return (
+      <section aria-label="Metas" className="mt-7">
+        <p className="text-[17px] text-mist">Sem destino por enquanto.</p>
+        <Link to="/metas" className="ghost mt-2 inline-grid place-items-center">
+          Traçar uma rota
+        </Link>
+      </section>
+    )
+  }
 
   const milestones = goal.milestones.length
   const next = goal.milestones[goal.reached]?.title
@@ -125,18 +128,19 @@ function FocusGoal() {
   return (
     <section aria-labelledby="meta-em-foco" className="mt-7">
       <div className="flex items-baseline justify-between gap-4">
-        <h2 id="meta-em-foco" className="font-display text-xl font-semibold">
-          {goal.title}
+        <h2 id="meta-em-foco" className="min-w-0 font-display text-xl font-semibold">
+          <Link to={`/metas/${goal.id}`}>{goal.title}</Link>
         </h2>
         <p className="shrink-0 text-[15px] text-mist">{deadlineLabel(daysLeft, !next)}</p>
       </div>
 
       <div className="mt-4">
         <Route
+          key={goal.id}
           milestones={milestones}
           reached={goal.reached}
           label={`Rota da meta: ${goal.reached} de ${milestones} marcos concluídos`}
-          onArrive={arriveAtStation}
+          onArrive={(station) => arriveAtStation(goal, station)}
         />
       </div>
 
@@ -146,7 +150,7 @@ function FocusGoal() {
             <p className="min-w-0 text-[15px] text-mist">
               Próximo marco: <span className="text-foam">{next}</span>
             </p>
-            <button type="button" className="action" onClick={completeMilestone}>
+            <button type="button" className="action" onClick={() => completeMilestone(goal)}>
               Concluir
             </button>
           </>
