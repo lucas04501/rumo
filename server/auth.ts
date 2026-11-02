@@ -6,7 +6,7 @@ import { account, session, user, verification } from './db/schema.js'
 const NINETY_DAYS = 60 * 60 * 24 * 90
 const ONE_DAY = 60 * 60 * 24
 
-// Cadastro fechado por padrão. Abre só de propósito, para criar a primeira conta.
+// Cadastro fechado por padrão. Só abre com `ALLOW_SIGNUP=true` no ambiente.
 export const signupOpen = process.env.ALLOW_SIGNUP === 'true'
 
 // Na Vercel o endereço vem do ambiente, então um domínio próprio não exige mudança aqui.
