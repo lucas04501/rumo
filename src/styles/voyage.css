@@ -39,20 +39,21 @@
   }
 }
 
+/* Centro no canto e tom de pôr do sol: o texto sobre o brilho mantém 4,5:1 com a maré cheia */
 .sun-glow {
   position: fixed;
-  top: -82vmin;
-  right: -82vmin;
+  top: -90vmin;
+  right: -90vmin;
   width: 180vmin;
   height: 180vmin;
   pointer-events: none;
   transform-origin: center;
   background: radial-gradient(
     closest-side,
-    rgb(250 190 106 / 0.62),
-    rgb(242 150 78 / 0.32) 30%,
-    rgb(232 120 66 / 0.12) 58%,
-    rgb(232 120 66 / 0.03) 80%,
+    rgb(226 112 58 / 0.42),
+    rgb(214 98 56 / 0.26) 30%,
+    rgb(196 84 56 / 0.1) 58%,
+    rgb(196 84 56 / 0.03) 80%,
     transparent
   );
 }
@@ -202,6 +203,21 @@
   from {
     transform: translateY(5px);
     opacity: 0.4;
+  }
+}
+
+/* Sem o destaque de toque do navegador, cada controle precisa responder sozinho */
+button:not(.action, .ghost, .pick, .item-row, .cal-day, .day-cell, .sound-toggle, .wash):active,
+a:not(.action, .ghost):active {
+  opacity: 0.6;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .ghost:hover,
+  .icon-button:hover,
+  .segmented button:not([aria-pressed='true']):hover,
+  .cal-day:not([data-done='true']):hover {
+    background: rgb(233 243 241 / 0.06);
   }
 }
 
@@ -501,7 +517,8 @@ button.day-cell:active {
 }
 
 .sheet-body {
-  padding: 16px 20px calc(env(safe-area-inset-bottom, 0px) + 20px);
+  padding: 16px max(20px, env(safe-area-inset-right, 0px))
+    calc(env(safe-area-inset-bottom, 0px) + 20px) max(20px, env(safe-area-inset-left, 0px));
 }
 
 @keyframes sheet-in {

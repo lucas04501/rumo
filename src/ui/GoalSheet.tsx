@@ -125,7 +125,7 @@ export function GoalSheet({ goal, milestones, position, today, onClosed }: GoalS
                 {done.length > 0 && (
                   <ul className="mt-1.5 grid gap-1">
                     {done.map((milestone) => (
-                      <li key={milestone.id} className="text-[15px] text-foam/60">
+                      <li key={milestone.id} className="text-[15px] text-foam/70">
                         {milestone.title} (concluído)
                       </li>
                     ))}

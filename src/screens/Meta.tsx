@@ -158,7 +158,7 @@ function Voyage({ goal, finished }: { goal: GoalInFocus; finished: boolean }) {
               >
                 <span
                   className={`line-clamp-2 min-w-0 text-[17px] ${
-                    index < goal.reached ? 'text-foam/60' : index === goal.reached ? '' : 'text-mist'
+                    index < goal.reached ? 'text-foam/70' : index === goal.reached ? '' : 'text-mist'
                   }`}
                 >
                   {milestone.title}

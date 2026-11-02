@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 
 export function Screen({ children }: { children: ReactNode }) {
   return (
-    <div className="mx-auto max-w-xl px-5 pt-[calc(env(safe-area-inset-top,0px)+16px)] pb-10 lg:max-w-5xl lg:px-10 lg:pt-8">
+    <div className="mx-auto max-w-xl pt-[calc(env(safe-area-inset-top,0px)+16px)] pr-[max(20px,env(safe-area-inset-right,0px))] pb-10 pl-[max(20px,env(safe-area-inset-left,0px))] lg:max-w-5xl lg:px-10 lg:pt-8">
       {children}
     </div>
   )

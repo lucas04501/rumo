@@ -27,7 +27,7 @@ export function Habitos() {
 
   return (
     <Screen>
-      <div className="flex items-center justify-between gap-4 pt-3 lg:pt-8">
+      <div className="flex max-w-2xl items-center justify-between gap-4 pt-3 lg:pt-8">
         <h1 className="font-display text-4xl font-semibold tracking-[-0.02em]">Hábitos</h1>
         <button type="button" className="action flex items-center gap-1.5" onClick={() => setEditing('novo')}>
           <Plus size={18} strokeWidth={2} aria-hidden />

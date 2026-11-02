@@ -105,57 +105,59 @@ function MonthView({ month, today, snapshot, index, onMonth, onOpen }: MonthView
   const completed = new Set(snapshot.days.filter((day) => day.completedAt).map((day) => day.date))
 
   return (
-    <div className="max-w-xl">
-      <Step
-        label={label}
-        previous="Mês anterior"
-        next="Próximo mês"
-        onPrevious={() => onMonth(shiftMonth(month, -1))}
-        onNext={() => onMonth(shiftMonth(month, 1))}
-      />
+    <div className="lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)] lg:gap-16">
+      <div>
+        <Step
+          label={label}
+          previous="Mês anterior"
+          next="Próximo mês"
+          onPrevious={() => onMonth(shiftMonth(month, -1))}
+          onNext={() => onMonth(shiftMonth(month, 1))}
+        />
 
-      <div className="cal-grid mt-2" aria-hidden>
-        {WEEK_LETTERS.map((letter, day) => (
-          <span key={day} className="text-center text-sm text-mist">
-            {letter}
-          </span>
-        ))}
-      </div>
+        <div className="cal-grid mt-2" aria-hidden>
+          {WEEK_LETTERS.map((letter, day) => (
+            <span key={day} className="text-center text-sm text-mist">
+              {letter}
+            </span>
+          ))}
+        </div>
 
-      <div className="cal-grid mt-1.5">
-        {monthGrid(month).map((date, position) => {
-          if (!date) return <span key={`vazio-${position}`} />
+        <div className="cal-grid mt-1.5">
+          {monthGrid(month).map((date, position) => {
+            if (!date) return <span key={`vazio-${position}`} />
 
-          const progress = dayProgress(index, date)
-          const done = completed.has(date)
-          const description = done
-            ? 'dia concluído'
-            : progress.total > 0
-              ? `${progress.done} de ${progress.total} concluídos`
-              : 'sem itens'
+            const progress = dayProgress(index, date)
+            const done = completed.has(date)
+            const description = done
+              ? 'dia concluído'
+              : progress.total > 0
+                ? `${progress.done} de ${progress.total} concluídos`
+                : 'sem itens'
 
-          return (
-            <button
-              key={date}
-              type="button"
-              className="cal-day"
-              data-done={done}
-              data-today={date === today}
-              data-future={date > today}
-              aria-label={`${formatLongDate(date)}, ${description}`}
-              onClick={() => onOpen(date)}
-            >
-              {!done && progress.level > 0 && (
-                <span className="cal-fill" style={{ transform: `scaleY(${progress.level})` }} />
-              )}
-              <span className="cal-number">{Number(date.slice(8))}</span>
-            </button>
-          )
-        })}
+            return (
+              <button
+                key={date}
+                type="button"
+                className="cal-day"
+                data-done={done}
+                data-today={date === today}
+                data-future={date > today}
+                aria-label={`${formatLongDate(date)}, ${description}`}
+                onClick={() => onOpen(date)}
+              >
+                {!done && progress.level > 0 && (
+                  <span className="cal-fill" style={{ transform: `scaleY(${progress.level})` }} />
+                )}
+                <span className="cal-number">{Number(date.slice(8))}</span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {insights.length > 0 && (
-        <ul className="mt-6 grid gap-1 text-[17px]">
+        <ul className="mt-6 grid gap-1 self-start text-[17px] lg:mt-[76px]">
           {insights.map((line) => (
             <li key={line}>{line}</li>
           ))}
@@ -180,7 +182,7 @@ function WeekView({ weekStart, today, snapshot, index, onWeek, onOpen }: WeekVie
   const label = `${days[0].slice(8)}/${days[0].slice(5, 7)} a ${days[6].slice(8)}/${days[6].slice(5, 7)}`
 
   return (
-    <div className="max-w-xl">
+    <div>
       <Step
         label={label}
         previous="Semana anterior"

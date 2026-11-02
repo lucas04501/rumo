@@ -38,7 +38,7 @@ export function ItemRow({ title, done, onToggle, leading, trailing }: ItemRowPro
         {ripples > 0 && done && <span key={ripples} className="check-ripple" />}
       </span>
       {leading}
-      <span className={`min-w-0 flex-1 text-[17px] transition-colors duration-200 ${done ? 'text-foam/60' : ''}`}>
+      <span className={`min-w-0 flex-1 text-[17px] transition-colors duration-200 ${done ? 'text-foam/70' : ''}`}>
         {title}
       </span>
       {trailing}

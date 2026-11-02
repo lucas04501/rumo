@@ -40,6 +40,7 @@ PWA de metas, hábitos e planner mensal, em português do Brasil. Uso pessoal ag
 - `C:\Users\Pichau\ObsidianVault\04 - Projetos\Rumo\`: fonte viva de roadmap, funcionalidades, decisões e estado. Comece por `Rumo.md`.
 - `docs/`: registro inicial, congelado em 2026-11-02
 - `PRODUCT.md`: quem usa e o que o produto promete
+- `DESIGN.md`: sistema visual, com tokens e regras. Leia antes de criar telas
 - `src/voyage/`: elementos de assinatura (rota, barco, maré, onda, sol)
 - `src/lib/`: lógica pura, com testes
 - `src/data/`: foto local, fila de escrita e ações
