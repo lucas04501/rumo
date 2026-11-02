@@ -41,6 +41,15 @@ export function formatShortDate(iso: string): string {
   return parse(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
 }
 
+const WEEKDAY_SHORT = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
+
+/** Curta o bastante para caber em uma linha em 320 px: "Seg, 2 de nov". */
+export function formatDayShort(iso: string): string {
+  const date = parse(iso)
+  const month = date.toLocaleDateString('pt-BR', { month: 'short' }).replace('.', '')
+  return `${WEEKDAY_SHORT[date.getDay()]}, ${date.getDate()} de ${month}`
+}
+
 export function formatLongDate(iso: string): string {
   const text = parse(iso).toLocaleDateString('pt-BR', {
     weekday: 'long',

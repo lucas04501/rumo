@@ -5,6 +5,7 @@ import { DayProvider } from './data/DayProvider'
 import { persistOptions, resumeWrites, store } from './data/store'
 import { AuthGate } from './ui/AuthGate'
 import { Shell } from './ui/Shell'
+import { Evolucao } from './screens/Evolucao'
 import { Foco } from './screens/Foco'
 import { Habitos } from './screens/Habitos'
 import { Hoje } from './screens/Hoje'
@@ -33,6 +34,7 @@ export function App() {
                   <Route path="metas/:id" element={<Meta />} />
                   <Route path="mes" element={<Mes />} />
                   <Route path="notas" element={<Notas />} />
+                  <Route path="evolucao" element={<Evolucao />} />
                   <Route path="foco" element={<Foco />} />
                   <Route path="mais" element={<Mais />} />
                 </Route>

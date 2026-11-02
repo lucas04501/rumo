@@ -20,7 +20,7 @@ import {
 } from '../lib/progress'
 import { XP, hasTailwind, rankFor, type Rank } from '../lib/xp'
 import { ConnectionNeeded } from '../ui/ConnectionNeeded'
-import { addTaskOn, setDayCompleted } from './dayActions'
+import { setDayCompleted } from './dayActions'
 import { completeNextMilestone } from './goalActions'
 import { commit, useSnapshot } from './store'
 import { saveTask } from './taskActions'
@@ -58,7 +58,6 @@ type Day = {
   celebration: Celebration | null
   toggleHabit: (id: string) => number
   toggleTask: (task: Task) => number
-  addTask: (title: string) => void
   completeMilestone: (goal: GoalInFocus) => void
   arriveAtStation: (goal: GoalInFocus, station: number) => void
   dismissReward: () => void
@@ -168,11 +167,6 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
     [done],
   )
 
-  const addTask = useCallback(
-    (title: string) => addTaskOn(date, title, snapshot.tasks.length),
-    [snapshot, date],
-  )
-
   const completeMilestone = useCallback((target: GoalInFocus) => {
     haptic()
     if (target.reached + 1 === target.milestones.length) setArrivingGoalId(target.id)
@@ -215,7 +209,6 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
     celebration,
     toggleHabit,
     toggleTask,
-    addTask,
     completeMilestone,
     arriveAtStation,
     dismissReward: useCallback(() => setRewards((current) => current.slice(1)), []),

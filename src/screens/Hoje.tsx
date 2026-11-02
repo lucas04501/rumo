@@ -1,13 +1,19 @@
-import { Anchor, Plus, Timer } from 'lucide-react'
-import { useEffect, useRef, useState, type FormEvent } from 'react'
+import { Anchor, ChevronRight, Plus, Timer } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { useDay, type HabitToday } from '../data/DayProvider'
 import { useFocusTimer } from '../data/focusTimer'
+import { useSnapshot } from '../data/store'
+import { addQuick, bringToToday } from '../data/taskActions'
 import { useNow } from '../data/useNow'
 import { formatLongDate } from '../lib/dates'
+import { periodDates, periodStats } from '../lib/evolution'
 import { formatClock, isOver, leftMs } from '../lib/focus'
 import { deadlineLabel } from '../lib/goals'
+import { indexSnapshot } from '../lib/progress'
+import { parseQuickAdd } from '../lib/quickAdd'
 import { isStreakMark } from '../lib/streaks'
+import { overdueTasks } from '../lib/tasks'
 import { XP } from '../lib/xp'
 import { iconFor } from '../ui/habitIcons'
 import { ItemRow } from '../ui/ItemRow'
@@ -27,6 +33,7 @@ export function Hoje() {
           <Greeting />
           <Quote />
           <FocusGoal />
+          <EvolutionShortcut />
         </div>
         <div className="lg:pt-8">
           <Habits />
@@ -248,16 +255,76 @@ function FocusShortcut() {
   )
 }
 
+function EvolutionShortcut() {
+  const { date } = useDay()
+  const { data: snapshot } = useSnapshot()
+  const score = useMemo(
+    () =>
+      snapshot ? periodStats(snapshot, indexSnapshot(snapshot), periodDates(date, 7)).score : null,
+    [snapshot, date],
+  )
+
+  if (score === null) return null
+
+  return (
+    <Link
+      to="/evolucao"
+      className="mt-5 flex min-h-11 items-center justify-between gap-3 text-[15px] text-mist"
+    >
+      <span>
+        Últimos 7 dias: <span className="text-foam">{score}% do combinado</span>
+      </span>
+      <ChevronRight size={18} strokeWidth={1.75} aria-hidden />
+    </Link>
+  )
+}
+
+function Overdue() {
+  const { date } = useDay()
+  const { data: snapshot } = useSnapshot()
+  const overdue = snapshot ? overdueTasks(snapshot.tasks, date) : []
+
+  if (overdue.length === 0) return null
+
+  return (
+    <div className="flex min-h-14 items-center gap-3 border-b border-white/8 py-2">
+      <div className="min-w-0 flex-1">
+        <p className="text-[15px]">
+          {overdue.length === 1 ? '1 ficou para trás' : `${overdue.length} ficaram para trás`}
+        </p>
+        <p className="truncate text-[15px] text-mist">
+          {overdue.map((task) => task.title).join(', ')}
+        </p>
+      </div>
+      <button type="button" className="ghost" onClick={() => bringToToday(overdue, date)}>
+        Trazer
+      </button>
+    </div>
+  )
+}
+
 function Tasks() {
-  const { tasks, addTask } = useDay()
+  const { date, tasks } = useDay()
+  const { data: snapshot } = useSnapshot()
   const [title, setTitle] = useState('')
+  const [focused, setFocused] = useState(false)
+  // "Ignorar" guarda o texto ignorado: ao digitar algo novo, a leitura volta.
+  const [literal, setLiteral] = useState<string | null>(null)
+
+  const intent = useMemo(() => parseQuickAdd(title, date), [title, date])
+  const understood = literal !== title && intent.labels.length > 0
 
   const submit = (event: FormEvent) => {
     event.preventDefault()
     const clean = title.trim()
-    if (!clean) return
-    addTask(clean)
+    if (!clean || !snapshot) return
+    addQuick(
+      understood ? intent : { ...intent, title: clean, date, priority: 'normal', repeat: null },
+      date,
+      snapshot,
+    )
     setTitle('')
+    setLiteral(null)
   }
 
   return (
@@ -268,6 +335,7 @@ function Tasks() {
         </h2>
         <FocusShortcut />
       </div>
+      <Overdue />
       <ul className="mt-1 divide-y divide-white/8">
         {tasks.map((task) => (
           <li key={task.id}>
@@ -275,17 +343,45 @@ function Tasks() {
           </li>
         ))}
         <li>
-          <form onSubmit={submit} className="flex min-h-14 items-center gap-3">
-            <Plus size={22} strokeWidth={1.75} className="mx-[3px] shrink-0 text-mist" aria-hidden />
-            <input
-              value={title}
-              onChange={(event) => setTitle(event.target.value)}
-              placeholder="Nova tarefa"
-              aria-label={`Nova tarefa, vale ${XP.task} XP ao concluir`}
-              enterKeyHint="done"
-              autoComplete="off"
-              className="min-w-0 flex-1 bg-transparent py-3 outline-none"
-            />
+          <form onSubmit={submit}>
+            <div className="flex min-h-14 items-center gap-3">
+              <Plus size={22} strokeWidth={1.75} className="mx-[3px] shrink-0 text-mist" aria-hidden />
+              <input
+                value={title}
+                onChange={(event) => setTitle(event.target.value)}
+                onFocus={() => setFocused(true)}
+                onBlur={() => setFocused(false)}
+                placeholder="Nova tarefa"
+                aria-label={`Nova tarefa, vale ${XP.task} XP ao concluir`}
+                enterKeyHint="done"
+                autoComplete="off"
+                className="min-w-0 flex-1 bg-transparent py-3 outline-none"
+              />
+            </div>
+            {understood ? (
+              <div className="flex flex-wrap items-center gap-2 pb-3 pl-[37px]">
+                {intent.labels.map((label) => (
+                  <span key={label} className="quick-chip">
+                    {label}
+                  </span>
+                ))}
+                <button
+                  type="button"
+                  className="min-h-8 px-1 text-sm text-mist underline underline-offset-4"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => setLiteral(title)}
+                >
+                  Ignorar
+                </button>
+              </div>
+            ) : (
+              focused &&
+              !title && (
+                <p className="pb-3 pl-[37px] text-sm text-mist">
+                  Tente: pagar luz sexta !alta, ou regar toda segunda
+                </p>
+              )
+            )}
           </form>
         </li>
       </ul>

@@ -1,6 +1,7 @@
 import { motion } from 'motion/react'
 import {
   CalendarDays,
+  ChartNoAxesCombined,
   Compass,
   Ellipsis,
   ListChecks,
@@ -21,6 +22,7 @@ import { Tide } from '../voyage/Tide'
 import { WaveWash } from '../voyage/WaveWash'
 import { FocusWatcher } from './FocusWatcher'
 import { RewardToast } from './RewardToast'
+import { UndoToast } from './UndoToast'
 
 type Tab = { to: string; label: string; icon: LucideIcon; also?: string[] }
 
@@ -33,11 +35,12 @@ const MAIN_TABS: Tab[] = [
 
 const PHONE_TABS: Tab[] = [
   ...MAIN_TABS,
-  { to: '/mais', label: 'Mais', icon: Ellipsis, also: ['/notas', '/foco'] },
+  { to: '/mais', label: 'Mais', icon: Ellipsis, also: ['/evolucao', '/notas', '/foco'] },
 ]
 
 const WIDE_TABS: Tab[] = [
   ...MAIN_TABS,
+  { to: '/evolucao', label: 'Evolução', icon: ChartNoAxesCombined },
   { to: '/notas', label: 'Notas', icon: NotebookPen },
   { to: '/foco', label: 'Foco', icon: Timer },
   { to: '/mais', label: 'Ajustes', icon: Settings },
@@ -72,6 +75,7 @@ export function Shell() {
       </main>
       <Navigation hidden={immersive} />
       <RewardToast reward={reward} onDone={dismissReward} />
+      <UndoToast />
       <WaveWash celebration={celebration} onDone={dismissCelebration} />
       <FocusWatcher />
     </div>

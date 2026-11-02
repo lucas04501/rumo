@@ -1,18 +1,27 @@
-import { ChevronRight, NotebookPen, Timer, type LucideIcon } from 'lucide-react'
+import {
+  ChartNoAxesCombined,
+  ChevronRight,
+  NotebookPen,
+  Timer,
+  type LucideIcon,
+} from 'lucide-react'
 import { Link } from 'react-router'
 import { authClient } from '../data/authClient'
 import { clearDevice } from '../data/store'
+import { settleUndo } from '../data/undo'
 import { Screen } from '../ui/Screen'
 
 type Area = { to: string; label: string; icon: LucideIcon }
 
-// Evolução e Treinos entram aqui quando existirem. Item sem tela só atrapalha.
+// Treinos entra aqui quando existir. Item sem tela só atrapalha.
 const AREAS: Area[] = [
+  { to: '/evolucao', label: 'Evolução', icon: ChartNoAxesCombined },
   { to: '/notas', label: 'Notas', icon: NotebookPen },
   { to: '/foco', label: 'Foco', icon: Timer },
 ]
 
 async function signOut() {
+  settleUndo()
   await authClient.signOut()
   await clearDevice()
 }

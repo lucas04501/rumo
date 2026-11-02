@@ -1,9 +1,19 @@
-import { addDays } from '../lib/dates'
+import { addDays, formatLongDate } from '../lib/dates'
 import { focusedMinutes, isOver, plannedMinutes, type FocusTimer } from '../lib/focus'
 import { newId } from '../lib/ids'
-import { occursOn, sameSchedule, tasksOn, upsertTask, type Schedule } from '../lib/tasks'
+import type { QuickAdd } from '../lib/quickAdd'
+import {
+  describeRule,
+  occursOn,
+  sameSchedule,
+  tasksOn,
+  upsertTask,
+  type Schedule,
+} from '../lib/tasks'
+import { addTaskOn, deleteTask } from './dayActions'
 import { commit, type Write } from './store'
 import type { FocusSession, Snapshot, Subtask, Task, TaskRule } from './types'
+import { offerUndo } from './undo'
 
 const now = () => new Date().toISOString()
 
@@ -32,6 +42,91 @@ export function ensureTask(task: Task, snapshot: Snapshot) {
 /** A linha fica marcada como pulada. Sem ela, a regra recriaria a ocorrência. */
 export function skipOccurrence(task: Task) {
   saveTask({ ...task, doneAt: null, skippedAt: now() })
+  offerUndo({ message: `${task.title}: pulada`, undo: () => saveTask(task) })
+}
+
+/**
+ * Some da tela na hora, mas o `DELETE` só entra na fila quando o prazo acaba: a
+ * exclusão no servidor não volta. Se o app fechar antes, a tarefa simplesmente fica.
+ */
+export function removeTask(task: Task) {
+  commit((current) => ({ ...current, tasks: current.tasks.filter((item) => item.id !== task.id) }), [])
+  offerUndo({
+    message: 'Tarefa excluída',
+    undo: () =>
+      commit((current) => ({ ...current, tasks: upsertTask(current.tasks, task) }), []),
+    expire: () => deleteTask(task.id),
+  })
+}
+
+export function moveTask(task: Task, date: string) {
+  saveTask({ ...task, date })
+  offerUndo({
+    message: `Movida para ${formatLongDate(date).toLowerCase()}`,
+    undo: () => saveTask(task),
+  })
+}
+
+/** Recorrente não muda de dia: o ID vem da data. Ela é pulada, e a regra volta na próxima vez. */
+export function postponeTask(task: Task, today: string) {
+  if (task.ruleId) skipOccurrence(task)
+  else moveTask(task, addDays(task.date < today ? today : task.date, 1))
+}
+
+export function bringToToday(tasks: Task[], today: string) {
+  const editedAt = now()
+  const moved = new Map(tasks.map((task) => [task.id, { ...task, date: today }]))
+  const original = new Map(tasks.map((task) => [task.id, task]))
+
+  commit(
+    (current) => ({
+      ...current,
+      tasks: current.tasks.map((task) => moved.get(task.id) ?? task),
+    }),
+    [...moved.values()].map((task) => putTask(task, editedAt)),
+  )
+  offerUndo({
+    message: tasks.length === 1 ? 'Tarefa trazida para hoje' : `${tasks.length} tarefas trazidas para hoje`,
+    undo: () =>
+      commit(
+        (current) => ({
+          ...current,
+          tasks: current.tasks.map((task) => original.get(task.id) ?? task),
+        }),
+        tasks.map((task) => putTask(task)),
+      ),
+  })
+}
+
+/** Salva o que a adição rápida entendeu, e confirma o que não vai aparecer na lista de hoje. */
+export function addQuick(intent: QuickAdd, today: string, snapshot: Snapshot) {
+  const { title, date, priority, repeat } = intent
+
+  if (repeat) {
+    const rule: TaskRule = {
+      id: newId(),
+      title,
+      ...repeat,
+      startDate: date,
+      endDate: null,
+      priority,
+      goalId: null,
+      position: snapshot.taskRules.length,
+    }
+    createRule(rule)
+    offerUndo({
+      message: `Repete: ${describeRule(rule)}`,
+      undo: () => stopRule(rule, rule.startDate),
+    })
+    return
+  }
+
+  const task = addTaskOn(date, title, snapshot.tasks.length, priority)
+  if (date === today) return
+  offerUndo({
+    message: `Adicionada para ${formatLongDate(date).toLowerCase()}`,
+    undo: () => deleteTask(task.id),
+  })
 }
 
 export function addSubtask(taskId: string, title: string, position: number) {

@@ -207,7 +207,7 @@
 }
 
 /* Sem o destaque de toque do navegador, cada controle precisa responder sozinho */
-button:not(.action, .ghost, .pick, .item-row, .cal-day, .day-cell, .sound-toggle, .wash):active,
+button:not(.action, .ghost, .pick, .item-row, .cal-day, .day-cell, .sound-toggle, .wash, .bar, .depth-cell):active,
 a:not(.action, .ghost):active {
   opacity: 0.6;
 }
@@ -476,6 +476,301 @@ button.day-cell:active {
   min-width: 0;
 }
 
+/* Deslizar a tarefa: o gesto só aparece quando alguém começa a arrastar */
+.swipe-row {
+  position: relative;
+  overflow-x: clip;
+}
+
+.swipe-under {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  pointer-events: none;
+}
+
+.swipe-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-mist);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.swipe-done {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  border-radius: 999px;
+  background: var(--color-tide);
+  color: var(--color-tide-ink);
+}
+
+.swipe-surface {
+  position: relative;
+  touch-action: pan-y;
+}
+
+/* Avisos com Desfazer: neutros, porque âmbar é só recompensa */
+.undo-toast {
+  position: fixed;
+  inset: auto 16px calc(env(safe-area-inset-bottom, 0px) + 76px);
+  z-index: 40;
+  display: flex;
+  max-width: 420px;
+  min-height: 52px;
+  margin-inline: auto;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px 6px 16px;
+  border: 1px solid rgb(233 243 241 / 0.16);
+  border-radius: 14px;
+  background: var(--color-abyss);
+  color: var(--color-foam);
+  transition:
+    opacity 200ms var(--ease-out),
+    transform 200ms var(--ease-out);
+
+  @starting-style {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+.undo-button {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding-inline: 10px;
+  color: var(--color-tide);
+  font-size: 15px;
+  font-weight: 600;
+}
+
+@media (min-width: 64rem) {
+  .undo-toast {
+    bottom: 24px;
+  }
+}
+
+/* Adição rápida: mostra o que foi entendido antes de salvar */
+.quick-chip {
+  padding: 3px 10px;
+  border: 1px solid rgb(79 216 196 / 0.4);
+  border-radius: 999px;
+  color: var(--color-foam);
+  font-size: 14px;
+}
+
+/* Evolução: leitura aberta, sem cartões */
+.evolution-score {
+  font-family: var(--font-sans);
+  font-size: clamp(64px, 20vw, 88px);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.chart-readout {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.tide-chart {
+  position: relative;
+  height: 150px;
+  margin-left: 40px;
+  cursor: crosshair;
+  touch-action: pan-y;
+}
+
+.tide-chart svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.chart-reveal {
+  animation: chart-reveal 520ms var(--ease-out);
+}
+
+@keyframes chart-reveal {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+.chart-rule {
+  position: absolute;
+  right: 0;
+  left: 0;
+  border-top: 1px solid rgb(233 243 241 / 0.08);
+}
+
+.chart-rule[data-label]::before {
+  position: absolute;
+  top: -10px;
+  left: -40px;
+  color: var(--color-mist);
+  content: attr(data-label);
+  font-size: 14px;
+}
+
+.chart-cross {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: rgb(233 243 241 / 0.3);
+  pointer-events: none;
+}
+
+.chart-dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--color-abyss);
+  border-radius: 999px;
+  background: var(--color-tide);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+}
+
+.depth-chart {
+  display: grid;
+  grid-template-columns: 14px repeat(13, minmax(0, 1fr));
+  gap: 3px;
+}
+
+.depth-letters,
+.depth-week {
+  display: grid;
+  grid-template-rows: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.depth-letters {
+  color: var(--color-mist);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.depth-letters span {
+  display: grid;
+  align-items: center;
+}
+
+.depth-cell {
+  display: block;
+  aspect-ratio: 1;
+  border-radius: 4px;
+  background: rgb(233 243 241 / 0.05);
+}
+
+.depth-cell[data-depth='future'] {
+  background: transparent;
+}
+
+.depth-cell[data-depth='0'] {
+  box-shadow: inset 0 0 0 1px rgb(157 182 186 / 0.35);
+}
+
+.depth-cell[data-depth='1'] {
+  background: rgb(79 216 196 / 0.25);
+}
+
+.depth-cell[data-depth='2'] {
+  background: rgb(79 216 196 / 0.48);
+}
+
+.depth-cell[data-depth='3'] {
+  background: rgb(79 216 196 / 0.72);
+}
+
+.depth-cell[data-depth='full'] {
+  background: var(--color-tide);
+}
+
+.depth-cell[data-today='true'] {
+  outline: 2px solid var(--color-foam);
+  outline-offset: 1px;
+}
+
+.depth-key {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+}
+
+.bars {
+  display: flex;
+  height: 110px;
+  align-items: stretch;
+  gap: 2px;
+  border-bottom: 1px solid rgb(233 243 241 / 0.16);
+}
+
+.bar {
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  align-items: flex-end;
+}
+
+.bar-fill {
+  display: block;
+  width: 100%;
+  max-width: 44px;
+  margin-inline: auto;
+  border-radius: 4px 4px 0 0;
+  background: rgb(79 216 196 / 0.5);
+  transform-origin: bottom;
+  transition: background-color 120ms var(--ease-out);
+  animation: bar-rise 420ms var(--ease-out);
+}
+
+.bar[aria-pressed='true'] .bar-fill {
+  background: var(--color-tide);
+}
+
+.bar-fill[data-empty='true'] {
+  background: rgb(157 182 186 / 0.35);
+}
+
+@keyframes bar-rise {
+  from {
+    transform: scaleY(0.6);
+    opacity: 0;
+  }
+}
+
+.meter {
+  height: 3px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgb(233 243 241 / 0.12);
+}
+
+.meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-tide);
+  transform-origin: left;
+  transition: transform 320ms var(--ease-out);
+}
+
 /* Relógio do foco: Figtree, porque os números tabulares não dançam a cada segundo */
 .focus-clock {
   margin-top: 20px;
@@ -701,8 +996,16 @@ button.day-cell:active {
   .check-ripple,
   .station-pop,
   .rank-glint,
-  .streak-pop {
+  .streak-pop,
+  .chart-reveal,
+  .bar-fill {
     animation: none;
+  }
+
+  .undo-toast {
+    @starting-style {
+      transform: none;
+    }
   }
 
   .rank-glint {

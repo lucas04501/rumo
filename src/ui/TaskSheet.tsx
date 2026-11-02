@@ -1,13 +1,14 @@
 import { Plus, X } from 'lucide-react'
 import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router'
-import { deleteTask } from '../data/dayActions'
 import { useDay } from '../data/DayProvider'
 import { useSnapshot } from '../data/store'
 import {
   addSubtask,
   deleteSubtask,
   ensureTask,
+  postponeTask,
+  removeTask,
   saveTask,
   skipOccurrence,
   startRepeating,
@@ -94,12 +95,21 @@ export function TaskSheet({ task, onClosed }: TaskSheetProps) {
               </button>
             )}
 
-            <div className="border-t border-white/8 pt-3">
+            <div className="flex flex-wrap gap-x-6 border-t border-white/8 pt-3">
+              {!task.ruleId && !task.doneAt && (
+                <button
+                  type="button"
+                  className="min-h-11 text-[15px] text-mist underline underline-offset-4"
+                  onClick={() => leave(() => postponeTask(edited, today))}
+                >
+                  Adiar para amanhã
+                </button>
+              )}
               <button
                 type="button"
                 className="min-h-11 text-[15px] text-mist underline underline-offset-4"
                 onClick={() =>
-                  leave(() => (task.ruleId ? skipOccurrence(edited) : deleteTask(task.id)))
+                  leave(() => (task.ruleId ? skipOccurrence(edited) : removeTask(edited)))
                 }
               >
                 {task.ruleId ? 'Pular esta vez' : 'Excluir tarefa'}

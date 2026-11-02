@@ -66,6 +66,13 @@ export function goalTasks(snapshot: Snapshot, goalId: string, today: string): Ta
   return [...rows, ...planned].sort((a, b) => Number(Boolean(a.doneAt)) - Number(Boolean(b.doneAt)))
 }
 
+/** Tarefas comuns de dias passados que ninguém concluiu. Recorrentes não entram: amanhã há outra. */
+export function overdueTasks(tasks: Task[], today: string): Task[] {
+  return tasks
+    .filter((task) => task.date < today && !task.doneAt && !task.skippedAt && !task.ruleId)
+    .sort(byPriority)
+}
+
 export function upsertTask(tasks: Task[], task: Task): Task[] {
   return tasks.some((item) => item.id === task.id)
     ? tasks.map((item) => (item.id === task.id ? task : item))

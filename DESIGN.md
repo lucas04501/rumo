@@ -155,7 +155,7 @@ Azul-petróleo quase preto, com um teal vivo para agir e um âmbar guardado para
 
 Coluna única no celular, com margem lateral de 20 px, que cresce sob o notch com o aparelho deitado. A partir de 1024 px, a navegação vira coluna lateral de 224 px, e o conteúdo vai a até 1024 px com margem de 40 px.
 
-Hoje, Meta, Notas e Mês usam duas colunas no computador, na proporção 5 para 4, com 64 px entre elas. Hábitos e Metas ficam em uma coluna de até 672 px, e o título acompanha essa largura.
+Hoje, Meta, Notas, Mês e Evolução usam duas colunas no computador, na proporção 5 para 4, com 64 px entre elas. Hábitos e Metas ficam em uma coluna de até 672 px, e o título acompanha essa largura.
 
 O app é uma tela só: altura em `dvh`, com rolagem dentro da área principal e das folhas. A página nunca rola.
 
@@ -190,7 +190,7 @@ Cantos suaves em tudo o que é controle (12 px), um pouco mais em avisos (14 px)
 
 ### Navigation
 
-Cinco abas no rodapé do celular, sobre `abyss`, com a marca teal deslizando até a aba ativa: Hoje, Hábitos, Metas, Mês e Mais. A aba Mais reúne Notas, Foco e Ajustes, e fica ativa nessas telas. Item sem tela pronta não entra nela. No computador, vira coluna lateral com a marca vertical, com Notas, Foco e Ajustes direto na lista.
+Cinco abas no rodapé do celular, sobre `abyss`, com a marca teal deslizando até a aba ativa: Hoje, Hábitos, Metas, Mês e Mais. A aba Mais reúne Evolução, Notas, Foco e Ajustes, e fica ativa nessas telas. Item sem tela pronta não entra nela. No computador, vira coluna lateral com a marca vertical, com todas essas áreas direto na lista.
 
 ### Sheets
 
@@ -201,6 +201,18 @@ Folha inferior no celular e janela central de 460 px no computador, com o `<dial
 Check redondo, ícone opcional, título e informação à direita. Ao concluir: mola no check, ondulação, XP subindo em âmbar, som curto e maré subindo. Nada disso bloqueia o próximo toque.
 
 Na tarefa, a marca de prioridade fica antes do título: bandeira cheia em espuma para alta, seta em névoa para baixa, nada para normal. Prioridade não é ação nem recompensa, então não usa teal nem âmbar. À direita ficam o ícone de repetição, a contagem de subtarefas e o botão de detalhes, que abre a folha com prioridade, subtarefas, repetição e excluir.
+
+Deslizar a linha para a direita conclui, pelo mesmo caminho do check. Para a esquerda, adia para amanhã, ou pula quando a tarefa repete. Vale passar de 96 px ou um toque rápido. Abaixo disso, a linha volta sem agir.
+
+A adição rápida da Hoje lê data, prioridade e repetição no fim do texto ("pagar luz sexta !alta") e mostra chips do que entendeu antes de salvar, com a opção Ignorar. Só no fim do texto, para "Segunda via do boleto" continuar sendo um título.
+
+### Undo Toast
+
+Aviso neutro no rodapé por 5 s, em `abyss` com borda de espuma e Desfazer em teal, porque desfazer é ação, e não recompensa. Aparece ao excluir, pular, adiar e mover. Entra dentro da folha do topo, porque um `<dialog>` modal deixa o resto da página sem resposta ao toque.
+
+### Charts
+
+Uma cor só, teal, porque tudo mede a mesma coisa: progresso. Sem cartões de estatística: números em lista aberta com linhas finas, e um único número grande por tela. A maré do período usa curva com média móvel nos períodos longos, e a legenda diz isso. A carta de consistência usa cinco profundidades de teal, e o dia cheio é teal sólido. Tocar lê o valor em uma linha acima do gráfico, sem balão, e abre o dia. Âmbar só em XP ganho. Quando não há dados, a seção some ou diz o que falta, e nunca mostra zero como se fosse resultado.
 
 ### Focus
 
