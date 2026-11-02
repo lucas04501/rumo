@@ -38,7 +38,11 @@ export default defineConfig({
       },
     }),
   ],
-  server: { host: true },
+  server: {
+    host: true,
+    // Mesma origem do que em produção: o cookie de sessão continua primário.
+    proxy: { '/api': 'http://localhost:8787' },
+  },
   test: {
     include: ['src/**/*.test.ts'],
     env: { TZ: 'America/Sao_Paulo' },

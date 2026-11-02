@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+node_modules
+dist
+dev-dist
+.claude
+.impeccable
+.playwright-mcp
+docs

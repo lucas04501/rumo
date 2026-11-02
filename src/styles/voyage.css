@@ -199,6 +199,27 @@
   }
 }
 
+.action:disabled {
+  opacity: 0.6;
+}
+
+/* Campos de formulário */
+.field {
+  width: 100%;
+  min-height: 52px;
+  padding-inline: 14px;
+  border: 1px solid rgb(233 243 241 / 0.16);
+  border-radius: 12px;
+  background: var(--color-abyss);
+  color: var(--color-foam);
+  transition: border-color 120ms var(--ease-out);
+}
+
+.field:focus {
+  border-color: var(--color-tide);
+  outline: none;
+}
+
 /* Som */
 .sound-toggle {
   display: grid;

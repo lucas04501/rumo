@@ -1,5 +1,6 @@
 import { Anchor, Plus } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
+import { authClient } from '../data/authClient'
 import { USER_NAME } from '../data/demo'
 import { useDay, type HabitToday } from '../data/DayProvider'
 import { formatLongDate } from '../lib/dates'
@@ -28,6 +29,13 @@ export function Hoje() {
           <p className="mt-10 text-sm text-mist">
             Dados de demonstração. Recarregue a página para recomeçar.
           </p>
+          <button
+            type="button"
+            className="mt-1 -ml-1 min-h-11 px-1 text-sm text-mist underline underline-offset-4"
+            onClick={() => authClient.signOut()}
+          >
+            Sair da conta
+          </button>
         </div>
       </div>
     </Screen>
