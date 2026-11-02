@@ -55,11 +55,20 @@ const subtaskId = randomUUID()
 const focusId = randomUUID()
 const stepId = randomUUID()
 const routineCheckId = randomUUID()
+const planId = randomUUID()
+const planExerciseId = randomUUID()
+const workoutId = randomUUID()
+const setId = randomUUID()
+const customId = randomUUID()
 
 const habitBody = { title: 'Treinar', icon: 'dumbbell', weekdays: [1, 3, 5], startDate: DATE }
 const ruleBody = { title: 'Regar', weekdays: [1], startDate: DATE }
 const focusBody = { date: DATE, startedAt: `${DATE}T12:00:00Z`, minutes: 25, plannedMinutes: 25 }
 const stepBody = { weekday: 1, time: '06:30', title: 'Acordar' }
+const planExerciseBody = { exerciseRef: 'supino-reto', sets: 3, reps: 10, restSeconds: 90 }
+const workoutBody = { date: DATE, startedAt: `${DATE}T12:00:00Z` }
+const setBody = { exerciseRef: 'supino-reto', reps: 10, loadKg: 60, doneAt: `${DATE}T12:10:00Z` }
+const customBody = { name: 'Exercício da Ana', muscle: 'Peito' }
 
 beforeAll(async () => {
   ana = await signUp('Ana', emails.ana)
@@ -87,6 +96,17 @@ beforeAll(async () => {
   ])
   expect(dependents.map((response) => response.status)).toEqual([200, 200, 200, 200, 200, 200])
 
+  const plan = { title: 'Ficha da Ana', weekdays: [1], habitId, goalId }
+  expect((await call(ana, 'PUT', `/workout-plans/${planId}`, plan)).status).toBe(200)
+  expect((await call(ana, 'PUT', `/custom-exercises/${customId}`, customBody)).status).toBe(200)
+  const planned = await Promise.all([
+    call(ana, 'PUT', `/plan-exercises/${planExerciseId}`, { ...planExerciseBody, planId }),
+    call(ana, 'PUT', `/workout-sessions/${workoutId}`, { ...workoutBody, planId }),
+  ])
+  expect(planned.map((response) => response.status)).toEqual([200, 200])
+  const set = { ...setBody, sessionId: workoutId }
+  expect((await call(ana, 'PUT', `/session-sets/${setId}`, set)).status).toBe(200)
+
   const pause = { habitId, startDate: DATE, endDate: '2026-11-10' }
   expect((await call(ana, 'PUT', `/pauses/${pauseId}`, pause)).status).toBe(200)
   expect((await call(ana, 'PUT', `/checks/${habitId}/${DATE}`)).status).toBe(204)
@@ -108,6 +128,11 @@ const resources = [
   ['focus-sessions', () => focusId, { ...focusBody, minutes: 1 }],
   ['routine-steps', () => stepId, { ...stepBody, title: 'Invadido' }],
   ['routine-checks', () => routineCheckId, { stepId: randomUUID(), date: DATE }],
+  ['workout-plans', () => planId, { title: 'Invadido' }],
+  ['plan-exercises', () => planExerciseId, { ...planExerciseBody, planId: randomUUID() }],
+  ['workout-sessions', () => workoutId, { ...workoutBody, planId: randomUUID() }],
+  ['session-sets', () => setId, { ...setBody, sessionId: randomUUID() }],
+  ['custom-exercises', () => customId, { ...customBody, name: 'Invadido' }],
 ] as const
 
 describe('sem sessão', () => {
@@ -135,6 +160,21 @@ describe('sem sessão', () => {
     ['GET', '/routine-checks'],
     ['PUT', `/routine-checks/${randomUUID()}`],
     ['DELETE', `/routine-checks/${randomUUID()}`],
+    ['GET', '/workout-plans'],
+    ['PUT', `/workout-plans/${randomUUID()}`],
+    ['DELETE', `/workout-plans/${randomUUID()}`],
+    ['GET', '/plan-exercises'],
+    ['PUT', `/plan-exercises/${randomUUID()}`],
+    ['DELETE', `/plan-exercises/${randomUUID()}`],
+    ['GET', '/workout-sessions'],
+    ['PUT', `/workout-sessions/${randomUUID()}`],
+    ['DELETE', `/workout-sessions/${randomUUID()}`],
+    ['GET', '/session-sets'],
+    ['PUT', `/session-sets/${randomUUID()}`],
+    ['DELETE', `/session-sets/${randomUUID()}`],
+    ['GET', '/custom-exercises'],
+    ['PUT', `/custom-exercises/${randomUUID()}`],
+    ['DELETE', `/custom-exercises/${randomUUID()}`],
     ['GET', '/achievements'],
     ['PUT', '/achievements/habitos-1'],
     ['GET', '/snapshot'],
@@ -187,6 +227,11 @@ describe('isolamento entre usuários', () => {
       'routineChecks',
       'notes',
       'days',
+      'workoutPlans',
+      'planExercises',
+      'workoutSessions',
+      'sessionSets',
+      'customExercises',
     ]
     for (const key of lists) {
       expect(ofAna[key], key).toHaveLength(1)
@@ -216,6 +261,25 @@ describe('isolamento entre usuários', () => {
     expect((await call(bia, 'PUT', '/achievements/habitos-1')).status).toBe(204)
     expect(await seenBy(ana)).toHaveLength(1)
     expect(await seenBy(bia)).toHaveLength(1)
+  })
+
+  it('não liga ficha, sessão nem série a dados de outro usuário', async () => {
+    const plan = (fields: object) => call(bia, 'PUT', `/workout-plans/${randomUUID()}`, { title: 'Bia', ...fields })
+    expect((await plan({ habitId })).status).toBe(404)
+    expect((await plan({ goalId })).status).toBe(404)
+
+    const exercise = { ...planExerciseBody, planId }
+    expect((await call(bia, 'PUT', `/plan-exercises/${randomUUID()}`, exercise)).status).toBe(404)
+    const workout = { ...workoutBody, planId }
+    expect((await call(bia, 'PUT', `/workout-sessions/${randomUUID()}`, workout)).status).toBe(404)
+    const set = { ...setBody, sessionId: workoutId }
+    expect((await call(bia, 'PUT', `/session-sets/${randomUUID()}`, set)).status).toBe(404)
+  })
+
+  it('recusa carga fora do limite e ficha sem nome', async () => {
+    const heavy = { ...setBody, sessionId: workoutId, loadKg: 5000 }
+    expect((await call(ana, 'PUT', `/session-sets/${randomUUID()}`, heavy)).status).toBe(400)
+    expect((await call(ana, 'PUT', `/workout-plans/${randomUUID()}`, { title: ' ' })).status).toBe(400)
   })
 
   it('recusa identificador de conquista inválido', async () => {

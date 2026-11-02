@@ -5,8 +5,10 @@ import { DayProvider } from './data/DayProvider'
 import { persistOptions, resumeWrites, store } from './data/store'
 import { AuthGate } from './ui/AuthGate'
 import { Shell } from './ui/Shell'
+import { Biblioteca } from './screens/Biblioteca'
 import { Conquistas } from './screens/Conquistas'
 import { Evolucao } from './screens/Evolucao'
+import { Ficha } from './screens/Ficha'
 import { Foco } from './screens/Foco'
 import { Habitos } from './screens/Habitos'
 import { Hoje } from './screens/Hoje'
@@ -16,6 +18,8 @@ import { Meta } from './screens/Meta'
 import { Metas } from './screens/Metas'
 import { Notas } from './screens/Notas'
 import { Rotina } from './screens/Rotina'
+import { Treino } from './screens/Treino'
+import { Treinos } from './screens/Treinos'
 
 export function App() {
   return (
@@ -42,6 +46,10 @@ export function App() {
                   <Route path="evolucao" element={<Evolucao />} />
                   <Route path="conquistas" element={<Conquistas />} />
                   <Route path="foco" element={<Foco />} />
+                  <Route path="treinos" element={<Treinos />} />
+                  <Route path="treinos/biblioteca" element={<Biblioteca />} />
+                  <Route path="treinos/:id" element={<Ficha />} />
+                  <Route path="treino" element={<Treino />} />
                   <Route path="mais" element={<Mais />} />
                 </Route>
               </Routes>

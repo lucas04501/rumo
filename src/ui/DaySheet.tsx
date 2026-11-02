@@ -184,6 +184,22 @@ export function DaySheet({ date, today, snapshot, onClosed }: DaySheetProps) {
             </Detail>
           )}
 
+          {report.workouts.length > 0 && (
+            <Detail title="Treino">
+              <ul className="grid gap-1 text-[15px]">
+                {report.workouts.map((workout) => (
+                  <li key={workout.id}>
+                    {workout.title}
+                    <span className="text-mist">
+                      , {workout.sets} {workout.sets === 1 ? 'série' : 'séries'},{' '}
+                      {formatMinutes(workout.minutes)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </Detail>
+          )}
+
           {report.milestones.length + report.goals.length > 0 && (
             <Detail title="Metas">
               <ul className="grid gap-1 text-[15px]">

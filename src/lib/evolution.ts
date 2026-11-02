@@ -9,6 +9,7 @@ import {
   type SnapshotIndex,
 } from './progress'
 import { currentStreak } from './streaks'
+import { recordsOf } from './workouts'
 import { XP, hasTailwind } from './xp'
 
 export const RANGES = [7, 30, 90] as const
@@ -53,6 +54,7 @@ export function xpByDate(snapshot: Snapshot, index: SnapshotIndex): Map<string, 
   for (const day of snapshot.days) {
     if (day.completedAt && dayProgress(index, day.date).perfect) add(day.date, XP.perfectDay)
   }
+  for (const { date } of recordsOf(snapshot)) add(date, XP.record)
 
   return totals
 }

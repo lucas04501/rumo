@@ -3,6 +3,7 @@ import { toIsoDate } from './dates'
 import { isScheduled, type HabitPlan } from './habits'
 import { currentStreak } from './streaks'
 import { mergeDay, tasksOn } from './tasks'
+import { recordsOf } from './workouts'
 import { totalXp } from './xp'
 
 export type HabitToday = Habit & {
@@ -112,6 +113,7 @@ export function xpOf(snapshot: Snapshot): number {
       .length,
     milestonesDone: snapshot.milestones.filter((milestone) => milestone.doneAt).length,
     goalsDone: snapshot.goals.filter((goal) => goal.status === 'done').length,
+    records: recordsOf(snapshot).length,
   })
 }
 

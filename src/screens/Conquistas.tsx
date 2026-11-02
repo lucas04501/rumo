@@ -2,9 +2,11 @@ import {
   Anchor,
   CheckCheck,
   Compass,
+  Dumbbell,
   Flag,
   ListChecks,
   Timer,
+  TrendingUp,
   Waves,
   type LucideIcon,
 } from 'lucide-react'
@@ -29,6 +31,8 @@ const ICONS: Record<Measure, LucideIcon> = {
   focus: Timer,
   milestones: Flag,
   goals: Compass,
+  workouts: Dumbbell,
+  records: TrendingUp,
 }
 
 const figure = (value: number, measure: Measure) =>

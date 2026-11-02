@@ -2,34 +2,44 @@ import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { auth, signupOpen } from './auth.js'
 import {
+  customExercises,
   focusSessions,
   goals,
   habitPauses,
   habits,
   milestones,
   notes,
+  planExercises,
   routineChecks,
   routineSteps,
+  sessionSets,
   subtasks,
   taskRules,
   tasks,
+  workoutPlans,
+  workoutSessions,
 } from './db/schema.js'
 import { achievements } from './routes/achievements.js'
 import { checks } from './routes/checks.js'
 import { days } from './routes/days.js'
 import { resource } from './routes/resource.js'
 import {
+  customExerciseFields,
   focusFields,
   goalFields,
   habitFields,
   milestoneFields,
   noteFields,
   pauseFields,
+  planExerciseFields,
   routineCheckFields,
   routineStepFields,
+  sessionSetFields,
   subtaskFields,
   taskFields,
   taskRuleFields,
+  workoutPlanFields,
+  workoutSessionFields,
 } from './routes/schemas.js'
 import { snapshot } from './routes/snapshot.js'
 import { requireUser, type AuthedEnv } from './session.js'
@@ -56,6 +66,11 @@ const data = new Hono<AuthedEnv>()
   .route('/routine-steps', resource(routineSteps, routineStepFields))
   .route('/routine-checks', resource(routineChecks, routineCheckFields))
   .route('/notes', resource(notes, noteFields))
+  .route('/workout-plans', resource(workoutPlans, workoutPlanFields))
+  .route('/plan-exercises', resource(planExercises, planExerciseFields))
+  .route('/workout-sessions', resource(workoutSessions, workoutSessionFields))
+  .route('/session-sets', resource(sessionSets, sessionSetFields))
+  .route('/custom-exercises', resource(customExercises, customExerciseFields))
   .route('/checks', checks)
   .route('/achievements', achievements)
   .route('/days', days)

@@ -100,6 +100,58 @@ export type RoutineCheck = {
   doneAt: string | null
 }
 
+export type WorkoutPlan = {
+  id: string
+  title: string
+  /** Dias planejados. Vazio é uma ficha sem dia fixo. */
+  weekdays: number[]
+  habitId: string | null
+  goalId: string | null
+  archivedAt: string | null
+  position: number
+}
+
+export type PlanExercise = {
+  id: string
+  planId: string
+  /** ID da biblioteca fixa ou de um exercício próprio. */
+  exerciseRef: string
+  position: number
+  sets: number
+  reps: number
+  loadKg: number | null
+  restSeconds: number
+  notes: string | null
+}
+
+export type WorkoutSession = {
+  id: string
+  planId: string
+  date: string
+  startedAt: string
+  /** Nulo enquanto o treino está aberto. */
+  finishedAt: string | null
+  notes: string | null
+}
+
+/** Só existe depois de feita: série a fazer sai da ficha. */
+export type SessionSet = {
+  id: string
+  sessionId: string
+  exerciseRef: string
+  position: number
+  reps: number
+  loadKg: number | null
+  doneAt: string
+}
+
+export type CustomExercise = {
+  id: string
+  name: string
+  muscle: string
+  instructions: string
+}
+
 export type Note = {
   id: string
   goalId: string | null
@@ -132,4 +184,9 @@ export type Snapshot = {
   days: Day[]
   /** Conquistas cuja animação já tocou, em qualquer aparelho. */
   achievementsSeen: string[]
+  workoutPlans: WorkoutPlan[]
+  planExercises: PlanExercise[]
+  workoutSessions: WorkoutSession[]
+  sessionSets: SessionSet[]
+  customExercises: CustomExercise[]
 }

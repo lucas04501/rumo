@@ -5,11 +5,12 @@ import { useDay } from '../data/DayProvider'
 import { addGoalTask, setMainGoal, undoLastMilestone } from '../data/goalActions'
 import { useSnapshot } from '../data/store'
 import type { Habit, Note, Snapshot } from '../data/types'
-import { formatShortDate } from '../lib/dates'
+import { addDays, formatShortDate } from '../lib/dates'
 import { consistency, deadlineLabel, goalProgress, paceSentence } from '../lib/goals'
 import { visibleNotes } from '../lib/notes'
 import { checksOf, planOf, withMilestones, type GoalInFocus } from '../lib/progress'
 import { goalTasks } from '../lib/tasks'
+import { activePlans, finishedSessions } from '../lib/workouts'
 import { GoalSheet } from '../ui/GoalSheet'
 import { iconFor } from '../ui/habitIcons'
 import { LinkSheet } from '../ui/LinkSheet'
@@ -98,6 +99,7 @@ export function Meta() {
             today={date}
             onLink={() => setLinking(true)}
           />
+          <LinkedPlans goal={goal} snapshot={snapshot} today={date} />
           <GoalTasks goal={goal} snapshot={snapshot} today={date} />
           <GoalNotes goal={goal} snapshot={snapshot} />
         </div>
@@ -221,6 +223,39 @@ function LinkedHabits({ goal, snapshot, today, onLink }: LinkedHabitsProps) {
           ))}
         </ul>
       )}
+    </section>
+  )
+}
+
+const WORKOUT_WINDOW_DAYS = 30
+
+function LinkedPlans({ goal, snapshot, today }: { goal: GoalInFocus; snapshot: Snapshot; today: string }) {
+  const plans = activePlans(snapshot).filter((plan) => plan.goalId === goal.id)
+  if (plans.length === 0) return null
+
+  const from = addDays(today, -WORKOUT_WINDOW_DAYS)
+  const recent = finishedSessions(snapshot).filter((session) => session.date > from)
+
+  return (
+    <section aria-labelledby="treinos-ligados" className="mt-8">
+      <h2 id="treinos-ligados" className="font-display text-xl font-semibold">
+        Treinos ligados
+      </h2>
+      <ul className="mt-1 divide-y divide-line">
+        {plans.map((plan) => {
+          const count = recent.filter((session) => session.planId === plan.id).length
+          return (
+            <li key={plan.id}>
+              <Link to={`/treinos/${plan.id}`} className="flex min-h-13 items-center gap-3">
+                <span className="min-w-0 flex-1 text-[17px]">{plan.title}</span>
+                <span className="shrink-0 text-[15px] text-mist">
+                  {count} {count === 1 ? 'treino' : 'treinos'} em 30 dias
+                </span>
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
     </section>
   )
 }

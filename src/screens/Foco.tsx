@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link, useLocation } from 'react-router'
 import { useDay } from '../data/DayProvider'
 import { setFocusTimer, useFocusTimer } from '../data/focusTimer'
@@ -24,6 +24,7 @@ import {
 import { newId } from '../lib/ids'
 import { tasksOn } from '../lib/tasks'
 import { Screen } from '../ui/Screen'
+import { useWakeLock } from '../ui/useWakeLock'
 
 export function Foco() {
   const { date: today } = useDay()
@@ -43,35 +44,6 @@ export function Foco() {
       )}
     </Screen>
   )
-}
-
-/** Mantém a tela acesa: com ela apagada, o iPhone suspende o app e o som do fim não toca. */
-function useWakeLock(active: boolean) {
-  useEffect(() => {
-    if (!active || !('wakeLock' in navigator)) return
-
-    let lock: WakeLockSentinel | null = null
-    let ended = false
-    const acquire = () => {
-      if (document.visibilityState !== 'visible') return
-      navigator.wakeLock
-        .request('screen')
-        .then((sentinel) => {
-          if (ended) void sentinel.release()
-          else lock = sentinel
-        })
-        .catch(() => {})
-    }
-
-    acquire()
-    document.addEventListener('visibilitychange', acquire)
-
-    return () => {
-      ended = true
-      document.removeEventListener('visibilitychange', acquire)
-      void lock?.release()
-    }
-  }, [active])
 }
 
 function todayLine(blocks: number, minutes: number): string {

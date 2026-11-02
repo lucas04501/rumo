@@ -5,6 +5,7 @@ import {
   ChartNoAxesCombined,
   Columns3,
   Compass,
+  Dumbbell,
   Ellipsis,
   ListChecks,
   Medal,
@@ -42,7 +43,7 @@ const PHONE_TABS: Tab[] = [
     to: '/mais',
     label: 'Mais',
     icon: Ellipsis,
-    also: ['/rotina', '/evolucao', '/conquistas', '/notas', '/foco'],
+    also: ['/rotina', '/evolucao', '/conquistas', '/notas', '/foco', '/treinos', '/treino'],
   },
 ]
 
@@ -57,6 +58,7 @@ const WIDE_TABS: Tab[] = [
   { to: '/conquistas', label: 'Conquistas', icon: Medal },
   { to: '/notas', label: 'Notas', icon: NotebookPen },
   { to: '/foco', label: 'Foco', icon: Timer },
+  { to: '/treinos', label: 'Treinos', icon: Dumbbell },
   { to: '/mais', label: 'Ajustes', icon: Settings },
 ]
 
@@ -105,7 +107,7 @@ export function Shell() {
   const { reward, dismissReward, celebration, dismissCelebration } = useDay()
   const timer = useFocusTimer()
   // No modo foco, a navegação some no celular. No computador, ela não atrapalha.
-  const immersive = pathname === '/foco' && timer !== null
+  const immersive = (pathname === '/foco' && timer !== null) || pathname === '/treino'
   const layer = useLayer()
   useShortcuts()
 
@@ -118,7 +120,7 @@ export function Shell() {
         </div>
       </main>
       <Navigation hidden={immersive} />
-      {pathname !== '/foco' && (
+      {pathname !== '/foco' && pathname !== '/treino' && (
         <button type="button" className="fab" aria-label="Criar" onClick={() => openLayer('criar')}>
           <Plus size={26} strokeWidth={2} aria-hidden />
         </button>
@@ -182,7 +184,7 @@ function Navigation({ hidden }: { hidden: boolean }) {
 
 function TabLink({ tab: { to, label, icon: Icon, also = [] } }: { tab: Tab }) {
   const { pathname } = useLocation()
-  const inside = also.includes(pathname)
+  const inside = also.some((path) => pathname === path || pathname.startsWith(`${path}/`))
 
   return (
     <NavLink

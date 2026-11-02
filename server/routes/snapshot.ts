@@ -3,6 +3,7 @@ import { Hono } from 'hono'
 import { db } from '../db/client.js'
 import {
   achievementsSeen,
+  customExercises,
   days,
   focusSessions,
   goals,
@@ -11,12 +12,16 @@ import {
   habits,
   milestones,
   notes,
+  planExercises,
   routineChecks,
   routineSteps,
+  sessionSets,
   subtasks,
   taskRules,
   tasks,
   user,
+  workoutPlans,
+  workoutSessions,
 } from '../db/schema.js'
 import type { AuthedEnv } from '../session.js'
 
@@ -44,6 +49,11 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
     noteRows,
     dayRows,
     seenRows,
+    planRows,
+    planExerciseRows,
+    workoutRows,
+    setRows,
+    customRows,
   ] = await Promise.all([
     db.select({ name: user.name }).from(user).where(eq(user.id, userId)),
     db
@@ -114,6 +124,30 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
       .select({ id: achievementsSeen.achievementId })
       .from(achievementsSeen)
       .where(eq(achievementsSeen.userId, userId)),
+    db
+      .select()
+      .from(workoutPlans)
+      .where(and(eq(workoutPlans.userId, userId), isNull(workoutPlans.deletedAt)))
+      .orderBy(asc(workoutPlans.position)),
+    db
+      .select()
+      .from(planExercises)
+      .where(and(eq(planExercises.userId, userId), isNull(planExercises.deletedAt)))
+      .orderBy(asc(planExercises.position)),
+    db
+      .select()
+      .from(workoutSessions)
+      .where(and(eq(workoutSessions.userId, userId), isNull(workoutSessions.deletedAt)))
+      .orderBy(asc(workoutSessions.startedAt)),
+    db
+      .select()
+      .from(sessionSets)
+      .where(and(eq(sessionSets.userId, userId), isNull(sessionSets.deletedAt)))
+      .orderBy(asc(sessionSets.position)),
+    db
+      .select()
+      .from(customExercises)
+      .where(and(eq(customExercises.userId, userId), isNull(customExercises.deletedAt))),
   ])
 
   return c.json({
@@ -132,5 +166,10 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
     notes: noteRows,
     days: dayRows,
     achievementsSeen: seenRows.map((row) => row.id),
+    workoutPlans: planRows,
+    planExercises: planExerciseRows,
+    workoutSessions: workoutRows,
+    sessionSets: setRows,
+    customExercises: customRows,
   })
 })

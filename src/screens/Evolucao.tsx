@@ -29,6 +29,7 @@ import { Bars, DepthChart, Meter, TideChart } from '../ui/EvolutionCharts'
 import { iconFor } from '../ui/habitIcons'
 import { Screen } from '../ui/Screen'
 import { Ticker } from '../ui/Ticker'
+import { workoutsOn } from '../lib/workouts'
 
 const DEPTH_WEEKS = 13
 const SECTION = 'mt-9 first:mt-0'
@@ -223,6 +224,24 @@ export function Evolucao() {
                   label="Tempo de foco"
                   color="focus"
                   items={buckets(dates, focusMinutesOn(snapshot), formatMinutes)}
+                />
+              </div>
+            </section>
+          )}
+
+          {dates.some((date) => workoutsOn(snapshot)(date) > 0) && (
+            <section aria-labelledby="treinos-evolucao" className={SECTION}>
+              <h2 id="treinos-evolucao" className={HEADING}>
+                Treinos
+              </h2>
+              <div className="mt-2">
+                <Bars
+                  key={range}
+                  label="Treinos concluídos"
+                  color="workout"
+                  items={buckets(dates, workoutsOn(snapshot), (value) =>
+                    value === 1 ? '1 treino' : `${value} treinos`,
+                  )}
                 />
               </div>
             </section>

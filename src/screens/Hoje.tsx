@@ -14,6 +14,7 @@ import { dayProgress, indexSnapshot, type SnapshotIndex } from '../lib/progress'
 import { clockOf, currentStep, nextStep, stepsOn } from '../lib/routine'
 import { isStreakMark } from '../lib/streaks'
 import { overdueTasks } from '../lib/tasks'
+import { plansOn, runningSession, workoutsOn } from '../lib/workouts'
 import { XP } from '../lib/xp'
 import { Bars } from '../ui/EvolutionCharts'
 import { iconFor } from '../ui/habitIcons'
@@ -38,7 +39,10 @@ export function Hoje() {
       <Quote />
       <div className="mt-6 grid grid-cols-1 gap-9 lg:grid-cols-2 lg:items-start lg:gap-5 xl:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)_minmax(0,1fr)]">
         <div className="panel grid grid-cols-1 gap-6">
-          <RoutineShortcut />
+          <div>
+            <WorkoutShortcut />
+            <RoutineShortcut />
+          </div>
           <Habits />
         </div>
         <div className="panel">
@@ -281,6 +285,34 @@ function FocusShortcut() {
     <Link to="/foco" className="flex min-h-11 items-center gap-1.5 text-[15px] text-mist">
       <Timer size={17} strokeWidth={1.75} aria-hidden />
       {!timer ? 'Foco' : isOver(timer) ? 'Bloco concluído' : formatClock(leftMs(timer, now))}
+    </Link>
+  )
+}
+
+function WorkoutShortcut() {
+  const { date } = useDay()
+  const { data: snapshot } = useSnapshot()
+  if (!snapshot) return null
+
+  const running = runningSession(snapshot)
+  const plan = plansOn(snapshot, date)[0]
+  const done = workoutsOn(snapshot)(date) > 0
+  if (!running && (!plan || done)) return null
+
+  const title = running
+    ? snapshot.workoutPlans.find((item) => item.id === running.planId)?.title
+    : plan.title
+
+  return (
+    <Link
+      to={running ? '/treino' : `/treinos/${plan.id}`}
+      className="flex min-h-11 items-center justify-between gap-3 text-[15px]"
+    >
+      <span className="min-w-0 truncate">
+        <span className="text-mist">{running ? 'Treino em andamento: ' : 'Treino de hoje: '}</span>
+        {title}
+      </span>
+      <ChevronRight size={18} strokeWidth={1.75} className="shrink-0 text-mist" aria-hidden />
     </Link>
   )
 }

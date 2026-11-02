@@ -40,6 +40,14 @@ const snapshot: Snapshot = complete({
     { id: 'n', goalId: null, title: 'Treino', body: 'Rodagem na orla', pinned: false, updatedAt: '' },
   ],
   days: [],
+  workoutPlans: [
+    { id: 'p', title: 'Peito e tríceps', weekdays: [1], habitId: null, goalId: null, archivedAt: null, position: 0 },
+    { id: 'a', title: 'Peito antigo', weekdays: [], habitId: null, goalId: null, archivedAt: `${TODAY}T10:00:00Z`, position: 1 },
+  ],
+  planExercises: [],
+  workoutSessions: [],
+  sessionSets: [],
+  customExercises: [],
 })
 
 describe('searchAll', () => {
@@ -60,6 +68,10 @@ describe('searchAll', () => {
 
   it('acha a regra e a ocorrência de hoje, que não tem linha', () => {
     expect(ids('regar')).toEqual([occurrenceId(rule.id, TODAY), rule.id])
+  })
+
+  it('acha ficha de treino e tira a arquivada', () => {
+    expect(ids('peito')).toEqual(['p'])
   })
 
   it('procura também no texto da nota', () => {

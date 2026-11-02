@@ -5,6 +5,7 @@ import { complete } from '../lib/snapshot'
 import { ApiError, request } from './api'
 import { forgetFocusTimer } from './focusTimer'
 import { forgetRankSeen } from './rankSeen'
+import { forgetRestTimer } from './restTimer'
 import type { Snapshot } from './types'
 
 const SNAPSHOT_KEY = ['snapshot']
@@ -110,5 +111,6 @@ export async function clearDevice() {
   store.clear()
   forgetRankSeen()
   forgetFocusTimer()
+  forgetRestTimer()
   await del(STORAGE_KEY).catch(() => {})
 }

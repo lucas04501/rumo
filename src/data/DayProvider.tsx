@@ -2,6 +2,7 @@ import { createContext, use, useCallback, useEffect, useRef, useState, type Reac
 import { FRASES_VENTO, pick } from '../content/frases'
 import { placeOn, type Column } from '../lib/board'
 import { diffDays } from '../lib/dates'
+import { formatMinutes } from '../lib/evolution'
 import {
   haptic,
   soundArrival,
@@ -19,16 +20,19 @@ import {
   type GoalInFocus,
   type HabitToday,
 } from '../lib/progress'
+import { exerciseOf, formatLoad, recordsOf, setsOf, summarize } from '../lib/workouts'
 import { XP, hasTailwind, rankFor, type Rank } from '../lib/xp'
 import { ConnectionNeeded } from '../ui/ConnectionNeeded'
 import { setDayCompleted } from './dayActions'
 import { completeNextMilestone } from './goalActions'
+import { setCheck } from './habitActions'
 import { commit, useSnapshot } from './store'
 import { saveTask } from './taskActions'
-import type { Snapshot, Task } from './types'
+import type { Snapshot, Task, WorkoutSession } from './types'
 import { useAchievements } from './useAchievements'
 import { useRankUp } from './useRankUp'
 import { useToday } from './useToday'
+import { saveSession } from './workoutActions'
 
 export type { HabitToday } from '../lib/progress'
 
@@ -63,6 +67,8 @@ type Day = {
   toggleTask: (task: Task) => number
   /** Move no quadro e devolve o XP ganho, como o check. */
   moveCard: (task: Task, column: Column) => number
+  /** Fecha o treino e marca o hábito ligado. O XP sai do hábito e dos recordes, nunca do treino em si. */
+  finishWorkout: (session: WorkoutSession) => void
   completeMilestone: (goal: GoalInFocus) => void
   arriveAtStation: (goal: GoalInFocus, station: number) => void
   dismissReward: () => void
@@ -193,6 +199,43 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
     [done],
   )
 
+  const finishWorkout = useCallback(
+    (session: WorkoutSession) => {
+      const finished = { ...session, finishedAt: now() }
+      const sets = setsOf(snapshot, session.id)
+      const { minutes } = summarize(finished, sets, '')
+      const habitId = snapshot.workoutPlans.find((plan) => plan.id === session.planId)?.habitId
+      const checked = snapshot.checks.some(
+        (check) => check.habitId === habitId && check.date === session.date,
+      )
+      const records = recordsOf({
+        ...snapshot,
+        workoutSessions: snapshot.workoutSessions.map((item) =>
+          item.id === session.id ? finished : item,
+        ),
+      }).filter((record) => record.sessionId === session.id)
+
+      saveSession(finished)
+      if (habitId && !checked) setCheck(habitId, session.date, true)
+      haptic()
+
+      addReward({
+        title: 'Treino concluído',
+        detail: `${sets.length} ${sets.length === 1 ? 'série' : 'séries'}, ${formatMinutes(minutes)}.`,
+        sound: soundArrival,
+      })
+      for (const { exerciseRef, loadKg } of records) {
+        const { name } = exerciseOf(exerciseRef, snapshot.customExercises)
+        addReward({
+          title: `Recorde: ${name}`,
+          detail: `${formatLoad(loadKg)}. Mais ${XP.record} XP.`,
+          sound: soundArrival,
+        })
+      }
+    },
+    [snapshot, addReward],
+  )
+
   const completeMilestone = useCallback((target: GoalInFocus) => {
     haptic()
     if (target.reached + 1 === target.milestones.length) setArrivingGoalId(target.id)
@@ -236,6 +279,7 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
     toggleHabit,
     toggleTask,
     moveCard,
+    finishWorkout,
     completeMilestone,
     arriveAtStation,
     dismissReward: useCallback(() => setRewards((current) => current.slice(1)), []),

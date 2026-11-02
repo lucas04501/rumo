@@ -1,6 +1,7 @@
 import {
   CalendarClock,
   Compass,
+  Dumbbell,
   ListChecks,
   NotebookPen,
   Repeat,
@@ -20,8 +21,9 @@ import { QuickChips, useQuickAdd } from './QuickAdd'
 import { StepSheet } from './RoutineSheets'
 import { RuleSheet } from './RuleSheet'
 import { Sheet } from './Sheet'
+import { PlanSheet } from './WorkoutSheets'
 
-type Kind = 'habit' | 'goal' | 'note' | 'rule' | 'step'
+type Kind = 'habit' | 'goal' | 'note' | 'rule' | 'step' | 'plan'
 
 const KINDS: { kind: Kind; label: string; icon: LucideIcon }[] = [
   { kind: 'habit', label: 'Hábito', icon: ListChecks },
@@ -29,6 +31,7 @@ const KINDS: { kind: Kind; label: string; icon: LucideIcon }[] = [
   { kind: 'note', label: 'Nota', icon: NotebookPen },
   { kind: 'rule', label: 'Repetição', icon: Repeat },
   { kind: 'step', label: 'Passo da rotina', icon: CalendarClock },
+  { kind: 'plan', label: 'Ficha de treino', icon: Dumbbell },
 ]
 
 /** Ponto único de criar. O campo é a adição rápida; o resto abre a folha certa com o texto já escrito. */
@@ -63,6 +66,9 @@ export function Creator({ draft = '' }: { draft?: string }) {
     return (
       <RuleSheet rule={null} initialTitle={title} position={snapshot.taskRules.length} {...shared} />
     )
+  }
+  if (kind === 'plan') {
+    return <PlanSheet plan={null} initialTitle={title} snapshot={snapshot} onClosed={closeLayer} />
   }
   if (kind === 'note') {
     return (

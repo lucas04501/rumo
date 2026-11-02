@@ -27,9 +27,10 @@
   --color-tide-ink: #03211f;
   --color-sun: #ffb23e;
 
-  /* Só em gráficos: cada cor é uma coisa. Tarefa é azul, foco é rosa e XP é âmbar. */
+  /* Só em gráficos: cada cor é uma coisa. Tarefa é azul, foco é rosa, treino é roxo e XP é âmbar. */
   --color-chart-task: #5a8dff;
   --color-chart-focus: #ff5c8a;
+  --color-chart-workout: #b692ff;
 
   --font-display: 'Bricolage Grotesque Variable', ui-sans-serif, system-ui, sans-serif;
   --font-sans: 'Figtree Variable', ui-sans-serif, system-ui, sans-serif;

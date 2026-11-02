@@ -2,6 +2,7 @@ import {
   CalendarClock,
   ChartNoAxesCombined,
   ChevronRight,
+  Dumbbell,
   Medal,
   NotebookPen,
   Search,
@@ -17,8 +18,9 @@ import { Screen } from '../ui/Screen'
 
 type Area = { to: string; label: string; icon: LucideIcon }
 
-// Treinos entra aqui quando existir. Item sem tela só atrapalha.
+// Item sem tela só atrapalha.
 const AREAS: Area[] = [
+  { to: '/treinos', label: 'Treinos', icon: Dumbbell },
   { to: '/rotina', label: 'Rotina', icon: CalendarClock },
   { to: '/evolucao', label: 'Evolução', icon: ChartNoAxesCombined },
   { to: '/conquistas', label: 'Conquistas', icon: Medal },

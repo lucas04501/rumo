@@ -1,6 +1,7 @@
 import { useState, type PointerEvent } from 'react'
 import { formatDayShort, formatLongDate, formatShortDate } from '../lib/dates'
 import { depthOf, smoothed, type Bucket, type DayPoint } from '../lib/evolution'
+import { formatLoad, type LoadPoint } from '../lib/workouts'
 
 const WEEK_LETTERS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
 
@@ -131,6 +132,73 @@ export function TideChart({ points, window, onOpen }: TideChartProps) {
   )
 }
 
+type LoadChartProps = { points: LoadPoint[]; label: string }
+
+/** Maior carga de cada treino. O eixo começa perto do menor valor, porque a mudança é pequena. */
+export function LoadChart({ points, label }: LoadChartProps) {
+  const [picked, setPicked] = useState<number | null>(null)
+  const values = points.map((point) => point.value)
+  const lowest = Math.min(...values)
+  const highest = Math.max(...values)
+  const span = highest - lowest || 1
+
+  const xOf = (index: number) => (index / (points.length - 1)) * 100
+  const yOf = (value: number) => 90 - ((value - lowest) / span) * 80
+  const selected = picked ?? points.length - 1
+  const { date, value } = points[selected]
+
+  const pick = (event: PointerEvent<HTMLDivElement>) => {
+    const box = event.currentTarget.getBoundingClientRect()
+    const ratio = (event.clientX - box.left) / box.width
+    setPicked(Math.max(0, Math.min(points.length - 1, Math.round(ratio * (points.length - 1)))))
+  }
+
+  return (
+    <figure>
+      <p className="chart-readout text-[15px]">
+        {formatDayShort(date)}: {formatLoad(value)}
+      </p>
+      <div className="tide-chart" onPointerDown={pick} onPointerMove={pick} aria-hidden>
+        <span className="chart-rule" style={{ top: '10%' }} data-label={String(highest)} />
+        <span className="chart-rule" style={{ top: '90%' }} data-label={String(lowest)} />
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="chart-reveal">
+          <path
+            d={linePath(points.map((point, index) => ({ x: xOf(index), y: yOf(point.value) })))}
+            fill="none"
+            stroke="var(--color-chart-workout)"
+            strokeWidth="2.5"
+            strokeLinecap="round"
+            vectorEffect="non-scaling-stroke"
+          />
+        </svg>
+        <span className="chart-cross" style={{ left: `${xOf(selected)}%` }} />
+        <span
+          className="chart-dot"
+          style={{
+            left: `${xOf(selected)}%`,
+            top: `${yOf(value)}%`,
+            background: 'var(--color-chart-workout)',
+          }}
+        />
+      </div>
+      <div className="sr-only">
+        <table>
+          <caption>{label}</caption>
+          <tbody>
+            {points.map((point) => (
+              <tr key={point.date}>
+                <td>
+                  {formatLongDate(point.date)}: {formatLoad(point.value)}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </figure>
+  )
+}
+
 type DepthChartProps = {
   weeks: (DayPoint | null)[][]
   today: string
@@ -182,7 +250,7 @@ type BarsProps = {
   items: Bucket[]
   label: string
   /** Cor da coisa medida: tarefa é azul e foco é rosa, em qualquer tela. */
-  color: 'tide' | 'task' | 'focus'
+  color: 'tide' | 'task' | 'focus' | 'workout'
   /** Coluna lida ao abrir, se não for a última. */
   selected?: string
 }

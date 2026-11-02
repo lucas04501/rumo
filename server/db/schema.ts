@@ -9,6 +9,7 @@ import {
   integer,
   pgTable,
   primaryKey,
+  real,
   smallint,
   text,
   timestamp,
@@ -400,4 +401,119 @@ export const notes = pgTable(
     }),
     index('notes_user_idx').on(table.userId),
   ],
+)
+
+// Ficha de treino. Terminar a sessão marca o hábito ligado: não há segundo registro.
+export const workoutPlans = pgTable(
+  'workout_plans',
+  {
+    id: uuid('id').primaryKey(),
+    userId: owner(),
+    title: text('title').notNull(),
+    weekdays: smallint('weekdays').array().notNull().default(sql`'{}'::smallint[]`),
+    habitId: uuid('habit_id'),
+    goalId: uuid('goal_id'),
+    archivedAt: moment('archived_at'),
+    position: integer('position').notNull().default(0),
+    ...lifecycle(),
+  },
+  (table) => [
+    unique('workout_plans_owner_key').on(table.userId, table.id),
+    foreignKey({
+      columns: [table.userId, table.habitId],
+      foreignColumns: [habits.userId, habits.id],
+      name: 'workout_plans_habit_owner_fk',
+    }),
+    foreignKey({
+      columns: [table.userId, table.goalId],
+      foreignColumns: [goals.userId, goals.id],
+      name: 'workout_plans_goal_owner_fk',
+    }),
+  ],
+)
+
+export const planExercises = pgTable(
+  'plan_exercises',
+  {
+    id: uuid('id').primaryKey(),
+    userId: owner(),
+    planId: uuid('plan_id').notNull(),
+    // Da biblioteca fixa ou de `custom_exercises`: por isso não tem chave estrangeira.
+    exerciseRef: text('exercise_ref').notNull(),
+    position: integer('position').notNull().default(0),
+    sets: smallint('sets').notNull().default(3),
+    reps: smallint('reps').notNull().default(10),
+    loadKg: real('load_kg'),
+    restSeconds: smallint('rest_seconds').notNull().default(90),
+    notes: text('notes'),
+    ...lifecycle(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.userId, table.planId],
+      foreignColumns: [workoutPlans.userId, workoutPlans.id],
+      name: 'plan_exercises_plan_owner_fk',
+    }),
+    index('plan_exercises_plan_idx').on(table.planId),
+  ],
+)
+
+export const workoutSessions = pgTable(
+  'workout_sessions',
+  {
+    id: uuid('id').primaryKey(),
+    userId: owner(),
+    planId: uuid('plan_id').notNull(),
+    date: date('date').notNull(),
+    startedAt: moment('started_at').notNull(),
+    finishedAt: moment('finished_at'),
+    notes: text('notes'),
+    ...lifecycle(),
+  },
+  (table) => [
+    unique('workout_sessions_owner_key').on(table.userId, table.id),
+    foreignKey({
+      columns: [table.userId, table.planId],
+      foreignColumns: [workoutPlans.userId, workoutPlans.id],
+      name: 'workout_sessions_plan_owner_fk',
+    }),
+    index('workout_sessions_user_date_idx').on(table.userId, table.date),
+  ],
+)
+
+// Série feita. A que falta sai da ficha, então desmarcar é só excluir a linha.
+export const sessionSets = pgTable(
+  'session_sets',
+  {
+    id: uuid('id').primaryKey(),
+    userId: owner(),
+    sessionId: uuid('session_id').notNull(),
+    exerciseRef: text('exercise_ref').notNull(),
+    position: integer('position').notNull().default(0),
+    reps: smallint('reps').notNull(),
+    loadKg: real('load_kg'),
+    doneAt: moment('done_at').notNull(),
+    ...lifecycle(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.userId, table.sessionId],
+      foreignColumns: [workoutSessions.userId, workoutSessions.id],
+      name: 'session_sets_session_owner_fk',
+    }),
+    index('session_sets_session_idx').on(table.sessionId),
+  ],
+)
+
+export const customExercises = pgTable(
+  'custom_exercises',
+  {
+    id: uuid('id').primaryKey(),
+    userId: owner(),
+    name: text('name').notNull(),
+    muscle: text('muscle').notNull(),
+    instructions: text('instructions').notNull().default(''),
+    ...lifecycle(),
+  },
+  (table) => [index('custom_exercises_user_idx').on(table.userId)],
 )

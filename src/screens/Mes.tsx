@@ -12,7 +12,7 @@ import { Board } from '../ui/Board'
 import { DaySheet } from '../ui/DaySheet'
 import { Screen } from '../ui/Screen'
 
-const WEEK_LETTERS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
+export const WEEK_LETTERS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
 
 const VIEWS = [
   { path: '/mes', label: 'Mês' },
@@ -89,7 +89,7 @@ export function Mes() {
 
 type Stepper = { label: string; previous: string; next: string; onPrevious: () => void; onNext: () => void }
 
-function Step({ label, previous, next, onPrevious, onNext }: Stepper) {
+export function Step({ label, previous, next, onPrevious, onNext }: Stepper) {
   return (
     <div className="mt-4 flex items-center justify-between">
       <button type="button" className="icon-button -ml-2.5" aria-label={previous} onClick={onPrevious}>

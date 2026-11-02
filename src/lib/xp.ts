@@ -5,6 +5,7 @@ export const XP = {
   perfectDay: 30,
   milestone: 50,
   goal: 200,
+  record: 20,
 } as const
 
 const TAILWIND_ODDS = 8
@@ -31,9 +32,18 @@ export type XpInput = {
   perfectDays: number
   milestonesDone: number
   goalsDone: number
+  /** Recordes de carga: é o que o treino dá de próprio, além do hábito ligado. */
+  records?: number
 }
 
-export function totalXp({ checks, tasksDone, perfectDays, milestonesDone, goalsDone }: XpInput): number {
+export function totalXp({
+  checks,
+  tasksDone,
+  perfectDays,
+  milestonesDone,
+  goalsDone,
+  records = 0,
+}: XpInput): number {
   const fromChecks = checks.reduce(
     (sum, { habitId, date }) => sum + XP.habit + (hasTailwind(habitId, date) ? XP.tailwind : 0),
     0,
@@ -44,7 +54,8 @@ export function totalXp({ checks, tasksDone, perfectDays, milestonesDone, goalsD
     tasksDone * XP.task +
     perfectDays * XP.perfectDay +
     milestonesDone * XP.milestone +
-    goalsDone * XP.goal
+    goalsDone * XP.goal +
+    records * XP.record
   )
 }
 

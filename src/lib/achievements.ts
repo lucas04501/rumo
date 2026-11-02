@@ -3,8 +3,18 @@ import { addDays, diffDays } from './dates'
 import { periodStats } from './evolution'
 import { checksOf, indexSnapshot, planOf } from './progress'
 import { bestStreak } from './streaks'
+import { finishedSessions, recordsOf } from './workouts'
 
-export type Measure = 'habits' | 'tasks' | 'streak' | 'perfectDays' | 'focus' | 'milestones' | 'goals'
+export type Measure =
+  | 'habits'
+  | 'tasks'
+  | 'streak'
+  | 'perfectDays'
+  | 'focus'
+  | 'milestones'
+  | 'goals'
+  | 'workouts'
+  | 'records'
 
 type Achievement = { id: string; title: string; detail: string; measure: Measure; target: number }
 
@@ -16,6 +26,8 @@ export const ACHIEVEMENT_GROUPS: { measure: Measure; label: string }[] = [
   { measure: 'focus', label: 'Foco' },
   { measure: 'milestones', label: 'Marcos' },
   { measure: 'goals', label: 'Metas' },
+  { measure: 'workouts', label: 'Treinos' },
+  { measure: 'records', label: 'Recordes' },
 ]
 
 // O ID vai para o banco: mudar o título é livre, mudar o ID faria a animação tocar de novo.
@@ -39,6 +51,12 @@ export const ACHIEVEMENTS: Achievement[] = [
   { id: 'marco-10', title: 'Rota traçada', detail: 'Alcance 10 marcos', measure: 'milestones', target: 10 },
   { id: 'meta-1', title: 'Terra firme', detail: 'Conclua uma meta', measure: 'goals', target: 1 },
   { id: 'meta-3', title: 'Cartógrafo', detail: 'Conclua 3 metas', measure: 'goals', target: 3 },
+  { id: 'treino-1', title: 'Primeira remada', detail: 'Conclua um treino', measure: 'workouts', target: 1 },
+  { id: 'treino-10', title: 'Remador', detail: 'Conclua 10 treinos', measure: 'workouts', target: 10 },
+  { id: 'treino-50', title: 'Mestre de convés', detail: 'Conclua 50 treinos', measure: 'workouts', target: 50 },
+  { id: 'treino-100', title: 'Casco de aço', detail: 'Conclua 100 treinos', measure: 'workouts', target: 100 },
+  { id: 'recorde-1', title: 'Âncora erguida', detail: 'Bata um recorde de carga', measure: 'records', target: 1 },
+  { id: 'recorde-10', title: 'Mais fundo', detail: 'Bata 10 recordes de carga', measure: 'records', target: 10 },
 ]
 
 /** Do primeiro registro até hoje. Aqui hoje conta: a conquista é do momento em que acontece. */
@@ -69,6 +87,8 @@ export function totals(snapshot: Snapshot, today: string): Record<Measure, numbe
     focus: stats.focusMinutes,
     milestones: snapshot.milestones.filter((milestone) => milestone.doneAt).length,
     goals: snapshot.goals.filter((goal) => goal.status === 'done').length,
+    workouts: finishedSessions(snapshot).length,
+    records: recordsOf(snapshot).length,
   }
 }
 

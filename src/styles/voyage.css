@@ -231,7 +231,7 @@
 }
 
 /* Sem o destaque de toque do navegador, cada controle precisa responder sozinho */
-button:not(.action, .ghost, .pick, .item-row, .cal-day, .day-cell, .sound-toggle, .wash, .bar, .depth-cell, .fab):active,
+button:not(.action, .ghost, .pick, .item-row, .cal-day, .day-cell, .sound-toggle, .wash, .bar, .depth-cell, .fab, .stepper-button):active,
 a:not(.action, .ghost):active {
   opacity: 0.6;
 }
@@ -482,6 +482,114 @@ button.day-cell:active {
 .cal-key {
   width: 7px;
   height: 7px;
+}
+
+.cal-key[data-kind='done'] {
+  background: var(--color-tide);
+}
+
+.cal-key[data-kind='planned'] {
+  box-shadow: inset 0 0 0 1px var(--color-tide);
+}
+
+.cal-day[data-planned='true'] {
+  border: 1.5px dashed var(--color-tide);
+}
+
+/* Modo treino: alvos grandes para a mão ocupada */
+.panel-line {
+  display: flex;
+  min-height: 56px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.muscle-chip {
+  min-height: 36px;
+  padding-inline: 12px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 999px;
+  color: var(--color-mist);
+  font-size: 15px;
+}
+
+.muscle-chip[aria-pressed='true'] {
+  border-color: var(--color-tide);
+  background: var(--color-tide);
+  color: var(--color-tide-ink);
+}
+
+.exercise-block {
+  padding-inline: 14px;
+  border-radius: 12px;
+  background: var(--color-sea-1);
+}
+
+.rest-bar {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  z-index: 5;
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 8px 12px 8px 14px;
+  border: 1px solid var(--color-line-strong);
+  border-radius: 12px;
+  background: var(--color-sea-2);
+}
+
+.rest-clock {
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+.rest-bar .ghost {
+  padding-inline: 10px;
+}
+
+.stepper {
+  display: grid;
+  gap: 6px;
+}
+
+.stepper-row {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) 56px;
+  align-items: center;
+  gap: 8px;
+}
+
+.stepper-button {
+  display: grid;
+  height: 56px;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--color-sea-3);
+  transition: transform 120ms var(--ease-out);
+}
+
+.stepper-button:active {
+  transform: scale(0.95);
+}
+
+.stepper-value {
+  width: 100%;
+  height: 56px;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--color-foam);
+  font-size: 30px;
+  font-weight: 600;
+  text-align: center;
+  outline: none;
+}
+
+.stepper-value:focus {
+  box-shadow: inset 0 0 0 1.5px var(--color-tide);
 }
 
 /* Rotina: o dia selecionado é teal, e o ponto mostra quais dias já têm passos */
@@ -1124,6 +1232,10 @@ button.day-cell:active {
 
 .bars[data-color='focus'] {
   --bar-color: var(--color-chart-focus);
+}
+
+.bars[data-color='workout'] {
+  --bar-color: var(--color-chart-workout);
 }
 
 /* Cor cheia em todas as colunas: a selecionada ganha só uma tampa clara */

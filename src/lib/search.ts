@@ -1,4 +1,4 @@
-import type { Goal, Habit, Note, Snapshot, Task, TaskRule } from '../data/types'
+import type { Goal, Habit, Note, Snapshot, Task, TaskRule, WorkoutPlan } from '../data/types'
 import { formatShortDate } from './dates'
 import { describeWeekdays } from './habits'
 import { normalize, noteTitle, notePreview } from './notes'
@@ -10,6 +10,7 @@ export type Hit =
   | { kind: 'habit'; id: string; title: string; detail: string; habit: Habit }
   | { kind: 'goal'; id: string; title: string; detail: string; goal: Goal }
   | { kind: 'note'; id: string; title: string; detail: string; note: Note }
+  | { kind: 'plan'; id: string; title: string; detail: string; plan: WorkoutPlan }
 
 const PER_KIND = 5
 
@@ -63,6 +64,12 @@ export function searchAll(snapshot: Snapshot, query: string, today: string): Hit
           detail: `Repete: ${describeRule(rule).toLowerCase()}`,
           rule,
         }),
+      ),
+    ...snapshot.workoutPlans
+      .filter((plan) => !plan.archivedAt && matches(plan.title))
+      .slice(0, PER_KIND)
+      .map(
+        (plan): Hit => ({ kind: 'plan', id: plan.id, title: plan.title, detail: 'Ficha de treino', plan }),
       ),
     ...snapshot.notes
       .filter((note) => matches(`${note.title}\n${note.body}`))

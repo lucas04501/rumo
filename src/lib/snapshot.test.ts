@@ -41,6 +41,15 @@ describe('complete', () => {
     expect(complete(previous).routineSteps).toEqual([])
   })
 
+  it('completa uma foto da versão com conquistas, mas sem treinos', () => {
+    const previous = { ...base, tasks: [], achievementsSeen: ['habitos-1'] }
+    const snapshot = complete(previous)
+    expect(snapshot.achievementsSeen).toEqual(['habitos-1'])
+    expect(snapshot.workoutPlans).toEqual([])
+    expect(snapshot.sessionSets).toEqual([])
+    expect(xpOf(snapshot)).toBe(0)
+  })
+
   it('mantém os dados de uma foto parcial', () => {
     const note = { id: 'n', goalId: null, title: '', body: 'x', pinned: false, updatedAt: '' }
     expect(complete({ ...base, tasks: [], notes: [note] }).notes).toEqual([note])

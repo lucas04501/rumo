@@ -11,6 +11,7 @@ import {
 } from './progress'
 import { routineOn, type RoutineLine } from './routine'
 import { currentStreak, isStreakMark } from './streaks'
+import { finishedSessions, setsOf, summarize } from './workouts'
 
 const WEEKDAY_NAMES = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado']
 
@@ -30,6 +31,7 @@ export type DayReport = {
   total: number
   xp: number
   focus: { blocks: number; minutes: number; titles: string[] }
+  workouts: { id: string; title: string; sets: number; minutes: number }[]
   milestones: string[]
   goals: string[]
   notes: string[]
@@ -137,6 +139,13 @@ export function dayReport(
     total,
     xp: xpByDate(snapshot, index).get(date) ?? 0,
     focus: { blocks: sessions.length, minutes, titles },
+    workouts: finishedSessions(snapshot)
+      .filter((session) => session.date === date)
+      .map((session) => ({
+        id: session.id,
+        title: snapshot.workoutPlans.find((plan) => plan.id === session.planId)?.title ?? 'Treino',
+        ...summarize(session, setsOf(snapshot, session.id), ''),
+      })),
     milestones: snapshot.milestones
       .filter((milestone) => milestone.doneAt && dayOf(milestone.doneAt) === date)
       .map((milestone) => milestone.title),

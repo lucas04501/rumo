@@ -19,6 +19,7 @@ colors:
   sun: "#ffb23e"
   chart-task: "#5a8dff"
   chart-focus: "#ff5c8a"
+  chart-workout: "#b692ff"
 typography:
   display:
     fontFamily: "Bricolage Grotesque Variable, ui-sans-serif, system-ui, sans-serif"
@@ -125,6 +126,7 @@ Só dentro de gráficos, e a cor segue a coisa medida, em qualquer tela.
 
 - **Azul Tarefa** (`chart-task`): tarefas concluídas.
 - **Rosa Foco** (`chart-focus`): tempo de foco.
+- **Roxo Treino** (`chart-workout`): frequência e carga dos treinos. Passa nos pares vizinhos, e nunca divide o plano com o azul, com quem se confunde em daltonismo.
 - Hábitos e andamento do dia usam `tide`. XP usa `sun`.
 - A carta de consistência é uma rampa de uma cor só: `#115a53`, `#16806f`, `#20a892` e `tide`.
 
@@ -211,15 +213,15 @@ Cantos suaves em tudo o que é controle e cartão (12 px), um pouco mais em avis
 
 ### Navigation
 
-Cinco abas no rodapé do celular, sobre `abyss`, com a marca teal deslizando até a aba ativa: Hoje, Hábitos, Metas, Plano e Mais. Plano reúne Mês, Semana e Quadro, em `/mes`, `/semana` e `/quadro`, com um seletor no topo. Mais reúne Buscar, Rotina, Evolução, Conquistas, Notas, Foco e Ajustes, e fica ativa nessas telas. Item sem tela pronta não entra nela. No computador, vira coluna lateral com Criar e Buscar no topo e todas as áreas direto na lista, com o item ativo em `sea-2`.
+Cinco abas no rodapé do celular, sobre `abyss`, com a marca teal deslizando até a aba ativa: Hoje, Hábitos, Metas, Plano e Mais. Plano reúne Mês, Semana e Quadro, em `/mes`, `/semana` e `/quadro`, com um seletor no topo. Mais reúne Buscar, Treinos, Rotina, Evolução, Conquistas, Notas, Foco e Ajustes, e fica ativa nessas telas. Item sem tela pronta não entra nela. No computador, vira coluna lateral com Criar e Buscar no topo e todas as áreas direto na lista, com o item ativo em `sea-2`.
 
 ### Create
 
-Um ponto só para criar qualquer coisa de qualquer tela: botão redondo acima das abas no celular, Criar na coluna lateral e a tecla `N` no computador. A folha abre com o campo da adição rápida, que salva tarefa ou repetição. Hábito, Meta, Nota, Repetição e Passo da rotina abrem a folha de sempre, com o texto já escrito. O botão some no foco, para não disputar com o relógio.
+Um ponto só para criar qualquer coisa de qualquer tela: botão redondo acima das abas no celular, Criar na coluna lateral e a tecla `N` no computador. A folha abre com o campo da adição rápida, que salva tarefa ou repetição. Hábito, Meta, Nota, Repetição, Passo da rotina e Ficha de treino abrem a folha de sempre, com o texto já escrito. O botão some no foco e no modo treino, para não disputar com o que está acontecendo.
 
 ### Search
 
-`Ctrl K`, `Cmd K` ou `/` no computador, e Buscar em Mais no celular. Procura em tarefas, hábitos, metas, repetições e notas, sem diferenciar acento, e leva às telas. A última linha cria com o texto digitado. Abre e fecha sem animação, porque atalho de teclado se repete muitas vezes ao dia. Atalhos não valem dentro de campos nem com folha aberta.
+`Ctrl K`, `Cmd K` ou `/` no computador, e Buscar em Mais no celular. Procura em tarefas, hábitos, metas, repetições, fichas e notas, sem diferenciar acento, e leva às telas. A última linha cria com o texto digitado. Abre e fecha sem animação, porque atalho de teclado se repete muitas vezes ao dia. Atalhos não valem dentro de campos nem com folha aberta.
 
 ### Sheets
 
@@ -270,6 +272,14 @@ Aviso no rodapé por 3,2 s, com título em âmbar: vento a favor, marco, patente
 ### Medals
 
 Conquistas em lista aberta, por grupo: sequência, dias perfeitos, hábitos, tarefas, foco, marcos e metas. Medalha ganha fica em âmbar, com ícone e anel. Medalha que falta fica em `haze`, com contagem e barra teal. A animação toca uma vez, no aviso: uma mola curta na medalha, com o som de chegada. O que já estava alcançado ao atualizar o app ou chegou de outro aparelho entra em silêncio. Medalha ganha não se perde.
+
+### Workouts
+
+A tela Treinos abre com o que importa hoje: continuar, começar ou recuperação. Depois vêm fichas, histórico, calendário, frequência e maiores cargas. No calendário, cheio é treino feito, tracejado é planejado e vazio é recuperação. Dia passado sem treino fica vazio: o calendário não cobra o que já foi.
+
+O modo treino é para uma mão, com a tela acesa e sem navegação no celular. Um exercício fica aberto de cada vez, e a série da vez ocupa a tela: botões de 56 px para repetições e carga, com passo de 2,5 kg, e Série feita em teal. O valor já vem preenchido com a série anterior, o último treino ou a ficha. O próximo exercício abre sozinho. O descanso fica fixo no topo enquanto a tela rola, conta pelo horário do fim e toca o som de fim do foco.
+
+Recorde é recompensa, então usa âmbar: a palavra Recorde na série e um aviso ao finalizar.
 
 ### Tide, Route, WaveWash
 

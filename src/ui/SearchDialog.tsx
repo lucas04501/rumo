@@ -75,7 +75,12 @@ function Palette({ places, onOpen }: PaletteProps) {
         key: `${hit.kind}-${hit.id}`,
         title: hit.title,
         detail: hit.detail,
-        run: hit.kind === 'goal' ? go(`/metas/${hit.id}`) : () => onOpen(hit),
+        run:
+          hit.kind === 'goal'
+            ? go(`/metas/${hit.id}`)
+            : hit.kind === 'plan'
+              ? go(`/treinos/${hit.id}`)
+              : () => onOpen(hit),
       }),
     )
     const wanted = normalize(query)
