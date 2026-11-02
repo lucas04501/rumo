@@ -26,7 +26,7 @@ Em desenvolvimento ativo.
 | Hábitos com dados reais e uso offline | Concluída e publicada |
 | Metas, marcos e vínculos com hábitos e tarefas | Concluída e publicada |
 | Calendário do mês, semana e insights | Concluída e publicada |
-| Notas e diário | Planejadas |
+| Notas, registro diário e recompensas | Concluída e publicada |
 | Produtividade, evolução, conquistas, treinos | Planejadas |
 
 ## Stack

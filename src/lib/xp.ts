@@ -48,24 +48,38 @@ export function totalXp({ checks, tasksDone, perfectDays, milestonesDone, goalsD
   )
 }
 
+// As patentes antigas mantêm o limite, para ninguém descer ao ganhar novas opções.
 const RANKS = [
   { name: 'Grumete', from: 0 },
   { name: 'Marinheiro', from: 500 },
+  { name: 'Timoneiro', from: 1_200 },
   { name: 'Imediato', from: 2_000 },
+  { name: 'Navegador', from: 3_500 },
   { name: 'Capitão', from: 6_000 },
+  { name: 'Comodoro', from: 10_000 },
   { name: 'Almirante', from: 15_000 },
+  { name: 'Grande Almirante', from: 25_000 },
+  { name: 'Lenda dos Mares', from: 40_000 },
 ]
 
 export type Rank = {
   name: string
+  /** Posição na escada de patentes, a partir de 0. */
+  level: number
+  next: string | null
   /** Avanço até a próxima patente, de 0 a 1. */
   progress: number
 }
 
 export function rankFor(xp: number): Rank {
-  const index = RANKS.findLastIndex((rank) => xp >= rank.from)
-  const current = RANKS[index]
-  const next = RANKS[index + 1]
-  if (!next) return { name: current.name, progress: 1 }
-  return { name: current.name, progress: (xp - current.from) / (next.from - current.from) }
+  const level = RANKS.findLastIndex((rank) => xp >= rank.from)
+  const current = RANKS[level]
+  const next = RANKS[level + 1]
+  if (!next) return { name: current.name, level, next: null, progress: 1 }
+  return {
+    name: current.name,
+    level,
+    next: next.name,
+    progress: (xp - current.from) / (next.from - current.from),
+  }
 }

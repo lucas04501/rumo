@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { addDays } from './dates'
-import { currentStreak } from './streaks'
+import { currentStreak, isStreakMark } from './streaks'
 
 const EVERY_DAY = [0, 1, 2, 3, 4, 5, 6]
 const TODAY = '2026-11-02' // segunda-feira
@@ -63,5 +63,12 @@ describe('currentStreak', () => {
 
   it('hábito sem nenhum check tem sequência zero', () => {
     expect(currentStreak(habit(), new Set(), TODAY)).toEqual({ days: 0, anchorUsed: false })
+  })
+})
+
+describe('isStreakMark', () => {
+  it('destaca as sequências redondas e ignora as outras', () => {
+    expect([7, 30, 100].every(isStreakMark)).toBe(true)
+    expect([0, 1, 8, 29].some(isStreakMark)).toBe(false)
   })
 })

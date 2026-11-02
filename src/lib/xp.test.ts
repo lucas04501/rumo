@@ -52,19 +52,31 @@ describe('totalXp', () => {
 
 describe('rankFor', () => {
   it('começa como Grumete', () => {
-    expect(rankFor(0)).toEqual({ name: 'Grumete', progress: 0 })
+    expect(rankFor(0)).toEqual({ name: 'Grumete', level: 0, next: 'Marinheiro', progress: 0 })
   })
 
   it('sobe de patente no limite exato', () => {
     expect(rankFor(499).name).toBe('Grumete')
-    expect(rankFor(500)).toEqual({ name: 'Marinheiro', progress: 0 })
+    expect(rankFor(500)).toEqual({ name: 'Marinheiro', level: 1, next: 'Timoneiro', progress: 0 })
   })
 
   it('mede o avanço até a próxima patente', () => {
     expect(rankFor(250).progress).toBe(0.5)
   })
 
-  it('Almirante é o topo e fica com a barra cheia', () => {
-    expect(rankFor(99_000)).toEqual({ name: 'Almirante', progress: 1 })
+  it('quem já tinha uma patente antiga continua nela', () => {
+    expect(rankFor(2_000).name).toBe('Imediato')
+    expect(rankFor(6_000).name).toBe('Capitão')
+    expect(rankFor(15_000).name).toBe('Almirante')
+  })
+
+  it('o nível só sobe conforme o XP cresce', () => {
+    const levels = Array.from({ length: 500 }, (_, i) => rankFor(i * 100).level)
+    expect(levels).toEqual([...levels].sort((a, b) => a - b))
+    expect(Math.max(...levels)).toBe(9)
+  })
+
+  it('Lenda dos Mares é o topo e fica com a barra cheia', () => {
+    expect(rankFor(99_000)).toEqual({ name: 'Lenda dos Mares', level: 9, next: null, progress: 1 })
   })
 })

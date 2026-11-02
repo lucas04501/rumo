@@ -1,7 +1,17 @@
-import { and, asc, eq, isNull } from 'drizzle-orm'
+import { and, asc, desc, eq, isNull } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { db } from '../db/client.js'
-import { days, goals, habitChecks, habitPauses, habits, milestones, tasks, user } from '../db/schema.js'
+import {
+  days,
+  goals,
+  habitChecks,
+  habitPauses,
+  habits,
+  milestones,
+  notes,
+  tasks,
+  user,
+} from '../db/schema.js'
 import type { AuthedEnv } from '../session.js'
 
 /**
@@ -12,7 +22,7 @@ import type { AuthedEnv } from '../session.js'
 export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
   const userId = c.get('userId')
 
-  const [owner, goalRows, milestoneRows, habitRows, pauseRows, checkRows, taskRows, dayRows] =
+  const [owner, goalRows, milestoneRows, habitRows, pauseRows, checkRows, taskRows, noteRows, dayRows] =
     await Promise.all([
       db.select({ name: user.name }).from(user).where(eq(user.id, userId)),
       db
@@ -43,6 +53,11 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
         .from(tasks)
         .where(and(eq(tasks.userId, userId), isNull(tasks.deletedAt)))
         .orderBy(asc(tasks.position)),
+      db
+        .select()
+        .from(notes)
+        .where(and(eq(notes.userId, userId), isNull(notes.deletedAt)))
+        .orderBy(desc(notes.updatedAt)),
       db.select().from(days).where(eq(days.userId, userId)),
     ])
 
@@ -54,6 +69,7 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
     pauses: pauseRows,
     checks: checkRows,
     tasks: taskRows,
+    notes: noteRows,
     days: dayRows,
   })
 })

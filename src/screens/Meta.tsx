@@ -4,13 +4,16 @@ import { Link, useParams } from 'react-router'
 import { useDay } from '../data/DayProvider'
 import { addGoalTask, setMainGoal, undoLastMilestone } from '../data/goalActions'
 import { useSnapshot } from '../data/store'
-import type { Habit, Snapshot, Task } from '../data/types'
+import type { Habit, Note, Snapshot, Task } from '../data/types'
 import { formatShortDate } from '../lib/dates'
 import { consistency, deadlineLabel, goalProgress, paceSentence } from '../lib/goals'
+import { visibleNotes } from '../lib/notes'
 import { checksOf, planOf, withMilestones, type GoalInFocus } from '../lib/progress'
 import { GoalSheet } from '../ui/GoalSheet'
 import { iconFor } from '../ui/habitIcons'
 import { LinkSheet } from '../ui/LinkSheet'
+import { NoteRow } from '../ui/NoteRow'
+import { NoteSheet } from '../ui/NoteSheet'
 import { Screen } from '../ui/Screen'
 import { TaskRow } from '../ui/TaskRow'
 import { Route } from '../voyage/Route'
@@ -95,6 +98,7 @@ export function Meta() {
             onLink={() => setLinking(true)}
           />
           <GoalTasks goal={goal} snapshot={snapshot} today={date} />
+          <GoalNotes goal={goal} snapshot={snapshot} />
         </div>
       </div>
 
@@ -276,6 +280,50 @@ function GoalTasks({ goal, snapshot, today }: { goal: GoalInFocus; snapshot: Sna
           </form>
         </li>
       </ul>
+    </section>
+  )
+}
+
+function GoalNotes({ goal, snapshot }: { goal: GoalInFocus; snapshot: Snapshot }) {
+  const [opened, setOpened] = useState<{ note: Note | null } | null>(null)
+  const notes = visibleNotes(
+    snapshot.notes.filter((note) => note.goalId === goal.id),
+    '',
+  )
+
+  return (
+    <section aria-labelledby="notas-da-meta" className="mt-8">
+      <div className="flex items-center justify-between gap-4">
+        <h2 id="notas-da-meta" className="font-display text-xl font-semibold">
+          Notas da meta
+        </h2>
+        <button type="button" className="ghost" onClick={() => setOpened({ note: null })}>
+          Nova nota
+        </button>
+      </div>
+
+      {notes.length === 0 ? (
+        <p className="mt-2 text-[15px] text-mist">
+          Guarde aqui o que você aprende e decide no caminho até este destino.
+        </p>
+      ) : (
+        <ul className="mt-1 divide-y divide-white/8">
+          {notes.map((note) => (
+            <li key={note.id}>
+              <NoteRow note={note} onOpen={() => setOpened({ note })} />
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {opened && (
+        <NoteSheet
+          note={opened.note}
+          goalId={goal.id}
+          goals={snapshot.goals}
+          onClosed={() => setOpened(null)}
+        />
+      )}
     </section>
   )
 }

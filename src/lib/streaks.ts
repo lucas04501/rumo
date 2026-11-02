@@ -38,3 +38,8 @@ export function currentStreak(habit: HabitPlan, checks: Set<string>, today: stri
 
   return { days, anchorUsed }
 }
+
+const STREAK_MARKS = new Set([7, 14, 21, 30, 60, 100, 200, 365])
+
+/** Sequências que merecem um destaque na lista. */
+export const isStreakMark = (days: number) => STREAK_MARKS.has(days)

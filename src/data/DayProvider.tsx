@@ -24,11 +24,21 @@ import { setDayCompleted } from './dayActions'
 import { completeNextMilestone } from './goalActions'
 import { commit, useSnapshot } from './store'
 import type { Snapshot, Task } from './types'
+import { useRankUp } from './useRankUp'
 import { useToday } from './useToday'
 
 export type { HabitToday } from '../lib/progress'
 
 export type Celebration = { title: string; detail: string }
+
+export type Reward = {
+  id: string
+  title: string
+  detail: string
+  isRank?: boolean
+  /** Toca quando o aviso aparece, e não quando entra na fila. */
+  sound?: () => void
+}
 
 type Day = {
   date: string
@@ -43,14 +53,14 @@ type Day = {
   remaining: number
   xp: number
   rank: Rank
-  wind: string | null
+  reward: Reward | null
   celebration: Celebration | null
   toggleHabit: (id: string) => number
   toggleTask: (id: string) => number
   addTask: (title: string) => void
   completeMilestone: (goal: GoalInFocus) => void
   arriveAtStation: (goal: GoalInFocus, station: number) => void
-  dismissWind: () => void
+  dismissReward: () => void
   dismissCelebration: () => void
 }
 
@@ -67,7 +77,7 @@ export function DayProvider({ children }: { children: ReactNode }) {
 
 function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: ReactNode }) {
   const date = useToday()
-  const [wind, setWind] = useState<string | null>(null)
+  const [rewards, setRewards] = useState<Reward[]>([])
   const [celebration, setCelebration] = useState<Celebration | null>(null)
   const celebratedOn = useRef<string | null>(null)
   // Ao concluir o último marco, a meta continua na tela até o barco chegar.
@@ -78,7 +88,21 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
   const arriving = snapshot.goals.find((item) => item.id === arrivingGoalId)
   const goal = arriving ? withMilestones(arriving, snapshot) : goalInFocus(snapshot, date)
   const xp = xpOf(snapshot)
+  const rank = rankFor(xp)
   const completedAt = snapshot.days.find((day) => day.date === date)?.completedAt ?? null
+
+  const addReward = useCallback((reward: Omit<Reward, 'id'>) => {
+    setRewards((current) => [...current, { ...reward, id: newId() }])
+  }, [])
+
+  useRankUp(snapshot, rank, ({ name, next }) =>
+    addReward({
+      title: `Nova patente: ${name}`,
+      detail: next ? `Próxima parada: ${next}.` : 'Não há mar acima deste.',
+      isRank: true,
+      sound: soundArrival,
+    }),
+  )
 
   useEffect(() => {
     const reopened = wasPerfect.current && !perfect
@@ -122,10 +146,10 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
       soundCheck(done)
       if (!hasTailwind(id, date)) return XP.habit
       soundWind()
-      setWind(pick(FRASES_VENTO))
+      addReward({ title: `Vento a favor! Mais ${XP.tailwind} XP`, detail: pick(FRASES_VENTO) })
       return XP.habit + XP.tailwind
     },
-    [snapshot, date, done],
+    [snapshot, date, done, addReward],
   )
 
   const toggleTask = useCallback(
@@ -176,15 +200,25 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
     completeNextMilestone(target)
   }, [])
 
-  const arriveAtStation = useCallback((target: GoalInFocus, station: number) => {
-    if (station < target.milestones.length) {
-      soundArrival()
-      return
-    }
-    setArrivingGoalId(null)
-    soundCelebration()
-    setCelebration({ title: 'Meta concluída', detail: `${target.title}. Mais ${XP.goal} XP.` })
-  }, [])
+  const arriveAtStation = useCallback(
+    (target: GoalInFocus, station: number) => {
+      if (station < target.milestones.length) {
+        soundArrival()
+        addReward({
+          title: `Marco alcançado. Mais ${XP.milestone} XP`,
+          detail: target.milestones[station - 1].title,
+        })
+        return
+      }
+      setArrivingGoalId(null)
+      soundCelebration()
+      setCelebration({ title: 'Meta concluída', detail: `${target.title}. Mais ${XP.goal} XP.` })
+    },
+    [addReward],
+  )
+
+  // Recompensa pequena espera a onda e a chegada do barco, que cobririam o aviso.
+  const reward = celebration || arrivingGoalId ? null : (rewards[0] ?? null)
 
   const value: Day = {
     date,
@@ -197,15 +231,15 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
     level,
     remaining,
     xp,
-    rank: rankFor(xp),
-    wind,
+    rank,
+    reward,
     celebration,
     toggleHabit,
     toggleTask,
     addTask,
     completeMilestone,
     arriveAtStation,
-    dismissWind: useCallback(() => setWind(null), []),
+    dismissReward: useCallback(() => setRewards((current) => current.slice(1)), []),
     dismissCelebration: useCallback(() => setCelebration(null), []),
   }
 

@@ -1,11 +1,12 @@
 import { Anchor, Plus } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { authClient } from '../data/authClient'
 import { useDay, type HabitToday } from '../data/DayProvider'
 import { clearDevice } from '../data/store'
 import { formatLongDate } from '../lib/dates'
 import { deadlineLabel } from '../lib/goals'
+import { isStreakMark } from '../lib/streaks'
 import { XP } from '../lib/xp'
 import { iconFor } from '../ui/habitIcons'
 import { ItemRow } from '../ui/ItemRow'
@@ -49,15 +50,26 @@ export function Hoje() {
 }
 
 function TopBar() {
-  const { xp, rank } = useDay()
+  const { xp, rank, reward } = useDay()
+  const lastXp = useRef(xp)
+  const [gains, setGains] = useState(0)
+
+  useEffect(() => {
+    if (xp > lastXp.current) setGains((count) => count + 1)
+    lastXp.current = xp
+  }, [xp])
 
   return (
     <header className="flex items-start justify-between">
       <p className="font-display text-[22px] font-semibold lg:invisible">Rumo</p>
       <div className="flex items-start">
         <div className="text-right">
-          <p className="text-sm leading-tight">
-            <span className="text-mist">{rank.name} · </span>
+          <p className="text-sm leading-tight whitespace-nowrap">
+            <span
+              className={`transition-colors duration-500 ${reward?.isRank ? 'text-sun' : 'text-mist'}`}
+            >
+              {rank.name} ·{' '}
+            </span>
             <span className="font-semibold">
               <Ticker value={xp} /> XP
             </span>
@@ -66,12 +78,13 @@ function TopBar() {
             role="progressbar"
             aria-label="Avanço até a próxima patente"
             aria-valuenow={Math.round(rank.progress * 100)}
-            className="mt-1.5 ml-auto h-[3px] w-28 overflow-hidden rounded-full bg-white/12"
+            className="relative mt-1.5 ml-auto h-[3px] w-28 overflow-hidden rounded-full bg-white/12"
           >
             <div
               className="h-full origin-left rounded-full bg-sun transition-transform duration-500 ease-out"
               style={{ transform: `scaleX(${rank.progress})` }}
             />
+            {gains > 0 && <span key={gains} className="rank-glint" />}
           </div>
         </div>
         <SoundToggle />
@@ -205,20 +218,30 @@ function Habits() {
 
 function HabitRow({ habit }: { habit: HabitToday }) {
   const { toggleHabit } = useDay()
+  const [gains, setGains] = useState(0)
   const Icon = iconFor(habit.icon)
+  const atMark = habit.done && isStreakMark(habit.streak)
 
   return (
     <ItemRow
       title={habit.title}
       done={habit.done}
-      onToggle={() => toggleHabit(habit.id)}
+      onToggle={() => {
+        const xp = toggleHabit(habit.id)
+        if (xp > 0) setGains((count) => count + 1)
+        return xp
+      }}
       leading={<Icon size={19} strokeWidth={1.75} className="shrink-0 text-mist" aria-hidden />}
       trailing={
-        <span className="flex shrink-0 items-center gap-1 text-[15px] text-mist">
+        <span
+          className={`flex shrink-0 items-center gap-1 text-[15px] ${atMark ? 'text-sun' : 'text-mist'}`}
+        >
           {habit.anchorUsed && (
             <Anchor size={14} strokeWidth={1.75} aria-label="Âncora em uso: uma falta perdoada" />
           )}
-          {habit.streak} {habit.streak === 1 ? 'dia' : 'dias'}
+          <span key={gains} className={gains > 0 ? 'streak-pop' : undefined}>
+            {habit.streak} {habit.streak === 1 ? 'dia' : 'dias'}
+          </span>
         </span>
       }
     />

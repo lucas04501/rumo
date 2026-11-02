@@ -2,6 +2,7 @@ import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persi
 import { MutationCache, MutationObserver, QueryClient, useQuery } from '@tanstack/react-query'
 import { del, get, set } from 'idb-keyval'
 import { ApiError, request } from './api'
+import { forgetRankSeen } from './rankSeen'
 import type { Snapshot } from './types'
 
 const SNAPSHOT_KEY = ['snapshot']
@@ -81,14 +82,25 @@ export function resumeWrites() {
   for (const mutation of pending) void mutation.continue().catch(() => {})
 }
 
+// A foto salva no aparelho pode ser de uma versão anterior às notas. Sem internet,
+// é ela que abre o app até a próxima busca.
+const complete = (snapshot: Snapshot): Snapshot =>
+  snapshot.notes ? snapshot : { ...snapshot, notes: [] }
+
 export function useSnapshot() {
-  return useQuery({ queryKey: SNAPSHOT_KEY, queryFn: fetchSnapshot })
+  return useQuery({ queryKey: SNAPSHOT_KEY, queryFn: fetchSnapshot, select: complete })
 }
+
+let localEdits = 0
+
+/** Quantas mudanças saíram deste aparelho, para separá-las das que chegam na foto. */
+export const localEditCount = () => localEdits
 
 /** Muda a tela na hora e coloca as escritas na fila, que envia em ordem. */
 export function commit(update: (snapshot: Snapshot) => Snapshot, writes: Write[]) {
+  localEdits += 1
   void store.cancelQueries({ queryKey: SNAPSHOT_KEY })
-  store.setQueryData<Snapshot>(SNAPSHOT_KEY, (current) => current && update(current))
+  store.setQueryData<Snapshot>(SNAPSHOT_KEY, (current) => current && update(complete(current)))
 
   for (const write of writes) {
     const observer = new MutationObserver<void, Error, Write>(store, { mutationKey: WRITE_KEY })
@@ -99,5 +111,6 @@ export function commit(update: (snapshot: Snapshot) => Snapshot, writes: Write[]
 /** Ao sair da conta, nada deste usuário pode ficar no aparelho. */
 export async function clearDevice() {
   store.clear()
+  forgetRankSeen()
   await del(STORAGE_KEY).catch(() => {})
 }

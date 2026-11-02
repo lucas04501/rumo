@@ -5,7 +5,7 @@ import { useDay } from '../data/DayProvider'
 import { SunGlow } from '../voyage/SunGlow'
 import { Tide } from '../voyage/Tide'
 import { WaveWash } from '../voyage/WaveWash'
-import { WindToast } from './WindToast'
+import { RewardToast } from './RewardToast'
 
 type Tab = { to: string; label: string; icon: LucideIcon }
 
@@ -19,7 +19,7 @@ const TABS: Tab[] = [
 
 export function Shell() {
   const { pathname } = useLocation()
-  const { level, wind, dismissWind, celebration, dismissCelebration } = useDay()
+  const { level, reward, dismissReward, celebration, dismissCelebration } = useDay()
 
   return (
     <div className="relative grid h-dvh grid-rows-[minmax(0,1fr)_auto] lg:grid-cols-[224px_minmax(0,1fr)] lg:grid-rows-1">
@@ -31,7 +31,7 @@ export function Shell() {
         </div>
       </main>
       <Navigation />
-      <WindToast message={wind} onDone={dismissWind} />
+      <RewardToast reward={reward} onDone={dismissReward} />
       <WaveWash celebration={celebration} onDone={dismissCelebration} />
     </div>
   )

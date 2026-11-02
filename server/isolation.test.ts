@@ -135,14 +135,32 @@ describe('isolamento entre usuários', () => {
     expect(ofAna.user.name).toBe('Ana')
     expect(ofBia.user.name).toBe('Bia')
     for (const key of ['goals', 'milestones', 'habits', 'pauses', 'checks', 'tasks', 'notes', 'days']) {
-      if (key !== 'notes') expect(ofAna[key], key).toHaveLength(1)
-      expect(JSON.stringify(ofBia[key] ?? [])).not.toContain('Ana')
+      expect(ofAna[key], key).toHaveLength(1)
+      expect(JSON.stringify(ofBia[key])).not.toContain('Ana')
     }
     expect(ofBia.goals).toHaveLength(0)
     expect(ofBia.habits).toHaveLength(0)
     expect(ofBia.pauses).toHaveLength(0)
     expect(ofBia.checks).toHaveLength(0)
     expect(ofBia.tasks).toHaveLength(0)
+    expect(ofBia.notes).toHaveLength(0)
+  })
+
+  it('a foto traz a nota com o vínculo à meta e deixa de trazer depois de excluída', async () => {
+    type Note = { id: string; goalId: string | null; title: string; updatedAt: string }
+    const notesOf = async (person: Person) =>
+      ((await (await call(person, 'GET', '/snapshot')).json()) as { notes: Note[] }).notes
+
+    const id = randomUUID()
+    expect((await call(ana, 'PUT', `/notes/${id}`, { title: 'Ligada', goalId })).status).toBe(200)
+
+    const linked = (await notesOf(ana)).find((note) => note.id === id)
+    expect(linked?.goalId).toBe(goalId)
+    expect(linked?.updatedAt).toBeTruthy()
+    expect(await notesOf(bia)).toHaveLength(0)
+
+    expect((await call(ana, 'DELETE', `/notes/${id}`)).status).toBe(204)
+    expect((await notesOf(ana)).some((note) => note.id === id)).toBe(false)
   })
 
   it('não pausa nem altera pausa em hábito de outro usuário', async () => {

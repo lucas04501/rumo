@@ -28,7 +28,8 @@ function snapshot(overrides: Partial<Snapshot> = {}): Snapshot {
     pauses: [],
     checks: [],
     tasks: [],
-    days: [],
+    notes: [],
+  days: [],
     ...overrides,
   }
 }

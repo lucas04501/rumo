@@ -47,6 +47,15 @@ export type Task = {
   position: number
 }
 
+export type Note = {
+  id: string
+  goalId: string | null
+  title: string
+  body: string
+  pinned: boolean
+  updatedAt: string
+}
+
 export type Day = {
   date: string
   completedAt: string | null
@@ -61,5 +70,6 @@ export type Snapshot = {
   pauses: Pause[]
   checks: Check[]
   tasks: Task[]
+  notes: Note[]
   days: Day[]
 }
