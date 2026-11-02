@@ -1,7 +1,6 @@
-import { Plus, X } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
-import { addTaskOn, deleteTask, saveDayNote, setDayCompleted } from '../data/dayActions'
-import { useDay } from '../data/DayProvider'
+import { addTaskOn, saveDayNote, setDayCompleted } from '../data/dayActions'
 import { setCheck } from '../data/habitActions'
 import type { Snapshot } from '../data/types'
 import { formatLongDate } from '../lib/dates'
@@ -10,6 +9,7 @@ import { checksOf, dayProgress, indexSnapshot, planOf } from '../lib/progress'
 import { iconFor } from './habitIcons'
 import { ItemRow } from './ItemRow'
 import { Sheet } from './Sheet'
+import { TaskRow } from './TaskRow'
 
 type DaySheetProps = {
   date: string
@@ -19,7 +19,6 @@ type DaySheetProps = {
 }
 
 export function DaySheet({ date, today, snapshot, onClosed }: DaySheetProps) {
-  const { toggleTask } = useDay()
   const day = snapshot.days.find((item) => item.date === date)
   const [note, setNote] = useState(day?.note ?? '')
   const [title, setTitle] = useState('')
@@ -83,22 +82,8 @@ export function DaySheet({ date, today, snapshot, onClosed }: DaySheetProps) {
             </h3>
             <ul className="mt-1 divide-y divide-white/8">
               {tasks.map((task) => (
-                <li key={task.id} className="flex items-center gap-1">
-                  <div className="min-w-0 flex-1">
-                    <ItemRow
-                      title={task.title}
-                      done={Boolean(task.doneAt)}
-                      onToggle={() => toggleTask(task.id)}
-                    />
-                  </div>
-                  <button
-                    type="button"
-                    className="icon-button -mr-2.5"
-                    aria-label={`Excluir ${task.title}`}
-                    onClick={() => deleteTask(task.id)}
-                  >
-                    <X size={18} strokeWidth={1.75} aria-hidden />
-                  </button>
+                <li key={task.id}>
+                  <TaskRow task={task} />
                 </li>
               ))}
               <li>

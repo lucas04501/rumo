@@ -12,6 +12,7 @@ import { ItemRow } from '../ui/ItemRow'
 import { Quote } from '../ui/Quote'
 import { Screen } from '../ui/Screen'
 import { SoundToggle } from '../ui/SoundToggle'
+import { TaskRow } from '../ui/TaskRow'
 import { Ticker } from '../ui/Ticker'
 import { Route } from '../voyage/Route'
 
@@ -225,7 +226,7 @@ function HabitRow({ habit }: { habit: HabitToday }) {
 }
 
 function Tasks() {
-  const { tasks, toggleTask, addTask } = useDay()
+  const { tasks, addTask } = useDay()
   const [title, setTitle] = useState('')
 
   const submit = (event: FormEvent) => {
@@ -244,11 +245,7 @@ function Tasks() {
       <ul className="mt-2 divide-y divide-white/8">
         {tasks.map((task) => (
           <li key={task.id}>
-            <ItemRow
-              title={task.title}
-              done={Boolean(task.doneAt)}
-              onToggle={() => toggleTask(task.id)}
-            />
+            <TaskRow task={task} />
           </li>
         ))}
         <li>

@@ -10,9 +10,9 @@ import { consistency, deadlineLabel, goalProgress, paceSentence } from '../lib/g
 import { checksOf, planOf, withMilestones, type GoalInFocus } from '../lib/progress'
 import { GoalSheet } from '../ui/GoalSheet'
 import { iconFor } from '../ui/habitIcons'
-import { ItemRow } from '../ui/ItemRow'
 import { LinkSheet } from '../ui/LinkSheet'
 import { Screen } from '../ui/Screen'
+import { TaskRow } from '../ui/TaskRow'
 import { Route } from '../voyage/Route'
 
 const ROW_HEIGHT = 76
@@ -236,7 +236,6 @@ function LinkedHabit({ habit, snapshot, today }: { habit: Habit; snapshot: Snaps
 }
 
 function GoalTasks({ goal, snapshot, today }: { goal: GoalInFocus; snapshot: Snapshot; today: string }) {
-  const { toggleTask } = useDay()
   const [title, setTitle] = useState('')
 
   const tasks: Task[] = snapshot.tasks
@@ -259,11 +258,7 @@ function GoalTasks({ goal, snapshot, today }: { goal: GoalInFocus; snapshot: Sna
       <ul className="mt-1 divide-y divide-white/8">
         {tasks.map((task) => (
           <li key={task.id}>
-            <ItemRow
-              title={task.title}
-              done={Boolean(task.doneAt)}
-              onToggle={() => toggleTask(task.id)}
-            />
+            <TaskRow task={task} />
           </li>
         ))}
         <li>
