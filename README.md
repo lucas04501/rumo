@@ -29,7 +29,7 @@ Em desenvolvimento ativo.
 | Notas, registro diário e recompensas | Concluída e publicada |
 | Publicação, offline e acabamento | Concluída e publicada |
 | Prioridades, subtarefas, tarefas recorrentes, foco e Pomodoro | Concluída e publicada |
-| Evolução, gráficos, padrões e fluxos rápidos | Concluída |
+| Evolução, gráficos, padrões e fluxos rápidos | Concluída e publicada |
 | Conquistas, treinos | Planejadas |
 
 ## Stack
