@@ -1,5 +1,7 @@
 # Do uso pessoal ao produto
 
+> Registro inicial, congelado em 2026-11-02. A versão viva está no vault do Obsidian, em `04 - Projetos\Rumo\Rumo - Roadmap.md`.
+
 O Rumo nasce pronto para ter vários usuários no modelo de dados. O que falta para abrir ao público é isto.
 
 ## Já garantido desde o início

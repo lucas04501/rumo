@@ -1,5 +1,7 @@
 # Decisões
 
+> Registro inicial, congelado em 2026-11-02. A versão viva está no vault do Obsidian, em `04 - Projetos\Rumo\Rumo - Decisões Técnicas.md`.
+
 Registro do que foi decidido, por quem e por quê. Última revisão: 2026-11-02.
 
 ## Decididas pelo Lucas

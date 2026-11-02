@@ -19,11 +19,13 @@ PWA de metas, hábitos e planner mensal, em português do Brasil. Uso pessoal ag
 - O que acontece muitas vezes ao dia fica discreto. A onda em tela cheia fica para os grandes momentos.
 - Sempre respeitar `prefers-reduced-motion` e gatear `:hover`.
 - Nada de segredo no cliente. A conexão com o banco vive só no servidor.
+- Todo som passa por `pluck()` em `src/lib/feedback.ts`. A preferência de som fica no aparelho, de propósito, e não vai para o banco.
+- Ao concluir uma etapa ou tomar uma decisão, atualizar as notas do vault, separando implementado de planejado, conforme `~/.claude/skills/system-docs/references/obsidian-taxonomy.md`.
 
 ## Onde está cada coisa
 
-- `docs/decisoes.md`: decisões, motivos e dúvidas abertas
-- `docs/roadmap-multi-tenant.md`: o que falta para abrir ao público
+- `C:\Users\Pichau\ObsidianVault\04 - Projetos\Rumo\`: fonte viva de roadmap, funcionalidades, decisões e estado. Comece por `Rumo.md`.
+- `docs/`: registro inicial, congelado em 2026-11-02
 - `PRODUCT.md`: quem usa e o que o produto promete
 - `src/voyage/`: elementos de assinatura (rota, barco, maré, onda, sol)
 - `src/lib/`: lógica pura, com testes
