@@ -40,6 +40,7 @@ export function Hoje() {
           >
             Sair da conta
           </button>
+          <p className="text-sm text-mist">Versão {__APP_VERSION__}</p>
         </div>
       </div>
     </Screen>

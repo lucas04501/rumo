@@ -5,7 +5,16 @@ import { VitePWA } from 'vite-plugin-pwa'
 
 const SEA = '#06161c'
 
+const BUILD_TIME = new Date().toLocaleString('pt-BR', {
+  timeZone: 'America/Sao_Paulo',
+  day: '2-digit',
+  month: '2-digit',
+  hour: '2-digit',
+  minute: '2-digit',
+})
+
 export default defineConfig({
+  define: { __APP_VERSION__: JSON.stringify(BUILD_TIME) },
   plugins: [
     react(),
     tailwindcss(),
