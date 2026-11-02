@@ -31,7 +31,8 @@ Em desenvolvimento ativo.
 | Prioridades, subtarefas, tarefas recorrentes, foco e Pomodoro | Concluída e publicada |
 | Evolução, gráficos, padrões e fluxos rápidos | Concluída e publicada |
 | Rotina por dia da semana e relatório do dia no calendário | Concluída e publicada |
-| Conquistas, treinos | Planejadas |
+| Redesign escuro, quadro de tarefas, criar e buscar de qualquer tela e conquistas | Concluída e publicada |
+| Treinos | Planejada |
 
 ## Stack
 
