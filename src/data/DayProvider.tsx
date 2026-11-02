@@ -1,6 +1,6 @@
-import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { createContext, use, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { FRASES_VENTO, pick } from '../content/frases'
-import { diffDays, hoje } from '../lib/dates'
+import { diffDays } from '../lib/dates'
 import {
   haptic,
   soundArrival,
@@ -9,20 +9,32 @@ import {
   soundUncheck,
   soundWind,
 } from '../lib/feedback'
-import { currentStreak } from '../lib/streaks'
-import { XP, rankFor, totalXp, type Rank } from '../lib/xp'
-import { createDemo, historyXp, isWindy, type Goal, type Habit, type Task } from './demo'
+import { newId } from '../lib/ids'
+import {
+  goalInFocus,
+  summarizeDay,
+  xpOf,
+  type GoalInFocus,
+  type HabitToday,
+} from '../lib/progress'
+import { XP, hasTailwind, rankFor, type Rank } from '../lib/xp'
+import { ConnectionNeeded } from '../ui/ConnectionNeeded'
+import { commit, useSnapshot } from './store'
+import type { Snapshot, Task } from './types'
+import { useToday } from './useToday'
 
-export type HabitToday = Habit & { done: boolean; streak: number; anchorUsed: boolean }
+export type { HabitToday } from '../lib/progress'
 
 export type Celebration = { title: string; detail: string }
 
 type Day = {
   date: string
+  name: string
+  hasHabits: boolean
   habits: HabitToday[]
   tasks: Task[]
-  goal: Goal
-  daysLeft: number
+  goal: GoalInFocus | null
+  daysLeft: number | null
   /** Parte do dia concluída, de 0 a 1. É o nível da maré. */
   level: number
   remaining: number
@@ -41,112 +53,160 @@ type Day = {
 
 const DayContext = createContext<Day | null>(null)
 
+const now = () => new Date().toISOString()
+
 export function DayProvider({ children }: { children: ReactNode }) {
-  const [date] = useState(() => hoje())
-  const [seed] = useState(() => createDemo(date))
-  const [checked, setChecked] = useState(seed.checkedToday)
-  const [tasks, setTasks] = useState(seed.tasks)
-  const [goal, setGoal] = useState(seed.goal)
+  const { data: snapshot, isPending } = useSnapshot()
+
+  if (!snapshot) return isPending ? null : <ConnectionNeeded />
+  return <LoadedDay snapshot={snapshot}>{children}</LoadedDay>
+}
+
+function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: ReactNode }) {
+  const date = useToday()
   const [wind, setWind] = useState<string | null>(null)
   const [celebration, setCelebration] = useState<Celebration | null>(null)
-  const celebratedToday = useRef(false)
+  const celebratedOn = useRef<string | null>(null)
 
-  const doneToday = checked.size + tasks.filter((task) => task.done).length
-  const total = seed.habits.length + tasks.length
-  const level = total === 0 ? 0 : doneToday / total
-  const perfect = total > 0 && doneToday === total
+  const { habits, tasks, done, level, remaining, perfect } = summarizeDay(snapshot, date)
+  const goal = goalInFocus(snapshot, date)
+  const xp = xpOf(snapshot)
+  const completedAt = snapshot.days.find((day) => day.date === date)?.completedAt ?? null
 
   useEffect(() => {
-    if (!perfect || celebratedToday.current) return
-    celebratedToday.current = true
-    soundCelebration()
-    setCelebration({ title: 'Dia perfeito', detail: `Maré cheia. Mais ${XP.perfectDay} XP.` })
-  }, [perfect])
+    if (perfect === Boolean(completedAt)) return
 
-  const habits = useMemo(
-    () =>
-      seed.habits.map((habit) => {
-        const done = checked.has(habit.id)
-        const dates = new Set(seed.history.get(habit.id))
-        if (done) dates.add(date)
-        const { days, anchorUsed } = currentStreak(habit, dates, date)
-        return { ...habit, done, streak: days, anchorUsed }
+    // O dia acompanha o progresso: fecha ao chegar a 100% e reabre se algo for desmarcado.
+    const value = perfect ? now() : null
+    commit(
+      (current) => ({
+        ...current,
+        days: [
+          ...current.days.filter((day) => day.date !== date),
+          {
+            date,
+            completedAt: value,
+            note: current.days.find((day) => day.date === date)?.note ?? null,
+          },
+        ],
       }),
-    [seed, checked, date],
-  )
+      [{ method: 'PUT', path: `/days/${date}`, body: { completedAt: value, editedAt: now() } }],
+    )
 
-  const xp = useMemo(() => {
-    const past = historyXp(seed.history, date)
-    return totalXp({
-      ...past,
-      checks: [
-        ...past.checks,
-        ...[...checked].map((habitId) => ({
-          habitId,
-          date,
-          tailwind: isWindy(habitId, date, date),
-        })),
-      ],
-      tasksDone: past.tasksDone + tasks.filter((task) => task.done).length,
-      perfectDays: past.perfectDays + (perfect ? 1 : 0),
-      milestonesDone: goal.reached,
-      goalsDone: goal.reached === goal.milestones.length ? 1 : 0,
-    })
-  }, [seed, checked, tasks, goal, date, perfect])
+    if (perfect && celebratedOn.current !== date) {
+      celebratedOn.current = date
+      soundCelebration()
+      setCelebration({ title: 'Dia perfeito', detail: `Maré cheia. Mais ${XP.perfectDay} XP.` })
+    }
+  }, [perfect, completedAt, date])
 
   const toggleHabit = useCallback(
     (id: string) => {
-      const wasDone = checked.has(id)
-      const next = new Set(checked)
-      if (wasDone) next.delete(id)
-      else next.add(id)
-      setChecked(next)
+      const wasDone = snapshot.checks.some((check) => check.habitId === id && check.date === date)
+      const path = `/checks/${id}/${date}`
       haptic()
 
       if (wasDone) {
+        commit(
+          (current) => ({
+            ...current,
+            checks: current.checks.filter((check) => !(check.habitId === id && check.date === date)),
+          }),
+          [{ method: 'DELETE', path }],
+        )
         soundUncheck()
         return 0
       }
 
-      soundCheck(doneToday)
-      if (!isWindy(id, date, date)) return XP.habit
+      commit((current) => ({ ...current, checks: [...current.checks, { habitId: id, date }] }), [
+        { method: 'PUT', path },
+      ])
+      soundCheck(done)
+      if (!hasTailwind(id, date)) return XP.habit
       soundWind()
       setWind(pick(FRASES_VENTO))
       return XP.habit + XP.tailwind
     },
-    [checked, date, doneToday],
+    [snapshot, date, done],
   )
 
   const toggleTask = useCallback(
     (id: string) => {
-      const task = tasks.find((item) => item.id === id)
+      const task = snapshot.tasks.find((item) => item.id === id)
       if (!task) return 0
-      setTasks(tasks.map((item) => (item.id === id ? { ...item, done: !item.done } : item)))
+
+      const next = { ...task, doneAt: task.doneAt ? null : now() }
+      commit(
+        (current) => ({
+          ...current,
+          tasks: current.tasks.map((item) => (item.id === id ? next : item)),
+        }),
+        [{ method: 'PUT', path: `/tasks/${id}`, body: { ...next, editedAt: now() } }],
+      )
       haptic()
-      if (task.done) {
+
+      if (task.doneAt) {
         soundUncheck()
         return 0
       }
-      soundCheck(doneToday)
+      soundCheck(done)
       return XP.task
     },
-    [tasks, doneToday],
+    [snapshot, done],
   )
 
-  const addTask = useCallback((title: string) => {
-    setTasks((current) => [...current, { id: `tarefa-${Date.now()}`, title, done: false }])
-  }, [])
+  const addTask = useCallback(
+    (title: string) => {
+      const task: Task = { id: newId(), date, title, doneAt: null, position: snapshot.tasks.length }
+      commit((current) => ({ ...current, tasks: [...current.tasks, task] }), [
+        { method: 'PUT', path: `/tasks/${task.id}`, body: { ...task, editedAt: now() } },
+      ])
+    },
+    [snapshot, date],
+  )
 
   const completeMilestone = useCallback(() => {
+    if (!goal) return
+    const next = goal.milestones[goal.reached]
+    if (!next) return
+
+    const doneAt = now()
+    const finished = goal.reached + 1 === goal.milestones.length
+    const finishedGoal = { ...goal, status: 'done' as const, doneAt }
+
     haptic()
-    setGoal((current) => ({
-      ...current,
-      reached: Math.min(current.reached + 1, current.milestones.length),
-    }))
-  }, [])
+    commit(
+      (current) => ({
+        ...current,
+        milestones: current.milestones.map((item) =>
+          item.id === next.id ? { ...item, doneAt } : item,
+        ),
+        goals: finished
+          ? current.goals.map((item) => (item.id === goal.id ? finishedGoal : item))
+          : current.goals,
+      }),
+      [
+        {
+          method: 'PUT',
+          path: `/milestones/${next.id}`,
+          body: { ...next, doneAt, editedAt: doneAt },
+        },
+        ...(finished
+          ? [
+              {
+                method: 'PUT' as const,
+                path: `/goals/${goal.id}`,
+                body: { ...finishedGoal, editedAt: doneAt },
+              },
+            ]
+          : []),
+      ],
+    )
+  }, [goal])
 
   const arriveAtStation = useCallback(
     (station: number) => {
+      if (!goal) return
       if (station < goal.milestones.length) {
         soundArrival()
         return
@@ -159,12 +219,14 @@ export function DayProvider({ children }: { children: ReactNode }) {
 
   const value: Day = {
     date,
+    name: snapshot.user.name,
+    hasHabits: snapshot.habits.length > 0,
     habits,
     tasks,
     goal,
-    daysLeft: diffDays(goal.targetDate, date),
+    daysLeft: goal?.targetDate ? diffDays(goal.targetDate, date) : null,
     level,
-    remaining: total - doneToday,
+    remaining,
     xp,
     rank: rankFor(xp),
     wind,

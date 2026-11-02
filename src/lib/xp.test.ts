@@ -23,18 +23,22 @@ describe('hasTailwind', () => {
 describe('totalXp', () => {
   it('soma cada tipo de conquista', () => {
     const xp = totalXp({
-      checks: [{ habitId: 'a', date: '2026-11-02', tailwind: false }],
+      checks: [],
       tasksDone: 2,
       perfectDays: 1,
       milestonesDone: 1,
       goalsDone: 1,
     })
-    expect(xp).toBe(XP.habit + 2 * XP.task + XP.perfectDay + XP.milestone + XP.goal)
+    expect(xp).toBe(2 * XP.task + XP.perfectDay + XP.milestone + XP.goal)
   })
 
-  it('soma o bônus de vento a favor', () => {
-    const check = { habitId: 'a', date: '2026-11-02', tailwind: true }
-    expect(totalXp({ ...empty, checks: [check] })).toBe(XP.habit + XP.tailwind)
+  it('soma o bônus de vento a favor só nos checks com sorte', () => {
+    const dates = Array.from({ length: 400 }, (_, i) => addDays('2026-01-01', i))
+    const lucky = dates.find((date) => hasTailwind('a', date))!
+    const unlucky = dates.find((date) => !hasTailwind('a', date))!
+
+    expect(totalXp({ ...empty, checks: [{ habitId: 'a', date: lucky }] })).toBe(XP.habit + XP.tailwind)
+    expect(totalXp({ ...empty, checks: [{ habitId: 'a', date: unlucky }] })).toBe(XP.habit)
   })
 
   it('desmarcar e remarcar não muda o total', () => {

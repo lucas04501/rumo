@@ -1,17 +1,23 @@
 import { Anchor, Plus } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
+import { Link } from 'react-router'
 import { authClient } from '../data/authClient'
-import { USER_NAME } from '../data/demo'
 import { useDay, type HabitToday } from '../data/DayProvider'
+import { clearDevice } from '../data/store'
 import { formatLongDate } from '../lib/dates'
 import { XP } from '../lib/xp'
-import { HABIT_ICONS } from '../ui/habitIcons'
+import { iconFor } from '../ui/habitIcons'
 import { ItemRow } from '../ui/ItemRow'
 import { Quote } from '../ui/Quote'
 import { Screen } from '../ui/Screen'
 import { SoundToggle } from '../ui/SoundToggle'
 import { Ticker } from '../ui/Ticker'
 import { Route } from '../voyage/Route'
+
+async function signOut() {
+  await authClient.signOut()
+  await clearDevice()
+}
 
 export function Hoje() {
   return (
@@ -26,13 +32,10 @@ export function Hoje() {
         <div className="lg:pt-8">
           <Habits />
           <Tasks />
-          <p className="mt-10 text-sm text-mist">
-            Dados de demonstração. Recarregue a página para recomeçar.
-          </p>
           <button
             type="button"
-            className="mt-1 -ml-1 min-h-11 px-1 text-sm text-mist underline underline-offset-4"
-            onClick={() => authClient.signOut()}
+            className="mt-8 -ml-1 min-h-11 px-1 text-sm text-mist underline underline-offset-4"
+            onClick={signOut}
           >
             Sair da conta
           </button>
@@ -80,28 +83,33 @@ function greetingFor(hour: number): string {
   return 'Boa noite'
 }
 
-function tideSentence(remaining: number): string {
+function tideSentence(remaining: number, isEmpty: boolean): string {
+  if (isEmpty) return 'Nada programado para hoje.'
   if (remaining === 0) return 'Maré cheia.'
   if (remaining === 1) return 'Falta 1 para a maré cheia.'
   return `Faltam ${remaining} para a maré cheia.`
 }
 
 function Greeting() {
-  const { date, remaining } = useDay()
+  const { date, name, habits, tasks, remaining } = useDay()
+  const firstName = name.trim().split(/\s+/)[0]
 
   return (
     <div className="pt-7 lg:pt-8">
       <h1 className="font-display text-[42px]/[1.05] font-semibold tracking-[-0.025em] lg:text-[56px]">
-        {greetingFor(new Date().getHours())}, {USER_NAME}.
+        {greetingFor(new Date().getHours())}, {firstName}.
       </h1>
       <p className="mt-3 text-[17px]/snug text-mist">{formatLongDate(date)}</p>
-      <p className="text-[17px]/snug">{tideSentence(remaining)}</p>
+      <p className="text-[17px]/snug">
+        {tideSentence(remaining, habits.length + tasks.length === 0)}
+      </p>
     </div>
   )
 }
 
-function deadlineLabel(daysLeft: number, finished: boolean): string {
+function deadlineLabel(daysLeft: number | null, finished: boolean): string {
   if (finished) return 'Concluída'
+  if (daysLeft === null) return ''
   if (daysLeft > 1) return `Faltam ${daysLeft} dias`
   if (daysLeft === 1) return 'Falta 1 dia'
   return daysLeft === 0 ? 'Termina hoje' : 'Prazo encerrado'
@@ -109,8 +117,10 @@ function deadlineLabel(daysLeft: number, finished: boolean): string {
 
 function FocusGoal() {
   const { goal, daysLeft, completeMilestone, arriveAtStation } = useDay()
+  if (!goal || goal.milestones.length === 0) return null
+
   const milestones = goal.milestones.length
-  const next = goal.milestones[goal.reached]
+  const next = goal.milestones[goal.reached]?.title
 
   return (
     <section aria-labelledby="meta-em-foco" className="mt-7">
@@ -149,7 +159,7 @@ function FocusGoal() {
 }
 
 function Habits() {
-  const { habits } = useDay()
+  const { habits, hasHabits } = useDay()
   const done = habits.filter((habit) => habit.done).length
 
   return (
@@ -158,24 +168,38 @@ function Habits() {
         <h2 id="habitos-de-hoje" className="font-display text-xl font-semibold">
           Hábitos de hoje
         </h2>
-        <p className="text-[15px] text-mist">
-          {done} de {habits.length}
-        </p>
+        {habits.length > 0 && (
+          <p className="text-[15px] text-mist">
+            {done} de {habits.length}
+          </p>
+        )}
       </div>
-      <ul className="mt-2 divide-y divide-white/8">
-        {habits.map((habit) => (
-          <li key={habit.id}>
-            <HabitRow habit={habit} />
-          </li>
-        ))}
-      </ul>
+
+      {habits.length > 0 ? (
+        <ul className="mt-2 divide-y divide-white/8">
+          {habits.map((habit) => (
+            <li key={habit.id}>
+              <HabitRow habit={habit} />
+            </li>
+          ))}
+        </ul>
+      ) : hasHabits ? (
+        <p className="mt-2 text-[17px] text-mist">Nenhum hábito programado para hoje.</p>
+      ) : (
+        <div className="mt-2">
+          <p className="text-[17px] text-mist">Crie um hábito uma vez e ele volta todo dia.</p>
+          <Link to="/habitos" className="action mt-3 inline-grid place-items-center">
+            Criar primeiro hábito
+          </Link>
+        </div>
+      )}
     </section>
   )
 }
 
 function HabitRow({ habit }: { habit: HabitToday }) {
   const { toggleHabit } = useDay()
-  const Icon = HABIT_ICONS[habit.icon]
+  const Icon = iconFor(habit.icon)
 
   return (
     <ItemRow
@@ -215,7 +239,11 @@ function Tasks() {
       <ul className="mt-2 divide-y divide-white/8">
         {tasks.map((task) => (
           <li key={task.id}>
-            <ItemRow title={task.title} done={task.done} onToggle={() => toggleTask(task.id)} />
+            <ItemRow
+              title={task.title}
+              done={Boolean(task.doneAt)}
+              onToggle={() => toggleTask(task.id)}
+            />
           </li>
         ))}
         <li>

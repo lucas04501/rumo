@@ -53,6 +53,14 @@ describe('currentStreak', () => {
     expect(currentStreak(started, daysBefore(0, 1, 2, 3), TODAY)).toEqual({ days: 2, anchorUsed: false })
   })
 
+  it('uma pausa não quebra a sequência nem usa a âncora', () => {
+    const paused = {
+      ...habit(),
+      pauses: [{ startDate: addDays(TODAY, -6), endDate: addDays(TODAY, -2) }],
+    }
+    expect(currentStreak(paused, daysBefore(0, 1, 7, 8), TODAY)).toEqual({ days: 4, anchorUsed: false })
+  })
+
   it('hábito sem nenhum check tem sequência zero', () => {
     expect(currentStreak(habit(), new Set(), TODAY)).toEqual({ days: 0, anchorUsed: false })
   })

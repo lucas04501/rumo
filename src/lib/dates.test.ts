@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { addDays, diffDays, formatLongDate, hoje, weekdayOf } from './dates'
+import { addDays, diffDays, formatLongDate, formatShortDate, hoje, weekOf, weekdayOf } from './dates'
 
 describe('hoje', () => {
   it('continua no mesmo dia às 23h30 em São Paulo, quando em UTC já é amanhã', () => {
@@ -27,6 +27,18 @@ describe('contas com dias', () => {
   it('identifica o dia da semana', () => {
     expect(weekdayOf('2026-11-01')).toBe(0)
     expect(weekdayOf('2026-11-02')).toBe(1)
+  })
+
+  it('monta a semana de domingo a sábado, mesmo atravessando o mês', () => {
+    const week = weekOf('2026-11-04')
+    expect(week[0]).toBe('2026-11-01')
+    expect(week[6]).toBe('2026-11-07')
+    expect(weekOf('2026-11-01')[0]).toBe('2026-11-01')
+    expect(weekOf('2026-12-01')[0]).toBe('2026-11-29')
+  })
+
+  it('escreve a data curta', () => {
+    expect(formatShortDate('2026-11-02')).toBe('02/11')
   })
 
   it('escreve a data por extenso em português', () => {

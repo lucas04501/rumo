@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm'
 import {
   boolean,
+  check,
   date,
   foreignKey,
   index,
@@ -155,6 +156,27 @@ export const habits = pgTable(
       foreignColumns: [goals.userId, goals.id],
       name: 'habits_goal_owner_fk',
     }),
+  ],
+)
+
+export const habitPauses = pgTable(
+  'habit_pauses',
+  {
+    id: uuid('id').primaryKey(),
+    userId: owner(),
+    habitId: uuid('habit_id').notNull(),
+    startDate: date('start_date').notNull(),
+    endDate: date('end_date').notNull(),
+    ...lifecycle(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.userId, table.habitId],
+      foreignColumns: [habits.userId, habits.id],
+      name: 'habit_pauses_habit_owner_fk',
+    }),
+    check('habit_pauses_range', sql`${table.endDate} >= ${table.startDate}`),
+    index('habit_pauses_habit_idx').on(table.habitId),
   ],
 )
 

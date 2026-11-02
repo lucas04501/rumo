@@ -6,6 +6,14 @@ PWA em português, instalável no celular, com o mesmo dado no celular e no comp
 
 **[Abrir o app](https://rumo-kappa-livid.vercel.app)** · O cadastro está fechado: o endereço mostra a tela de login.
 
+<p>
+  <img src="docs/images/hoje.png" alt="Tela Hoje, com a maré cheia atrás da lista, a rota da meta e os hábitos concluídos" width="260" />
+  <img src="docs/images/habitos.png" alt="Tela de hábitos com a grade da semana" width="260" />
+  <img src="docs/images/novo-habito.png" alt="Folha para criar um hábito, com ícone e dias da semana" width="260" />
+</p>
+
+Imagens com dados fictícios.
+
 ## Estado do projeto
 
 Em desenvolvimento ativo.
@@ -15,7 +23,7 @@ Em desenvolvimento ativo.
 | Base, navegação e PWA | Concluída |
 | Núcleo visual e tela Hoje | Concluída |
 | Banco, API e login | Concluída e publicada |
-| Hábitos com dados reais | Em andamento |
+| Hábitos com dados reais e uso offline | Concluída e publicada |
 | Metas, planner do mês, notas | Planejadas |
 | Produtividade, evolução, conquistas, treinos | Planejadas |
 
@@ -25,6 +33,7 @@ Em desenvolvimento ativo.
 |---|---|
 | Interface | React 19, TypeScript, Vite, Tailwind CSS 4, Motion |
 | PWA | `vite-plugin-pwa` com Workbox |
+| Dados no aparelho | TanStack Query com cópia em IndexedDB e fila de escrita |
 | API | Hono em Vercel Functions |
 | Login | Better Auth, com sessão em cookie primário |
 | Banco | Postgres no Neon, com Drizzle ORM e migrações em SQL |
@@ -35,8 +44,9 @@ Em desenvolvimento ativo.
 
 ```mermaid
 flowchart TD
-    A[Telas React] --> B[Service worker: app abre sem internet]
-    A -->|mesmo domínio, cookie primário| C[Vercel: arquivos estáticos e /api]
+    A[Telas React] --> B[Cópia local em IndexedDB e fila de escrita]
+    S[Service worker] --> A
+    B -->|mesmo domínio, cookie primário| C[Vercel: arquivos estáticos e /api]
     C --> D[Hono + Better Auth]
     D --> E[(Neon Postgres)]
 ```
@@ -44,6 +54,8 @@ flowchart TD
 App e API ficam no mesmo domínio de propósito: o cookie de sessão é primário e funciona no Safari do iPhone, onde cookies de outro domínio tendem a ser bloqueados.
 
 ## Decisões técnicas que valem a leitura
+
+**Toque sem espera, com ou sem internet.** A tela muda antes de a rede responder, e cada escrita entra em uma fila salva no aparelho, que envia em ordem e sobrevive a fechar o app. Veja [`src/data/store.ts`](src/data/store.ts). A API entrega todos os dados do usuário em uma chamada, o que permite calcular XP e sequência sem rede e reduz as chamadas ao banco.
 
 **Isolamento entre usuários em duas camadas.** Toda linha tem dono, e toda rota filtra pelo usuário da sessão. Além disso, os vínculos usam chaves estrangeiras compostas com `user_id`, então o próprio banco recusa ligar um marco à meta de outra pessoa, mesmo que uma rota erre.
 
@@ -66,7 +78,7 @@ npm test
 npm run test:server
 ```
 
-`npm test` cobre a lógica pura: datas, sequência, XP, geometria da rota e preferência de som.
+`npm test` cobre a lógica pura: datas, hábitos, pausas, sequência, progresso do dia, XP, geometria da rota e preferência de som.
 
 `npm run test:server` roda contra um banco Postgres real, em uma branch separada. Dois usuários tentam ler, sobrescrever, excluir e vincular os dados um do outro, além de cobrir idempotência, exclusão suave e conflito de edição. Testes de isolamento só valem se falham quando a proteção some, então isso foi conferido removendo a proteção de propósito.
 

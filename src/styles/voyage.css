@@ -220,6 +220,164 @@
   outline: none;
 }
 
+/* Botões secundários */
+.ghost {
+  min-height: 44px;
+  padding-inline: 16px;
+  border: 1px solid rgb(233 243 241 / 0.22);
+  border-radius: 12px;
+  color: var(--color-foam);
+  font-size: 15px;
+  font-weight: 600;
+  transition: transform 120ms var(--ease-out);
+}
+
+.ghost:active {
+  transform: scale(0.97);
+}
+
+.ghost:disabled {
+  opacity: 0.5;
+}
+
+.icon-button {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--color-mist);
+}
+
+/* Escolha de ícone e de dia */
+.pick {
+  display: grid;
+  aspect-ratio: 1;
+  min-width: 0;
+  place-items: center;
+  border: 1px solid rgb(233 243 241 / 0.16);
+  border-radius: 12px;
+  color: var(--color-mist);
+  font-size: 15px;
+  font-weight: 600;
+  transition:
+    background-color 120ms var(--ease-out),
+    color 120ms var(--ease-out),
+    transform 120ms var(--ease-out);
+}
+
+.pick:active {
+  transform: scale(0.94);
+}
+
+.pick[aria-pressed='true'] {
+  border-color: var(--color-tide);
+  background: var(--color-tide);
+  color: var(--color-tide-ink);
+}
+
+/* Lista de hábitos */
+.habit-head {
+  display: flex;
+  width: 100%;
+  min-height: 48px;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.week-strip {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 44px));
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.day-cell {
+  display: grid;
+  aspect-ratio: 1;
+  place-items: center;
+  border-radius: 999px;
+  color: rgb(157 182 186 / 0.55);
+  font-size: 14px;
+  font-weight: 600;
+  transition:
+    background-color 120ms var(--ease-out),
+    transform 120ms var(--ease-out);
+}
+
+button.day-cell:active {
+  transform: scale(0.9);
+}
+
+.day-cell[data-state='done'] {
+  background: var(--color-tide);
+  color: var(--color-tide-ink);
+}
+
+.day-cell[data-state='today'] {
+  border: 1.5px solid var(--color-tide);
+  color: var(--color-foam);
+}
+
+.day-cell[data-state='missed'] {
+  border: 1.5px dashed rgb(157 182 186 / 0.45);
+  color: var(--color-mist);
+}
+
+.day-cell[data-state='paused'] {
+  text-decoration: line-through;
+}
+
+/* Folha inferior */
+.sheet {
+  width: 100%;
+  max-width: none;
+  max-height: 92dvh;
+  margin: auto 0 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 0;
+  border-radius: 16px 16px 0 0;
+  background: var(--color-sea-1);
+  color: var(--color-foam);
+  animation: sheet-in 320ms var(--ease-drawer);
+}
+
+.sheet[data-closing='true'] {
+  animation: sheet-out 200ms var(--ease-out) forwards;
+}
+
+.sheet::backdrop {
+  background: rgb(3 12 16 / 0.6);
+}
+
+.sheet-body {
+  padding: 16px 20px calc(env(safe-area-inset-bottom, 0px) + 20px);
+}
+
+@keyframes sheet-in {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes sheet-out {
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@media (min-width: 64rem) {
+  .sheet {
+    width: 460px;
+    margin: auto;
+    border-radius: 16px;
+  }
+}
+
 /* Som */
 .sound-toggle {
   display: grid;
@@ -372,8 +530,13 @@
     animation: none;
   }
 
-  .screen-in {
+  .screen-in,
+  .sheet {
     animation-name: screen-fade;
+  }
+
+  .sheet[data-closing='true'] {
+    animation-name: sheet-fade-out;
   }
 
   .xp-float {
@@ -382,6 +545,12 @@
 
   @keyframes screen-fade {
     from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes sheet-fade-out {
+    to {
       opacity: 0;
     }
   }

@@ -36,6 +36,12 @@ export const habitFields = z.object({
   position,
 })
 
+export const pauseFields = z.object({
+  habitId: uuid,
+  startDate: isoDate,
+  endDate: isoDate,
+})
+
 export const taskFields = z.object({
   date: isoDate,
   title,

@@ -17,6 +17,9 @@ PWA de metas, hábitos e planner mensal, em português do Brasil. Uso pessoal ag
 
 - Datas são dias locais `YYYY-MM-DD`. Toda "data de hoje" vem de `hoje()` em `src/lib/dates.ts`. Nunca usar UTC nem `toISOString()` para data.
 - XP e sequência são calculados a partir dos dados, em funções puras de `src/lib/`. Nunca são salvos.
+- Toda escrita passa por `commit()` em `src/data/store.ts`: atualiza a foto local e entra na fila. Não chame a API direto de uma tela.
+- Offline se testa no build (`npm run build` e `npm run preview`), porque o service worker não roda em desenvolvimento. Teste também reabrir o app sem internet mais de uma vez.
+- Ao fim de cada etapa: testar, atualizar o vault, publicar em produção e enviar ao GitHub. O repositório é público: nunca versione nada privado.
 - Toda tabela tem `user_id NOT NULL` e toda rota filtra pelo usuário da sessão. Vínculos entre tabelas usam chave estrangeira composta com `user_id`, para o banco recusar dado de outro usuário.
 - Toda rota nova precisa de caso em `server/isolation.test.ts`.
 - Em `server/` e `api/`, imports relativos terminam em `.js`: a Vercel roda ESM sem empacotar. `schema.ts` fica em um arquivo só, porque o drizzle-kit não resolve esses imports.
@@ -39,4 +42,5 @@ PWA de metas, hábitos e planner mensal, em português do Brasil. Uso pessoal ag
 - `PRODUCT.md`: quem usa e o que o produto promete
 - `src/voyage/`: elementos de assinatura (rota, barco, maré, onda, sol)
 - `src/lib/`: lógica pura, com testes
-- `src/data/demo.ts`: dados de demonstração, a remover na etapa 4
+- `src/data/`: foto local, fila de escrita e ações
+- `server/`: API, login e schema do banco

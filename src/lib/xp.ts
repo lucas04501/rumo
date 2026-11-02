@@ -26,7 +26,7 @@ export function hasTailwind(habitId: string, date: string): boolean {
 }
 
 export type XpInput = {
-  checks: { habitId: string; date: string; tailwind?: boolean }[]
+  checks: { habitId: string; date: string }[]
   tasksDone: number
   perfectDays: number
   milestonesDone: number
@@ -34,10 +34,10 @@ export type XpInput = {
 }
 
 export function totalXp({ checks, tasksDone, perfectDays, milestonesDone, goalsDone }: XpInput): number {
-  const fromChecks = checks.reduce((sum, { habitId, date, tailwind }) => {
-    const lucky = tailwind ?? hasTailwind(habitId, date)
-    return sum + XP.habit + (lucky ? XP.tailwind : 0)
-  }, 0)
+  const fromChecks = checks.reduce(
+    (sum, { habitId, date }) => sum + XP.habit + (hasTailwind(habitId, date) ? XP.tailwind : 0),
+    0,
+  )
 
   return (
     fromChecks +

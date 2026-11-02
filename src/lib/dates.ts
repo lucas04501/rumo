@@ -31,6 +31,16 @@ export function weekdayOf(iso: string): number {
   return parse(iso).getDay()
 }
 
+/** Os sete dias da semana da data, de domingo a sábado. */
+export function weekOf(iso: string): string[] {
+  const sunday = addDays(iso, -weekdayOf(iso))
+  return Array.from({ length: 7 }, (_, day) => addDays(sunday, day))
+}
+
+export function formatShortDate(iso: string): string {
+  return parse(iso).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+}
+
 export function formatLongDate(iso: string): string {
   const text = parse(iso).toLocaleDateString('pt-BR', {
     weekday: 'long',

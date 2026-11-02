@@ -1,9 +1,5 @@
-import { addDays, diffDays, weekdayOf } from './dates'
-
-export type HabitSchedule = {
-  weekdays: number[]
-  startDate: string
-}
+import { addDays, diffDays } from './dates'
+import { isScheduled, type HabitPlan } from './habits'
 
 export type Streak = {
   days: number
@@ -13,14 +9,15 @@ export type Streak = {
 // A âncora perdoa uma falta nesta janela. Duas faltas dentro dela quebram a sequência.
 const ANCHOR_WINDOW_DAYS = 7
 
-export function currentStreak(habit: HabitSchedule, checks: Set<string>, today: string): Streak {
+export function currentStreak(habit: HabitPlan, checks: Set<string>, today: string): Streak {
   let days = 0
   let lastMiss: string | null = null
   let newestMiss: string | null = null
   let bridged = false
 
   for (let date = today; date >= habit.startDate; date = addDays(date, -1)) {
-    if (!habit.weekdays.includes(weekdayOf(date))) continue
+    // Dia fora do plano ou em pausa não conta nem quebra.
+    if (!isScheduled(habit, date)) continue
 
     if (checks.has(date)) {
       days += 1

@@ -1,14 +1,23 @@
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { auth, signupOpen } from './auth.js'
-import { goals, habits, milestones, notes, tasks } from './db/schema.js'
+import { goals, habitPauses, habits, milestones, notes, tasks } from './db/schema.js'
 import { checks } from './routes/checks.js'
 import { days } from './routes/days.js'
 import { resource } from './routes/resource.js'
-import { goalFields, habitFields, milestoneFields, noteFields, taskFields } from './routes/schemas.js'
+import {
+  goalFields,
+  habitFields,
+  milestoneFields,
+  noteFields,
+  pauseFields,
+  taskFields,
+} from './routes/schemas.js'
+import { snapshot } from './routes/snapshot.js'
 import { requireUser, type AuthedEnv } from './session.js'
 
 const FOREIGN_KEY_VIOLATION = '23503'
+const CHECK_VIOLATION = '23514'
 
 function postgresCode(error: unknown): string | undefined {
   const { code, cause } = error as { code?: string; cause?: unknown }
@@ -19,7 +28,9 @@ const data = new Hono<AuthedEnv>()
   .use(requireUser)
   .route('/goals', resource(goals, goalFields))
   .route('/milestones', resource(milestones, milestoneFields))
+  .route('/snapshot', snapshot)
   .route('/habits', resource(habits, habitFields))
+  .route('/pauses', resource(habitPauses, pauseFields))
   .route('/tasks', resource(tasks, taskFields))
   .route('/notes', resource(notes, noteFields))
   .route('/checks', checks)
@@ -36,6 +47,7 @@ app.onError((error, c) => {
   if (error instanceof HTTPException) return c.json({ error: error.message }, error.status)
   // Vínculo com algo que não é do usuário: responde como se não existisse.
   if (postgresCode(error) === FOREIGN_KEY_VIOLATION) return c.json({ error: 'not_found' }, 404)
+  if (postgresCode(error) === CHECK_VIOLATION) return c.json({ error: 'invalid_input' }, 400)
 
   console.error(error)
   return c.json({ error: 'internal_error' }, 500)

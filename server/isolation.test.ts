@@ -49,6 +49,7 @@ const milestoneId = randomUUID()
 const habitId = randomUUID()
 const taskId = randomUUID()
 const noteId = randomUUID()
+const pauseId = randomUUID()
 
 const habitBody = { title: 'Treinar', icon: 'dumbbell', weekdays: [1, 3, 5], startDate: DATE }
 
@@ -69,6 +70,8 @@ beforeAll(async () => {
   ])
   expect(dependents.map((response) => response.status)).toEqual([200, 200])
 
+  const pause = { habitId, startDate: DATE, endDate: '2026-11-10' }
+  expect((await call(ana, 'PUT', `/pauses/${pauseId}`, pause)).status).toBe(200)
   expect((await call(ana, 'PUT', `/checks/${habitId}/${DATE}`)).status).toBe(204)
   expect((await call(ana, 'PUT', `/days/${DATE}`, { note: 'Diário da Ana' })).status).toBe(200)
 })
@@ -94,6 +97,8 @@ describe('sem sessão', () => {
     ['GET', '/milestones'],
     ['GET', '/tasks'],
     ['GET', '/notes'],
+    ['GET', '/pauses'],
+    ['GET', '/snapshot'],
     ['GET', `/checks?${RANGE}`],
     ['GET', `/days?${RANGE}`],
     ['PUT', `/days/${DATE}`],
@@ -120,6 +125,35 @@ describe('isolamento entre usuários', () => {
     expect((await call(bia, 'DELETE', `/${name}/${id()}`)).status).toBe(404)
     const rows = (await (await call(ana, 'GET', `/${name}`)).json()) as unknown[]
     expect(rows).toHaveLength(1)
+  })
+
+  it('a foto de um usuário não traz nada do outro', async () => {
+    type Snapshot = Record<string, unknown[]> & { user: { name: string } }
+    const ofAna = (await (await call(ana, 'GET', '/snapshot')).json()) as Snapshot
+    const ofBia = (await (await call(bia, 'GET', '/snapshot')).json()) as Snapshot
+
+    expect(ofAna.user.name).toBe('Ana')
+    expect(ofBia.user.name).toBe('Bia')
+    for (const key of ['goals', 'milestones', 'habits', 'pauses', 'checks', 'tasks', 'notes', 'days']) {
+      if (key !== 'notes') expect(ofAna[key], key).toHaveLength(1)
+      expect(JSON.stringify(ofBia[key] ?? [])).not.toContain('Ana')
+    }
+    expect(ofBia.goals).toHaveLength(0)
+    expect(ofBia.habits).toHaveLength(0)
+    expect(ofBia.pauses).toHaveLength(0)
+    expect(ofBia.checks).toHaveLength(0)
+    expect(ofBia.tasks).toHaveLength(0)
+  })
+
+  it('não pausa nem altera pausa em hábito de outro usuário', async () => {
+    const pause = { habitId, startDate: DATE, endDate: DATE }
+    expect((await call(bia, 'PUT', `/pauses/${randomUUID()}`, pause)).status).toBe(404)
+
+    const own = randomUUID()
+    await call(bia, 'PUT', `/habits/${own}`, habitBody)
+    const takeover = { habitId: own, startDate: DATE, endDate: DATE }
+    expect((await call(bia, 'PUT', `/pauses/${pauseId}`, takeover)).status).toBe(404)
+    await call(bia, 'DELETE', `/habits/${own}`)
   })
 
   it('milestones: não sobrescreve marco de outro usuário usando meta própria', async () => {
@@ -220,6 +254,14 @@ describe('validação', () => {
 
   it('recusa ID que não é UUID', async () => {
     expect((await call(bia, 'PUT', '/goals/1', { title: 'X' })).status).toBe(400)
+  })
+
+  it('recusa pausa que termina antes de começar', async () => {
+    const own = randomUUID()
+    await call(ana, 'PUT', `/habits/${own}`, habitBody)
+    const backwards = { habitId: own, startDate: '2026-11-10', endDate: '2026-11-02' }
+    expect((await call(ana, 'PUT', `/pauses/${randomUUID()}`, backwards)).status).toBe(400)
+    await call(ana, 'DELETE', `/habits/${own}`)
   })
 
   it('recusa título vazio', async () => {
