@@ -1,7 +1,15 @@
 import type { Snapshot, Task } from '../data/types'
 
-type OldSnapshot = Omit<Snapshot, 'notes' | 'tasks' | 'taskRules' | 'subtasks' | 'focusSessions'> &
-  Partial<Pick<Snapshot, 'notes' | 'taskRules' | 'subtasks' | 'focusSessions'>> & {
+type AddedLater =
+  | 'notes'
+  | 'taskRules'
+  | 'subtasks'
+  | 'focusSessions'
+  | 'routineSteps'
+  | 'routineChecks'
+
+type OldSnapshot = Omit<Snapshot, AddedLater | 'tasks'> &
+  Partial<Pick<Snapshot, AddedLater>> & {
     tasks: (Pick<Task, 'id' | 'date' | 'title' | 'goalId' | 'doneAt' | 'position'> & Partial<Task>)[]
   }
 
@@ -10,7 +18,9 @@ type OldSnapshot = Omit<Snapshot, 'notes' | 'tasks' | 'taskRules' | 'subtasks' |
  * que abre o app até a próxima busca, então os campos novos precisam existir.
  */
 export function complete(snapshot: OldSnapshot): Snapshot {
-  if (snapshot.focusSessions && snapshot.notes) return snapshot as Snapshot
+  if (snapshot.routineChecks && snapshot.focusSessions && snapshot.notes) {
+    return snapshot as Snapshot
+  }
 
   return {
     ...snapshot,
@@ -24,5 +34,7 @@ export function complete(snapshot: OldSnapshot): Snapshot {
     taskRules: snapshot.taskRules ?? [],
     subtasks: snapshot.subtasks ?? [],
     focusSessions: snapshot.focusSessions ?? [],
+    routineSteps: snapshot.routineSteps ?? [],
+    routineChecks: snapshot.routineChecks ?? [],
   }
 }

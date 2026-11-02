@@ -426,6 +426,69 @@ button.day-cell:active {
   position: relative;
 }
 
+/* Marcas do dia: ponto cheio é anotação, ponto vazado é foco */
+.cal-marks {
+  position: absolute;
+  bottom: 5px;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+}
+
+.cal-marks i,
+.cal-key {
+  display: block;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+}
+
+.cal-marks i[data-kind='note'],
+.cal-key[data-kind='note'] {
+  background: currentcolor;
+}
+
+.cal-marks i[data-kind='focus'],
+.cal-key[data-kind='focus'] {
+  box-shadow: inset 0 0 0 1px currentcolor;
+}
+
+.cal-key {
+  width: 7px;
+  height: 7px;
+}
+
+/* Rotina: o dia selecionado é teal, e o ponto mostra quais dias já têm passos */
+.routine-day {
+  position: relative;
+}
+
+.routine-day[data-filled='true']::after {
+  position: absolute;
+  bottom: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: currentcolor;
+  content: '';
+}
+
+.routine-day[data-today='true']:not([aria-pressed='true']) {
+  border-color: var(--color-foam);
+  color: var(--color-foam);
+}
+
+.routine-time {
+  flex-shrink: 0;
+  width: 84px;
+  padding-block: 12px;
+  background: transparent;
+  color: var(--color-foam);
+  outline: none;
+}
+
 .cal-day[data-done='true'] {
   border-color: var(--color-tide);
   background: var(--color-tide);

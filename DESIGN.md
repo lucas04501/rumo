@@ -190,7 +190,7 @@ Cantos suaves em tudo o que é controle (12 px), um pouco mais em avisos (14 px)
 
 ### Navigation
 
-Cinco abas no rodapé do celular, sobre `abyss`, com a marca teal deslizando até a aba ativa: Hoje, Hábitos, Metas, Mês e Mais. A aba Mais reúne Evolução, Notas, Foco e Ajustes, e fica ativa nessas telas. Item sem tela pronta não entra nela. No computador, vira coluna lateral com a marca vertical, com todas essas áreas direto na lista.
+Cinco abas no rodapé do celular, sobre `abyss`, com a marca teal deslizando até a aba ativa: Hoje, Hábitos, Metas, Mês e Mais. A aba Mais reúne Rotina, Evolução, Notas, Foco e Ajustes, e fica ativa nessas telas. Item sem tela pronta não entra nela. No computador, vira coluna lateral com a marca vertical, com todas essas áreas direto na lista.
 
 ### Sheets
 
@@ -205,6 +205,14 @@ Na tarefa, a marca de prioridade fica antes do título: bandeira cheia em espuma
 Deslizar a linha para a direita conclui, pelo mesmo caminho do check. Para a esquerda, adia para amanhã, ou pula quando a tarefa repete. Vale passar de 96 px ou um toque rápido. Abaixo disso, a linha volta sem agir.
 
 A adição rápida da Hoje lê data, prioridade e repetição no fim do texto ("pagar luz sexta !alta") e mostra chips do que entendeu antes de salvar, com a opção Ignorar. Só no fim do texto, para "Segunda via do boleto" continuar sendo um título.
+
+### Day Sheet
+
+A folha do dia é o relatório daquele dia: resumo com barra fina e XP, frases, hábitos, tarefas, rotina, foco, metas, notas editadas e a nota do dia. Cada bloco só aparece se tiver algo a dizer. No calendário, ponto cheio é anotação e ponto vazado é foco.
+
+### Routine
+
+Sete dias de segunda a domingo, cada um com a sua lista. Um ponto mostra quais dias têm passos. Horário à esquerda, em névoa, e em teal no passo de agora. Só o dia de hoje tem check. Rotina não dá XP nem sobe a maré, porque ela guia o dia e já há hábitos para medir. Copiar de outro dia é o atalho para montar a semana.
 
 ### Undo Toast
 

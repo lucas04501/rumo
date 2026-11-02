@@ -8,6 +8,8 @@ import {
   habits,
   milestones,
   notes,
+  routineChecks,
+  routineSteps,
   subtasks,
   taskRules,
   tasks,
@@ -22,6 +24,8 @@ import {
   milestoneFields,
   noteFields,
   pauseFields,
+  routineCheckFields,
+  routineStepFields,
   subtaskFields,
   taskFields,
   taskRuleFields,
@@ -48,6 +52,8 @@ const data = new Hono<AuthedEnv>()
   .route('/task-rules', resource(taskRules, taskRuleFields))
   .route('/subtasks', resource(subtasks, subtaskFields))
   .route('/focus-sessions', resource(focusSessions, focusFields))
+  .route('/routine-steps', resource(routineSteps, routineStepFields))
+  .route('/routine-checks', resource(routineChecks, routineCheckFields))
   .route('/notes', resource(notes, noteFields))
   .route('/checks', checks)
   .route('/days', days)

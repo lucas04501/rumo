@@ -26,13 +26,13 @@ PWA de metas, hábitos e planner mensal, em português do Brasil. Uso pessoal ag
 - Depois de `npm run db:generate`, leia o SQL: o drizzle-kit coloca a unicidade de tabela existente depois das chaves estrangeiras que dependem dela.
 - Offline se testa no build (`npm run build` e `npm run preview`), porque o service worker não roda em desenvolvimento. Teste também reabrir o app sem internet mais de uma vez.
 - Ao fim de cada etapa: testar, atualizar o vault, publicar em produção e enviar ao GitHub. O repositório é público: nunca versione nada privado.
-- Toda tabela tem `user_id NOT NULL` e toda rota filtra pelo usuário da sessão. Vínculos entre tabelas usam chave estrangeira composta com `user_id`, para o banco recusar dado de outro usuário.
+- Toda tabela do app tem `user_id NOT NULL` e toda rota filtra pelo usuário da sessão. A exceção é `rate_limit`, do Better Auth, que conta por IP antes de existir sessão. Vínculos entre tabelas usam chave estrangeira composta com `user_id`, para o banco recusar dado de outro usuário.
 - Toda rota nova precisa de caso em `server/isolation.test.ts`.
 - Em `server/` e `api/`, imports relativos terminam em `.js`: a Vercel roda ESM sem empacotar. `schema.ts` fica em um arquivo só, porque o drizzle-kit não resolve esses imports.
 - O `.env` aponta só para a branch `dev`. A conexão da branch principal não fica neste computador. Para migrar a principal, passe `DATABASE_URL` pelo ambiente, sem gravar em arquivo nem exibir. `vercel env run` não serve: a Vercel não libera valores do tipo Secret, e o CLI carrega o `.env`, então a migração cairia na `dev` dizendo sucesso. A conexão vem de `neonctl connection-string main`, guardada só em uma variável do comando. Confira que o endereço difere do `.env` antes de migrar. A migração vem antes do deploy, e a autorização do Lucas é pedida a cada vez.
 - Testes nunca tocam a branch principal.
 - Em produção, verificação é só leitura. Nunca confirme "cadastro fechado" tentando cadastrar: use `GET /api/signup-status`. Depois de um deploy, o endereço principal leva alguns segundos para apontar para a versão nova.
-- Cadastro fechado por padrão no código (`ALLOW_SIGNUP`). Em produção, está aberto a qualquer pessoa desde 2026-11-02, por decisão do Lucas, ainda sem confirmação de e-mail nem recuperação de senha. Para fechar: remova a variável na Vercel e publique de novo.
+- Cadastro fechado por padrão no código (`ALLOW_SIGNUP`). Em produção, está aberto a qualquer pessoa desde 2026-11-02, por decisão do Lucas, ainda sem confirmação de e-mail nem recuperação de senha. O limite de tentativas fica no banco, em `rate_limit`, e só liga em produção. Para fechar: remova a variável na Vercel e publique de novo.
 - Deploy em produção: `npx vercel deploy --prod --yes`. Autorizado pelo Lucas em 2026-11-02. Sem o `--prod`, o deploy vira pré-visualização.
 - Teal é ação e progresso. Âmbar é só recompensa.
 - O que acontece muitas vezes ao dia fica discreto. A onda em tela cheia fica para os grandes momentos.

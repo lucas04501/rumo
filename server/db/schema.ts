@@ -1,5 +1,6 @@
 import { sql } from 'drizzle-orm'
 import {
+  bigint,
   boolean,
   check,
   date,
@@ -80,6 +81,15 @@ export const verification = pgTable(
   },
   (table) => [index('verification_identifier_idx').on(table.identifier)],
 )
+
+// Contador de tentativas do Better Auth. Fica no banco porque a memória é por
+// instância na Vercel. É por IP, antes de existir sessão, então não tem dono.
+export const rateLimit = pgTable('rate_limit', {
+  id: text('id').primaryKey(),
+  key: text('key').notNull().unique(),
+  count: integer('count').notNull(),
+  lastRequest: bigint('last_request', { mode: 'number' }).notNull(),
+})
 
 // Tabelas do app. Toda linha pertence a um usuário.
 
@@ -314,6 +324,46 @@ export const focusSessions = pgTable(
       name: 'focus_sessions_task_owner_fk',
     }),
     index('focus_sessions_user_date_idx').on(table.userId, table.date),
+  ],
+)
+
+// Rotina: cada dia da semana tem a sua lista, sem ligação entre os dias.
+export const routineSteps = pgTable(
+  'routine_steps',
+  {
+    id: uuid('id').primaryKey(),
+    userId: owner(),
+    weekday: smallint('weekday').notNull(),
+    time: text('time').notNull(),
+    title: text('title').notNull(),
+    position: integer('position').notNull().default(0),
+    ...lifecycle(),
+  },
+  (table) => [
+    unique('routine_steps_owner_key').on(table.userId, table.id),
+    check('routine_steps_weekday', sql`${table.weekday} between 0 and 6`),
+    index('routine_steps_user_weekday_idx').on(table.userId, table.weekday),
+  ],
+)
+
+// Passo marcado em um dia. O ID vem do passo e da data, como nas tarefas recorrentes.
+export const routineChecks = pgTable(
+  'routine_checks',
+  {
+    id: uuid('id').primaryKey(),
+    userId: owner(),
+    stepId: uuid('step_id').notNull(),
+    date: date('date').notNull(),
+    doneAt: moment('done_at'),
+    ...lifecycle(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.userId, table.stepId],
+      foreignColumns: [routineSteps.userId, routineSteps.id],
+      name: 'routine_checks_step_owner_fk',
+    }),
+    index('routine_checks_user_date_idx').on(table.userId, table.date),
   ],
 )
 

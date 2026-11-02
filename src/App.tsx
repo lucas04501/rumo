@@ -14,6 +14,7 @@ import { Mes } from './screens/Mes'
 import { Meta } from './screens/Meta'
 import { Metas } from './screens/Metas'
 import { Notas } from './screens/Notas'
+import { Rotina } from './screens/Rotina'
 
 export function App() {
   return (
@@ -34,6 +35,7 @@ export function App() {
                   <Route path="metas/:id" element={<Meta />} />
                   <Route path="mes" element={<Mes />} />
                   <Route path="notas" element={<Notas />} />
+                  <Route path="rotina" element={<Rotina />} />
                   <Route path="evolucao" element={<Evolucao />} />
                   <Route path="foco" element={<Foco />} />
                   <Route path="mais" element={<Mais />} />

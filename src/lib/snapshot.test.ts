@@ -29,9 +29,16 @@ describe('complete', () => {
     expect(snapshot.taskRules).toEqual([])
     expect(snapshot.subtasks).toEqual([])
     expect(snapshot.focusSessions).toEqual([])
+    expect(snapshot.routineSteps).toEqual([])
+    expect(snapshot.routineChecks).toEqual([])
     expect(snapshot.tasks[0]).toMatchObject({ priority: 'normal', ruleId: null, skippedAt: null })
     expect(summarizeDay(snapshot, oldTask.date).done).toBe(1)
     expect(xpOf(snapshot)).toBeGreaterThan(0)
+  })
+
+  it('completa uma foto da versão com foco, mas sem rotina', () => {
+    const previous = { ...base, tasks: [], notes: [], taskRules: [], subtasks: [], focusSessions: [] }
+    expect(complete(previous).routineSteps).toEqual([])
   })
 
   it('mantém os dados de uma foto parcial', () => {

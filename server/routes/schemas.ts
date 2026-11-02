@@ -73,6 +73,19 @@ export const subtaskFields = z.object({
   doneAt: instant,
 })
 
+export const routineStepFields = z.object({
+  weekday: z.number().int().min(0).max(6),
+  time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/),
+  title,
+  position,
+})
+
+export const routineCheckFields = z.object({
+  stepId: uuid,
+  date: isoDate,
+  doneAt: instant,
+})
+
 export const focusFields = z.object({
   taskId: uuid.nullable().default(null),
   date: isoDate,

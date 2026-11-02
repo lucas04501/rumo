@@ -53,10 +53,13 @@ const pauseId = randomUUID()
 const ruleId = randomUUID()
 const subtaskId = randomUUID()
 const focusId = randomUUID()
+const stepId = randomUUID()
+const routineCheckId = randomUUID()
 
 const habitBody = { title: 'Treinar', icon: 'dumbbell', weekdays: [1, 3, 5], startDate: DATE }
 const ruleBody = { title: 'Regar', weekdays: [1], startDate: DATE }
 const focusBody = { date: DATE, startedAt: `${DATE}T12:00:00Z`, minutes: 25, plannedMinutes: 25 }
+const stepBody = { weekday: 1, time: '06:30', title: 'Acordar' }
 
 beforeAll(async () => {
   ana = await signUp('Ana', emails.ana)
@@ -66,8 +69,9 @@ beforeAll(async () => {
     call(ana, 'PUT', `/goals/${goalId}`, { title: 'Meta da Ana' }),
     call(ana, 'PUT', `/tasks/${taskId}`, { title: 'Tarefa da Ana', date: DATE }),
     call(ana, 'PUT', `/notes/${noteId}`, { title: 'Nota da Ana' }),
+    call(ana, 'PUT', `/routine-steps/${stepId}`, stepBody),
   ])
-  expect(writes.map((response) => response.status)).toEqual([200, 200, 200])
+  expect(writes.map((response) => response.status)).toEqual([200, 200, 200, 200])
 
   const dependents = await Promise.all([
     call(ana, 'PUT', `/milestones/${milestoneId}`, { title: 'Marco da Ana', goalId }),
@@ -75,8 +79,13 @@ beforeAll(async () => {
     call(ana, 'PUT', `/task-rules/${ruleId}`, { ...ruleBody, title: 'Regra da Ana', goalId }),
     call(ana, 'PUT', `/subtasks/${subtaskId}`, { title: 'Subtarefa da Ana', taskId }),
     call(ana, 'PUT', `/focus-sessions/${focusId}`, { ...focusBody, taskId }),
+    call(ana, 'PUT', `/routine-checks/${routineCheckId}`, {
+      stepId,
+      date: DATE,
+      doneAt: `${DATE}T12:00:00Z`,
+    }),
   ])
-  expect(dependents.map((response) => response.status)).toEqual([200, 200, 200, 200, 200])
+  expect(dependents.map((response) => response.status)).toEqual([200, 200, 200, 200, 200, 200])
 
   const pause = { habitId, startDate: DATE, endDate: '2026-11-10' }
   expect((await call(ana, 'PUT', `/pauses/${pauseId}`, pause)).status).toBe(200)
@@ -97,6 +106,8 @@ const resources = [
   ['task-rules', () => ruleId, { ...ruleBody, title: 'Invadido' }],
   ['subtasks', () => subtaskId, { title: 'Invadido', taskId: randomUUID() }],
   ['focus-sessions', () => focusId, { ...focusBody, minutes: 1 }],
+  ['routine-steps', () => stepId, { ...stepBody, title: 'Invadido' }],
+  ['routine-checks', () => routineCheckId, { stepId: randomUUID(), date: DATE }],
 ] as const
 
 describe('sem sessão', () => {
@@ -118,6 +129,12 @@ describe('sem sessão', () => {
     ['GET', '/focus-sessions'],
     ['PUT', `/focus-sessions/${randomUUID()}`],
     ['DELETE', `/focus-sessions/${randomUUID()}`],
+    ['GET', '/routine-steps'],
+    ['PUT', `/routine-steps/${randomUUID()}`],
+    ['DELETE', `/routine-steps/${randomUUID()}`],
+    ['GET', '/routine-checks'],
+    ['PUT', `/routine-checks/${randomUUID()}`],
+    ['DELETE', `/routine-checks/${randomUUID()}`],
     ['GET', '/snapshot'],
     ['GET', `/checks?${RANGE}`],
     ['GET', `/days?${RANGE}`],
@@ -164,6 +181,8 @@ describe('isolamento entre usuários', () => {
       'taskRules',
       'subtasks',
       'focusSessions',
+      'routineSteps',
+      'routineChecks',
       'notes',
       'days',
     ]
@@ -247,6 +266,15 @@ describe('isolamento entre usuários', () => {
     expect(task.status).toBe(404)
 
     await call(bia, 'DELETE', `/tasks/${own}`)
+  })
+
+  it('não marca passo da rotina de outro usuário', async () => {
+    const response = await call(bia, 'PUT', `/routine-checks/${randomUUID()}`, {
+      stepId,
+      date: DATE,
+      doneAt: `${DATE}T12:00:00Z`,
+    })
+    expect(response.status).toBe(404)
   })
 
   it('subtasks: não sobrescreve subtarefa de outro usuário usando tarefa própria', async () => {
@@ -411,6 +439,32 @@ describe('validação', () => {
     const badDay = { ...ruleBody, monthDay: 32 }
     expect((await call(bia, 'PUT', `/task-rules/${randomUUID()}`, noDays)).status).toBe(400)
     expect((await call(bia, 'PUT', `/task-rules/${randomUUID()}`, badDay)).status).toBe(400)
+  })
+
+  it('recusa passo com horário ou dia inválido', async () => {
+    const badTime = { ...stepBody, time: '25:00' }
+    const badDay = { ...stepBody, weekday: 7 }
+    expect((await call(bia, 'PUT', `/routine-steps/${randomUUID()}`, badTime)).status).toBe(400)
+    expect((await call(bia, 'PUT', `/routine-steps/${randomUUID()}`, badDay)).status).toBe(400)
+  })
+
+  it('remarcar um passo funciona, e desmarcar some da foto', async () => {
+    const step = randomUUID()
+    const check = `20261102${step.slice(8)}`
+    const checks = async () =>
+      ((await (await call(bia, 'GET', '/snapshot')).json()) as { routineChecks: { id: string }[] })
+        .routineChecks
+
+    await call(bia, 'PUT', `/routine-steps/${step}`, stepBody)
+    const done = (at: string | null, editedAt: string) => ({ stepId: step, date: DATE, doneAt: at, editedAt })
+    const moment = (seconds: number) => new Date(Date.now() - seconds * 1000).toISOString()
+
+    expect((await call(bia, 'PUT', `/routine-checks/${check}`, done(moment(30), moment(30)))).status).toBe(200)
+    expect(await checks()).toHaveLength(1)
+    expect((await call(bia, 'PUT', `/routine-checks/${check}`, done(null, moment(20)))).status).toBe(200)
+    expect(await checks()).toHaveLength(0)
+    expect((await call(bia, 'PUT', `/routine-checks/${check}`, done(moment(10), moment(10)))).status).toBe(200)
+    expect(await checks()).toHaveLength(1)
   })
 
   it('recusa sessão de foco sem duração válida', async () => {

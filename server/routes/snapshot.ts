@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, isNull } from 'drizzle-orm'
+import { and, asc, desc, eq, isNotNull, isNull } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { db } from '../db/client.js'
 import {
@@ -10,6 +10,8 @@ import {
   habits,
   milestones,
   notes,
+  routineChecks,
+  routineSteps,
   subtasks,
   taskRules,
   tasks,
@@ -36,6 +38,8 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
     ruleRows,
     subtaskRows,
     focusRows,
+    stepRows,
+    routineCheckRows,
     noteRows,
     dayRows,
   ] = await Promise.all([
@@ -85,6 +89,21 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
       .orderBy(asc(focusSessions.startedAt)),
     db
       .select()
+      .from(routineSteps)
+      .where(and(eq(routineSteps.userId, userId), isNull(routineSteps.deletedAt)))
+      .orderBy(asc(routineSteps.time), asc(routineSteps.position)),
+    db
+      .select()
+      .from(routineChecks)
+      .where(
+        and(
+          eq(routineChecks.userId, userId),
+          isNull(routineChecks.deletedAt),
+          isNotNull(routineChecks.doneAt),
+        ),
+      ),
+    db
+      .select()
       .from(notes)
       .where(and(eq(notes.userId, userId), isNull(notes.deletedAt)))
       .orderBy(desc(notes.updatedAt)),
@@ -102,6 +121,8 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
     taskRules: ruleRows,
     subtasks: subtaskRows,
     focusSessions: focusRows,
+    routineSteps: stepRows,
+    routineChecks: routineCheckRows,
     notes: noteRows,
     days: dayRows,
   })

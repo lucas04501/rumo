@@ -6,12 +6,13 @@ import { useFocusTimer } from '../data/focusTimer'
 import { useSnapshot } from '../data/store'
 import { addQuick, bringToToday } from '../data/taskActions'
 import { useNow } from '../data/useNow'
-import { formatLongDate } from '../lib/dates'
+import { formatLongDate, weekdayOf } from '../lib/dates'
 import { periodDates, periodStats } from '../lib/evolution'
 import { formatClock, isOver, leftMs } from '../lib/focus'
 import { deadlineLabel } from '../lib/goals'
 import { indexSnapshot } from '../lib/progress'
 import { parseQuickAdd } from '../lib/quickAdd'
+import { clockOf, currentStep, nextStep, stepsOn } from '../lib/routine'
 import { isStreakMark } from '../lib/streaks'
 import { overdueTasks } from '../lib/tasks'
 import { XP } from '../lib/xp'
@@ -32,6 +33,7 @@ export function Hoje() {
         <div>
           <Greeting />
           <Quote />
+          <RoutineShortcut />
           <FocusGoal />
           <EvolutionShortcut />
         </div>
@@ -251,6 +253,39 @@ function FocusShortcut() {
     <Link to="/foco" className="flex min-h-11 items-center gap-1.5 text-[15px] text-mist">
       <Timer size={17} strokeWidth={1.75} aria-hidden />
       {!timer ? 'Foco' : isOver(timer) ? 'Bloco concluído' : formatClock(leftMs(timer, now))}
+    </Link>
+  )
+}
+
+function RoutineShortcut() {
+  const { date } = useDay()
+  const { data: snapshot } = useSnapshot()
+  const now = useNow(60_000)
+  if (!snapshot) return null
+
+  const steps = stepsOn(snapshot.routineSteps, weekdayOf(date))
+  if (steps.length === 0) return null
+
+  const clock = clockOf(now)
+  const current = currentStep(steps, clock)
+  const next = nextStep(steps, clock)
+
+  return (
+    <Link to="/rotina" className="mt-5 flex min-h-11 items-center justify-between gap-3 text-[15px]">
+      <span className="min-w-0">
+        {current && (
+          <span className="block truncate">
+            <span className="text-mist">Agora: </span>
+            {current.title}
+          </span>
+        )}
+        {next && (
+          <span className="block truncate text-mist">
+            {next.time}: {next.title}
+          </span>
+        )}
+      </span>
+      <ChevronRight size={18} strokeWidth={1.75} className="shrink-0 text-mist" aria-hidden />
     </Link>
   )
 }

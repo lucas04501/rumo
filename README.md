@@ -30,6 +30,7 @@ Em desenvolvimento ativo.
 | Publicação, offline e acabamento | Concluída e publicada |
 | Prioridades, subtarefas, tarefas recorrentes, foco e Pomodoro | Concluída e publicada |
 | Evolução, gráficos, padrões e fluxos rápidos | Concluída e publicada |
+| Rotina por dia da semana e relatório do dia no calendário | Concluída e publicada |
 | Conquistas, treinos | Planejadas |
 
 ## Stack

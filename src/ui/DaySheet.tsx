@@ -1,16 +1,21 @@
-import { Plus, Repeat } from 'lucide-react'
-import { useState, type FormEvent } from 'react'
+import { Check, Plus, Repeat } from 'lucide-react'
+import { useMemo, useState, type FormEvent, type ReactNode } from 'react'
 import { addTaskOn, saveDayNote, setDayCompleted } from '../data/dayActions'
 import { setCheck } from '../data/habitActions'
 import type { Snapshot } from '../data/types'
 import { formatLongDate } from '../lib/dates'
+import { dayReport, type DayReport } from '../lib/dayReport'
+import { formatMinutes } from '../lib/evolution'
 import { isScheduled } from '../lib/habits'
-import { checksOf, dayProgress, indexSnapshot, planOf } from '../lib/progress'
+import { checksOf, indexSnapshot, planOf } from '../lib/progress'
 import { isPlanned, tasksOn } from '../lib/tasks'
+import { Meter } from './EvolutionCharts'
 import { iconFor } from './habitIcons'
 import { ItemRow } from './ItemRow'
 import { Sheet } from './Sheet'
 import { TaskRow } from './TaskRow'
+
+const HEADING = 'font-display text-lg font-semibold'
 
 type DaySheetProps = {
   date: string
@@ -19,15 +24,23 @@ type DaySheetProps = {
   onClosed: () => void
 }
 
+/** O dia inteiro em um lugar: o que foi feito, o que foi anotado e o que os dados dizem. */
 export function DaySheet({ date, today, snapshot, onClosed }: DaySheetProps) {
   const day = snapshot.days.find((item) => item.date === date)
   const [note, setNote] = useState(day?.note ?? '')
   const [title, setTitle] = useState('')
 
   const habits = snapshot.habits.filter((habit) => isScheduled(planOf(habit, snapshot), date))
+  const habitsDone = habits.filter((habit) => checksOf(habit.id, snapshot).has(date)).length
   const tasks = tasksOn(snapshot, date)
+  const tasksDone = tasks.filter((task) => task.doneAt).length
   const isFuture = date > today
-  const perfect = dayProgress(indexSnapshot(snapshot), date).perfect
+
+  const report = useMemo(
+    () => dayReport(snapshot, indexSnapshot(snapshot), date, today),
+    [snapshot, date, today],
+  )
+  const perfect = report.total > 0 && report.done === report.total
 
   const saveNote = () => {
     if (note !== (day?.note ?? '')) saveDayNote(date, note)
@@ -50,10 +63,28 @@ export function DaySheet({ date, today, snapshot, onClosed }: DaySheetProps) {
       }}
     >
       {() => (
-        <div className="mt-2">
+        <div className="mt-2 grid gap-5">
+          {!isFuture && <Summary report={report} />}
+
+          {report.insights.length > 0 && (
+            <ul className="grid gap-1 text-[15px]/snug">
+              {report.insights.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
+          )}
+
           {habits.length > 0 && !isFuture && (
-            <section aria-label="Hábitos do dia">
-              <ul className="divide-y divide-white/8">
+            <section aria-labelledby="habitos-do-dia">
+              <div className="flex items-baseline justify-between gap-3">
+                <h3 id="habitos-do-dia" className={HEADING}>
+                  Hábitos
+                </h3>
+                <p className="text-[15px] text-mist">
+                  {habitsDone} de {habits.length}
+                </p>
+              </div>
+              <ul className="mt-1 divide-y divide-white/8">
                 {habits.map((habit) => {
                   const Icon = iconFor(habit.icon)
                   const done = checksOf(habit.id, snapshot).has(date)
@@ -77,10 +108,17 @@ export function DaySheet({ date, today, snapshot, onClosed }: DaySheetProps) {
             </section>
           )}
 
-          <section aria-labelledby="tarefas-do-dia" className="mt-4">
-            <h3 id="tarefas-do-dia" className="font-display text-lg font-semibold">
-              Tarefas
-            </h3>
+          <section aria-labelledby="tarefas-do-dia">
+            <div className="flex items-baseline justify-between gap-3">
+              <h3 id="tarefas-do-dia" className={HEADING}>
+                Tarefas
+              </h3>
+              {tasks.length > 0 && (
+                <p className="text-[15px] text-mist">
+                  {tasksDone} de {tasks.length}
+                </p>
+              )}
+            </div>
             <ul className="mt-1 divide-y divide-white/8">
               {tasks.map((task) => (
                 <li key={task.id}>
@@ -111,7 +149,67 @@ export function DaySheet({ date, today, snapshot, onClosed }: DaySheetProps) {
             </ul>
           </section>
 
-          <label className="mt-4 grid gap-1.5 text-[15px] text-mist">
+          {report.routine.length > 0 && (
+            <Detail title="Rotina">
+              <ul className="grid gap-1">
+                {report.routine.map((step) => (
+                  <li key={step.id} className="flex items-baseline gap-3 text-[15px]">
+                    <span className="w-11 shrink-0 text-mist">{step.time}</span>
+                    <span className={`min-w-0 flex-1 wrap-anywhere ${step.done ? 'text-foam/70' : ''}`}>
+                      {step.title}
+                    </span>
+                    {step.done && (
+                      <Check
+                        size={16}
+                        strokeWidth={2.25}
+                        className="shrink-0 self-center text-tide"
+                        aria-label="Feito"
+                      />
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </Detail>
+          )}
+
+          {report.focus.blocks > 0 && (
+            <Detail title="Foco">
+              <p className="text-[15px]">
+                {report.focus.blocks} {report.focus.blocks === 1 ? 'bloco' : 'blocos'},{' '}
+                {formatMinutes(report.focus.minutes)}
+                {report.focus.titles.length > 0 && (
+                  <span className="text-mist"> em {report.focus.titles.join(', ')}</span>
+                )}
+              </p>
+            </Detail>
+          )}
+
+          {report.milestones.length + report.goals.length > 0 && (
+            <Detail title="Metas">
+              <ul className="grid gap-1 text-[15px]">
+                {report.milestones.map((milestone) => (
+                  <li key={milestone}>Marco alcançado: {milestone}</li>
+                ))}
+                {report.goals.map((goal) => (
+                  <li key={goal}>Meta concluída: {goal}</li>
+                ))}
+              </ul>
+            </Detail>
+          )}
+
+          {report.notes.length > 0 && (
+            <Detail title="Notas editadas neste dia">
+              <ul className="grid gap-1 text-[15px]">
+                {report.notes.map((line) => (
+                  <li key={line} className="wrap-anywhere">
+                    {line}
+                  </li>
+                ))}
+              </ul>
+            </Detail>
+          )}
+
+          <label className="grid gap-1.5 text-[15px] text-mist">
             Nota do dia
             <textarea
               className="field py-3"
@@ -126,7 +224,7 @@ export function DaySheet({ date, today, snapshot, onClosed }: DaySheetProps) {
           {!isFuture && !perfect && (
             <button
               type="button"
-              className="ghost mt-4 w-full"
+              className="ghost w-full"
               aria-pressed={Boolean(day?.completedAt)}
               onClick={() =>
                 setDayCompleted(date, day?.completedAt ? null : new Date().toISOString())
@@ -135,9 +233,43 @@ export function DaySheet({ date, today, snapshot, onClosed }: DaySheetProps) {
               {day?.completedAt ? 'Desmarcar dia concluído' : 'Marcar dia como concluído'}
             </button>
           )}
-          {perfect && !isFuture && <p className="mt-4 text-[15px] text-sun">Dia perfeito.</p>}
+          {perfect && !isFuture && <p className="text-[15px] text-sun">Dia perfeito.</p>}
         </div>
       )}
     </Sheet>
+  )
+}
+
+function Summary({ report }: { report: DayReport }) {
+  if (report.percent === null && report.xp === 0) {
+    return <p className="text-[15px] text-mist">Nada programado neste dia.</p>
+  }
+
+  return (
+    <div>
+      <p className="flex items-baseline justify-between gap-3">
+        <span className="text-[15px] text-mist">
+          {report.total > 0 ? `${report.done} de ${report.total} concluídos` : 'Sem itens programados'}
+        </span>
+        <span className="flex items-baseline gap-3">
+          {report.xp > 0 && <span className="text-[15px] font-semibold text-sun">+{report.xp} XP</span>}
+          {report.percent !== null && <span className="text-[17px] font-semibold">{report.percent}%</span>}
+        </span>
+      </p>
+      {report.percent !== null && (
+        <div className="mt-2">
+          <Meter value={report.percent} label={`${report.percent}% do dia concluído`} />
+        </div>
+      )}
+    </div>
+  )
+}
+
+function Detail({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section>
+      <h3 className={HEADING}>{title}</h3>
+      <div className="mt-1.5">{children}</div>
+    </section>
   )
 }

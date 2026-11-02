@@ -1,4 +1,5 @@
 import {
+  CalendarClock,
   ChartNoAxesCombined,
   ChevronRight,
   NotebookPen,
@@ -15,6 +16,7 @@ type Area = { to: string; label: string; icon: LucideIcon }
 
 // Treinos entra aqui quando existir. Item sem tela só atrapalha.
 const AREAS: Area[] = [
+  { to: '/rotina', label: 'Rotina', icon: CalendarClock },
   { to: '/evolucao', label: 'Evolução', icon: ChartNoAxesCombined },
   { to: '/notas', label: 'Notas', icon: NotebookPen },
   { to: '/foco', label: 'Foco', icon: Timer },

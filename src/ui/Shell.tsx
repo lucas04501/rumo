@@ -1,5 +1,6 @@
 import { motion } from 'motion/react'
 import {
+  CalendarClock,
   CalendarDays,
   ChartNoAxesCombined,
   Compass,
@@ -35,11 +36,12 @@ const MAIN_TABS: Tab[] = [
 
 const PHONE_TABS: Tab[] = [
   ...MAIN_TABS,
-  { to: '/mais', label: 'Mais', icon: Ellipsis, also: ['/evolucao', '/notas', '/foco'] },
+  { to: '/mais', label: 'Mais', icon: Ellipsis, also: ['/rotina', '/evolucao', '/notas', '/foco'] },
 ]
 
 const WIDE_TABS: Tab[] = [
   ...MAIN_TABS,
+  { to: '/rotina', label: 'Rotina', icon: CalendarClock },
   { to: '/evolucao', label: 'Evolução', icon: ChartNoAxesCombined },
   { to: '/notas', label: 'Notas', icon: NotebookPen },
   { to: '/foco', label: 'Foco', icon: Timer },

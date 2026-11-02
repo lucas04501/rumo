@@ -29,6 +29,13 @@
       "when": 1793639180045,
       "tag": "0003_giant_hammerhead",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1793644757456,
+      "tag": "0004_groovy_glorian",
+      "breakpoints": true
     }
   ]
 }

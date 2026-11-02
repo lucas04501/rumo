@@ -81,6 +81,23 @@ export type FocusSession = {
   plannedMinutes: number
 }
 
+export type RoutineStep = {
+  id: string
+  /** 0 é domingo, como em `Date.getDay()`. */
+  weekday: number
+  /** HH:MM */
+  time: string
+  title: string
+  position: number
+}
+
+export type RoutineCheck = {
+  id: string
+  stepId: string
+  date: string
+  doneAt: string | null
+}
+
 export type Note = {
   id: string
   goalId: string | null
@@ -107,6 +124,8 @@ export type Snapshot = {
   taskRules: TaskRule[]
   subtasks: Subtask[]
   focusSessions: FocusSession[]
+  routineSteps: RoutineStep[]
+  routineChecks: RoutineCheck[]
   notes: Note[]
   days: Day[]
 }

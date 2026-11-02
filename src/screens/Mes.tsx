@@ -4,6 +4,7 @@ import { useDay } from '../data/DayProvider'
 import { useSnapshot } from '../data/store'
 import type { Snapshot } from '../data/types'
 import { addDays, formatLongDate, weekOf } from '../lib/dates'
+import { calendarMarks } from '../lib/dayReport'
 import { monthGrid, monthInsights, monthName, monthOf, shiftMonth } from '../lib/month'
 import { dayProgress, indexedTasks, indexSnapshot, type SnapshotIndex } from '../lib/progress'
 import { DaySheet } from '../ui/DaySheet'
@@ -103,6 +104,7 @@ function MonthView({ month, today, snapshot, index, onMonth, onOpen }: MonthView
   const label = `${name[0].toUpperCase()}${name.slice(1)} de ${month.slice(0, 4)}`
   const insights = monthInsights(snapshot, month, today)
   const completed = new Set(snapshot.days.filter((day) => day.completedAt).map((day) => day.date))
+  const { noted, focused } = calendarMarks(snapshot)
 
   return (
     <div className="lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)] lg:gap-16">
@@ -143,26 +145,44 @@ function MonthView({ month, today, snapshot, index, onMonth, onOpen }: MonthView
                 data-done={done}
                 data-today={date === today}
                 data-future={date > today}
-                aria-label={`${formatLongDate(date)}, ${description}`}
+                aria-label={`${formatLongDate(date)}, ${description}${
+                  noted.has(date) ? ', com anotação' : ''
+                }${focused.has(date) ? ', com foco' : ''}`}
                 onClick={() => onOpen(date)}
               >
                 {!done && progress.level > 0 && (
                   <span className="cal-fill" style={{ transform: `scaleY(${progress.level})` }} />
                 )}
                 <span className="cal-number">{Number(date.slice(8))}</span>
+                {(noted.has(date) || focused.has(date)) && (
+                  <span className="cal-marks" aria-hidden>
+                    {noted.has(date) && <i data-kind="note" />}
+                    {focused.has(date) && <i data-kind="focus" />}
+                  </span>
+                )}
               </button>
             )
           })}
         </div>
       </div>
 
-      {insights.length > 0 && (
-        <ul className="mt-6 grid gap-1 self-start text-[17px] lg:mt-[76px]">
-          {insights.map((line) => (
-            <li key={line}>{line}</li>
-          ))}
-        </ul>
-      )}
+      <div className="mt-6 self-start lg:mt-[76px]">
+        {insights.length > 0 && (
+          <ul className="grid gap-1 text-[17px]">
+            {insights.map((line) => (
+              <li key={line}>{line}</li>
+            ))}
+          </ul>
+        )}
+        <p className="mt-4 flex items-center gap-4 text-sm text-mist">
+          <span className="flex items-center gap-1.5">
+            <span className="cal-key" data-kind="note" aria-hidden /> Anotação
+          </span>
+          <span className="flex items-center gap-1.5">
+            <span className="cal-key" data-kind="focus" aria-hidden /> Foco
+          </span>
+        </p>
+      </div>
     </div>
   )
 }
@@ -179,6 +199,7 @@ type WeekViewProps = {
 function WeekView({ weekStart, today, snapshot, index, onWeek, onOpen }: WeekViewProps) {
   const days = weekOf(weekStart)
   const completed = new Set(snapshot.days.filter((day) => day.completedAt).map((day) => day.date))
+  const { noted, focused } = calendarMarks(snapshot)
   const label = `${days[0].slice(8)}/${days[0].slice(5, 7)} a ${days[6].slice(8)}/${days[6].slice(5, 7)}`
 
   return (
@@ -195,6 +216,14 @@ function WeekView({ weekStart, today, snapshot, index, onWeek, onOpen }: WeekVie
         {days.map((date) => {
           const tasks = indexedTasks(index, date)
           const progress = dayProgress(index, date)
+          const summary = [
+            ...(progress.habitTotal > 0 && date <= today
+              ? [`${progress.habitDone} de ${progress.habitTotal} hábitos`]
+              : []),
+            ...(noted.has(date) ? ['nota'] : []),
+            ...(focused.has(date) ? ['foco'] : []),
+            ...tasks.map((task) => task.title),
+          ]
 
           return (
             <li key={date}>
@@ -208,9 +237,7 @@ function WeekView({ weekStart, today, snapshot, index, onWeek, onOpen }: WeekVie
                     {formatLongDate(date)}
                   </span>
                   <span className="block truncate text-[15px] text-mist">
-                    {tasks.length > 0
-                      ? tasks.map((task) => task.title).join(', ')
-                      : 'Toque para planejar'}
+                    {summary.length > 0 ? summary.join(', ') : 'Toque para planejar'}
                   </span>
                 </span>
                 <span className="shrink-0 text-[15px] text-mist">
