@@ -10,13 +10,341 @@
   }
 }
 
+/* Maré: a tela inteira é o mar */
+.tide {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.tide-layer {
+  position: absolute;
+  inset: 0;
+}
+
+.tide-crest {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% - 1px);
+  width: 200%;
+  line-height: 0;
+  animation: tide-drift linear infinite;
+  will-change: transform;
+}
+
+@keyframes tide-drift {
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.sun-glow {
+  position: fixed;
+  top: -82vmin;
+  right: -82vmin;
+  width: 180vmin;
+  height: 180vmin;
+  pointer-events: none;
+  transform-origin: center;
+  background: radial-gradient(
+    closest-side,
+    rgb(250 190 106 / 0.62),
+    rgb(242 150 78 / 0.32) 30%,
+    rgb(232 120 66 / 0.12) 58%,
+    rgb(232 120 66 / 0.03) 80%,
+    transparent
+  );
+}
+
+@media (min-width: 64rem) {
+  .sun-glow {
+    top: -58vmin;
+    right: -58vmin;
+    width: 116vmin;
+    height: 116vmin;
+  }
+}
+
+/* Itens da lista */
+.item-row {
+  position: relative;
+  display: flex;
+  width: 100%;
+  min-height: 56px;
+  align-items: center;
+  gap: 12px;
+  padding-block: 8px;
+  text-align: left;
+  transition: transform 120ms var(--ease-out);
+}
+
+.item-row:active {
+  transform: scale(0.985);
+}
+
+.check {
+  position: relative;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  place-items: center;
+  border: 1.5px solid rgb(157 182 186 / 0.6);
+  border-radius: 999px;
+  transition:
+    background-color 160ms var(--ease-out),
+    border-color 160ms var(--ease-out);
+}
+
+.check path {
+  fill: none;
+  stroke: var(--color-tide-ink);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 200ms var(--ease-out);
+}
+
+.check[data-done='true'] {
+  border-color: var(--color-tide);
+  background: var(--color-tide);
+  animation: check-pop 280ms var(--ease-out);
+}
+
+.check[data-done='true'] path {
+  stroke-dashoffset: 0;
+}
+
+@keyframes check-pop {
+  0% {
+    transform: scale(0.82);
+  }
+  55% {
+    transform: scale(1.1);
+  }
+}
+
+.check-ripple {
+  position: absolute;
+  inset: -1.5px;
+  border: 1.5px solid var(--color-tide);
+  border-radius: inherit;
+  pointer-events: none;
+  animation: check-ripple 560ms var(--ease-out) forwards;
+}
+
+@keyframes check-ripple {
+  from {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+.xp-float {
+  position: absolute;
+  top: 2px;
+  left: 44px;
+  color: var(--color-sun);
+  font-size: 14px;
+  font-weight: 600;
+  pointer-events: none;
+  animation: xp-float 900ms var(--ease-out) forwards;
+}
+
+@keyframes xp-float {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  20% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+}
+
+/* Botão de ação */
+.action {
+  flex-shrink: 0;
+  min-height: 44px;
+  padding-inline: 18px;
+  border-radius: 12px;
+  background: var(--color-tide);
+  color: var(--color-tide-ink);
+  font-size: 15px;
+  font-weight: 600;
+  transition:
+    transform 120ms var(--ease-out),
+    background-color 120ms var(--ease-out);
+}
+
+.action:active {
+  transform: scale(0.97);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .action:hover {
+    background: #6ce3d1;
+  }
+}
+
+/* Rota */
+.boat-bob {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: boat-bob 3.6s ease-in-out infinite alternate;
+}
+
+@keyframes boat-bob {
+  from {
+    transform: translateY(0.8px) rotate(-1.6deg);
+  }
+  to {
+    transform: translateY(-0.8px) rotate(1.6deg);
+  }
+}
+
+.station-pop {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: station-pop 420ms var(--ease-out);
+}
+
+@keyframes station-pop {
+  0% {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.14);
+  }
+}
+
+/* Vento a favor */
+.wind-slot {
+  position: fixed;
+  inset-inline: 16px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 76px);
+  z-index: 30;
+  overflow: hidden;
+  padding-top: 4px;
+  pointer-events: none;
+}
+
+.wind-toast {
+  max-width: 420px;
+  margin-inline: auto;
+  padding: 12px 16px;
+  border: 1px solid rgb(246 178 94 / 0.35);
+  border-radius: 14px;
+  background: var(--color-abyss);
+}
+
+@media (min-width: 64rem) {
+  .wind-slot {
+    bottom: 24px;
+  }
+}
+
+/* Onda dos grandes momentos */
+.wash {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  overflow: hidden;
+  text-align: center;
+}
+
+.wash-layer {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.wash-crest {
+  position: absolute;
+  left: 0;
+  width: 200%;
+  max-width: none;
+}
+
+.wash-crest-top {
+  bottom: calc(100% - 1px);
+}
+
+.wash-crest-bottom {
+  top: calc(100% - 1px);
+  transform: scaleY(-1);
+}
+
+.wash-sun {
+  display: block;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto 28px;
+  border-radius: 999px;
+  background: var(--color-sun);
+  box-shadow: 0 12px 120px 24px rgb(246 178 94 / 0.42);
+}
+
+.wash-content {
+  display: block;
+}
+
+/* Menos movimento: mantém o que explica, tira o que só balança */
 @media (prefers-reduced-motion: reduce) {
+  .tide-crest,
+  .boat-bob,
+  .check-ripple,
+  .station-pop {
+    animation: none;
+  }
+
+  .check-ripple {
+    display: none;
+  }
+
+  .check[data-done='true'] {
+    animation: none;
+  }
+
   .screen-in {
     animation-name: screen-fade;
   }
 
+  .xp-float {
+    animation-name: xp-fade;
+  }
+
   @keyframes screen-fade {
     from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes xp-fade {
+    from {
+      opacity: 0;
+    }
+    20%,
+    70% {
+      opacity: 1;
+    }
+    to {
       opacity: 0;
     }
   }

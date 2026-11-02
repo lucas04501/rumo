@@ -1,5 +1,6 @@
 import { MotionConfig } from 'motion/react'
 import { BrowserRouter, Route, Routes } from 'react-router'
+import { DayProvider } from './data/DayProvider'
 import { Shell } from './ui/Shell'
 import { Habitos } from './screens/Habitos'
 import { Hoje } from './screens/Hoje'
@@ -10,17 +11,19 @@ import { Notas } from './screens/Notas'
 export function App() {
   return (
     <MotionConfig reducedMotion="user">
-      <BrowserRouter>
-        <Routes>
-          <Route element={<Shell />}>
-            <Route index element={<Hoje />} />
-            <Route path="habitos" element={<Habitos />} />
-            <Route path="metas" element={<Metas />} />
-            <Route path="mes" element={<Mes />} />
-            <Route path="notas" element={<Notas />} />
-          </Route>
-        </Routes>
-      </BrowserRouter>
+      <DayProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<Shell />}>
+              <Route index element={<Hoje />} />
+              <Route path="habitos" element={<Habitos />} />
+              <Route path="metas" element={<Metas />} />
+              <Route path="mes" element={<Mes />} />
+              <Route path="notas" element={<Notas />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
+      </DayProvider>
     </MotionConfig>
   )
 }

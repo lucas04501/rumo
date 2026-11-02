@@ -1,6 +1,11 @@
 import { motion } from 'motion/react'
 import { CalendarDays, Compass, ListChecks, NotebookPen, Sunrise, type LucideIcon } from 'lucide-react'
 import { NavLink, Outlet, useLocation } from 'react-router'
+import { useDay } from '../data/DayProvider'
+import { SunGlow } from '../voyage/SunGlow'
+import { Tide } from '../voyage/Tide'
+import { WaveWash } from '../voyage/WaveWash'
+import { WindToast } from './WindToast'
 
 type Tab = { to: string; label: string; icon: LucideIcon }
 
@@ -14,15 +19,20 @@ const TABS: Tab[] = [
 
 export function Shell() {
   const { pathname } = useLocation()
+  const { level, wind, dismissWind, celebration, dismissCelebration } = useDay()
 
   return (
     <div className="relative grid h-dvh grid-rows-[minmax(0,1fr)_auto] lg:grid-cols-[224px_minmax(0,1fr)] lg:grid-rows-1">
+      <Tide level={level} />
+      <SunGlow level={level} />
       <main className="relative z-10 overflow-y-auto overscroll-contain lg:col-start-2">
         <div key={pathname} className="screen-in">
           <Outlet />
         </div>
       </main>
       <Navigation />
+      <WindToast message={wind} onDone={dismissWind} />
+      <WaveWash celebration={celebration} onDone={dismissCelebration} />
     </div>
   )
 }

@@ -51,6 +51,7 @@ O limite de CPU por requisição do plano gratuito é arriscado para hash de sen
 
 ## Dúvidas abertas
 
+- A sensação do núcleo visual aguarda aprovação no checkpoint da etapa 2. A revisão final de design e o `DESIGN.md` ficam para depois dela, porque a direção ainda pode mudar.
 - O aparelho principal é mesmo um iPhone? O vídeo sugere que sim. Afeta só o háptico.
 - A região `gru1` da Vercel está disponível no plano Hobby? Conferir no deploy da etapa 3.
 - Vite + Hono na mesma Vercel não tem guia oficial exato. O deploy de teste da etapa 3 valida isso.
