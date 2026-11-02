@@ -22,7 +22,9 @@ PWA de metas, hábitos e planner mensal, em português do Brasil. Uso pessoal ag
 - Em `server/` e `api/`, imports relativos terminam em `.js`: a Vercel roda ESM sem empacotar. `schema.ts` fica em um arquivo só, porque o drizzle-kit não resolve esses imports.
 - O `.env` aponta só para a branch `dev`. A conexão da branch principal não fica neste computador. Para migrar a principal, passe `DATABASE_URL` pelo ambiente, sem gravar em arquivo nem exibir.
 - Testes nunca tocam a branch principal.
+- Em produção, verificação é só leitura. Nunca confirme "cadastro fechado" tentando cadastrar: use `GET /api/signup-status`. Depois de um deploy, o endereço principal leva alguns segundos para apontar para a versão nova.
 - Cadastro fechado por padrão (`ALLOW_SIGNUP`). Abre só para criar a conta, e fecha em seguida.
+- Deploy em produção: `npx vercel deploy --prod --yes`. Autorizado pelo Lucas em 2026-11-02. Sem o `--prod`, o deploy vira pré-visualização.
 - Teal é ação e progresso. Âmbar é só recompensa.
 - O que acontece muitas vezes ao dia fica discreto. A onda em tela cheia fica para os grandes momentos.
 - Sempre respeitar `prefers-reduced-motion` e gatear `:hover`.
