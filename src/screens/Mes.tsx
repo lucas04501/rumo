@@ -5,7 +5,7 @@ import { useSnapshot } from '../data/store'
 import type { Snapshot } from '../data/types'
 import { addDays, formatLongDate, weekOf } from '../lib/dates'
 import { monthGrid, monthInsights, monthName, monthOf, shiftMonth } from '../lib/month'
-import { dayProgress, indexSnapshot, type SnapshotIndex } from '../lib/progress'
+import { dayProgress, indexedTasks, indexSnapshot, type SnapshotIndex } from '../lib/progress'
 import { DaySheet } from '../ui/DaySheet'
 import { Screen } from '../ui/Screen'
 
@@ -193,7 +193,7 @@ function WeekView({ weekStart, today, snapshot, index, onWeek, onOpen }: WeekVie
 
       <ul className="mt-2 divide-y divide-white/8">
         {days.map((date) => {
-          const tasks = index.tasks.get(date) ?? []
+          const tasks = indexedTasks(index, date)
           const progress = dayProgress(index, date)
 
           return (

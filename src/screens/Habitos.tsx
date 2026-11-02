@@ -3,14 +3,16 @@ import { useState } from 'react'
 import { useDay } from '../data/DayProvider'
 import { setCheck } from '../data/habitActions'
 import { useSnapshot } from '../data/store'
-import type { Habit, Snapshot } from '../data/types'
+import type { Habit, Snapshot, TaskRule } from '../data/types'
 import { formatLongDate, formatShortDate, weekOf } from '../lib/dates'
 import { haptic, soundCheck, soundUncheck } from '../lib/feedback'
 import { describeWeekdays, isPaused, isScheduled } from '../lib/habits'
 import { checksOf, planOf } from '../lib/progress'
 import { currentStreak } from '../lib/streaks'
+import { describeRule } from '../lib/tasks'
 import { iconFor } from '../ui/habitIcons'
 import { HabitSheet } from '../ui/HabitSheet'
+import { RuleSheet } from '../ui/RuleSheet'
 import { Screen } from '../ui/Screen'
 
 const WEEK_LETTERS = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S']
@@ -54,6 +56,8 @@ export function Habitos() {
         </ul>
       )}
 
+      <RepeatingTasks snapshot={snapshot} today={date} />
+
       {editing && (
         <HabitSheet
           key={editing === 'novo' ? 'novo' : editing.id}
@@ -64,6 +68,56 @@ export function Habitos() {
         />
       )}
     </Screen>
+  )
+}
+
+function RepeatingTasks({ snapshot, today }: { snapshot: Snapshot; today: string }) {
+  const [editing, setEditing] = useState<TaskRule | 'nova' | null>(null)
+  const rules = snapshot.taskRules.filter((rule) => !rule.endDate)
+
+  return (
+    <section aria-labelledby="tarefas-que-repetem" className="mt-9 max-w-2xl">
+      <div className="flex items-center justify-between gap-4">
+        <h2 id="tarefas-que-repetem" className="font-display text-xl font-semibold">
+          Tarefas que repetem
+        </h2>
+        <button type="button" className="ghost" onClick={() => setEditing('nova')}>
+          Nova
+        </button>
+      </div>
+
+      {rules.length === 0 ? (
+        <p className="mt-2 max-w-[42ch] text-[17px] text-mist">
+          Conta, faxina, relatório: crie uma vez e a tarefa aparece sozinha no dia.
+        </p>
+      ) : (
+        <ul className="mt-1 divide-y divide-white/8">
+          {rules.map((rule) => (
+            <li key={rule.id}>
+              <button
+                type="button"
+                className="min-h-14 w-full py-2 text-left"
+                aria-label={`Editar ${rule.title}`}
+                onClick={() => setEditing(rule)}
+              >
+                <span className="block text-[17px] wrap-anywhere">{rule.title}</span>
+                <span className="block text-sm text-mist">{describeRule(rule)}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+
+      {editing && (
+        <RuleSheet
+          key={editing === 'nova' ? 'nova' : editing.id}
+          rule={editing === 'nova' ? null : editing}
+          position={snapshot.taskRules.length}
+          today={today}
+          onClosed={() => setEditing(null)}
+        />
+      )}
+    </section>
   )
 }
 

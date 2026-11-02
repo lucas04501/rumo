@@ -2,6 +2,8 @@ import { useState, type ReactNode } from 'react'
 
 type ItemRowProps = {
   title: string
+  /** Nome lido por leitores de tela, quando diz mais que o título. */
+  label?: string
   done: boolean
   /** Conclui ou desfaz o item e devolve o XP ganho. */
   onToggle: () => number
@@ -11,7 +13,7 @@ type ItemRowProps = {
 
 type Float = { id: number; xp: number }
 
-export function ItemRow({ title, done, onToggle, leading, trailing }: ItemRowProps) {
+export function ItemRow({ title, label, done, onToggle, leading, trailing }: ItemRowProps) {
   const [ripples, setRipples] = useState(0)
   const [floats, setFloats] = useState<Float[]>([])
 
@@ -27,7 +29,7 @@ export function ItemRow({ title, done, onToggle, leading, trailing }: ItemRowPro
       type="button"
       role="checkbox"
       aria-checked={done}
-      aria-label={title}
+      aria-label={label ?? title}
       className="item-row"
       onClick={handleClick}
     >
@@ -38,7 +40,7 @@ export function ItemRow({ title, done, onToggle, leading, trailing }: ItemRowPro
         {ripples > 0 && done && <span key={ripples} className="check-ripple" />}
       </span>
       {leading}
-      <span className={`min-w-0 flex-1 text-[17px] transition-colors duration-200 ${done ? 'text-foam/70' : ''}`}>
+      <span className={`min-w-0 flex-1 text-[17px] wrap-anywhere transition-colors duration-200 ${done ? 'text-foam/70' : ''}`}>
         {title}
       </span>
       {trailing}

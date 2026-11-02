@@ -27,7 +27,9 @@ Em desenvolvimento ativo.
 | Metas, marcos e vínculos com hábitos e tarefas | Concluída e publicada |
 | Calendário do mês, semana e insights | Concluída e publicada |
 | Notas, registro diário e recompensas | Concluída e publicada |
-| Produtividade, evolução, conquistas, treinos | Planejadas |
+| Publicação, offline e acabamento | Concluída e publicada |
+| Prioridades, subtarefas, tarefas recorrentes, foco e Pomodoro | Concluída e publicada |
+| Evolução, conquistas, treinos | Planejadas |
 
 ## Stack
 

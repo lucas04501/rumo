@@ -38,6 +38,8 @@ export type Pause = {
 
 export type Check = { habitId: string; date: string }
 
+export type Priority = 'high' | 'normal' | 'low'
+
 export type Task = {
   id: string
   date: string
@@ -45,6 +47,38 @@ export type Task = {
   goalId: string | null
   doneAt: string | null
   position: number
+  priority: Priority
+  ruleId: string | null
+  skippedAt: string | null
+}
+
+export type TaskRule = {
+  id: string
+  title: string
+  weekdays: number[]
+  monthDay: number | null
+  startDate: string
+  endDate: string | null
+  priority: Priority
+  goalId: string | null
+  position: number
+}
+
+export type Subtask = {
+  id: string
+  taskId: string
+  title: string
+  position: number
+  doneAt: string | null
+}
+
+export type FocusSession = {
+  id: string
+  taskId: string | null
+  date: string
+  startedAt: string
+  minutes: number
+  plannedMinutes: number
 }
 
 export type Note = {
@@ -70,6 +104,9 @@ export type Snapshot = {
   pauses: Pause[]
   checks: Check[]
   tasks: Task[]
+  taskRules: TaskRule[]
+  subtasks: Subtask[]
+  focusSessions: FocusSession[]
   notes: Note[]
   days: Day[]
 }

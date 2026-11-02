@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Habit, Snapshot } from '../data/types'
 import { goalInFocus, habitsOn, summarizeDay, xpOf } from './progress'
+import { newTask } from './tasks'
 import { XP, hasTailwind } from './xp'
 
 const MONDAY = '2026-11-02'
@@ -28,20 +29,17 @@ function snapshot(overrides: Partial<Snapshot> = {}): Snapshot {
     pauses: [],
     checks: [],
     tasks: [],
+    taskRules: [],
+    subtasks: [],
+    focusSessions: [],
     notes: [],
-  days: [],
+    days: [],
     ...overrides,
   }
 }
 
-const task = (id: string, date: string, doneAt: string | null = null) => ({
-  id,
-  date,
-  title: id,
-  goalId: null,
-  doneAt,
-  position: 0,
-})
+const task = (id: string, date: string, doneAt: string | null = null) =>
+  newTask({ id, date, title: id, doneAt, position: 0 })
 
 describe('habitsOn', () => {
   it('traz só os hábitos programados para o dia', () => {

@@ -42,12 +42,43 @@ export const pauseFields = z.object({
   endDate: isoDate,
 })
 
+const priority = z.enum(['high', 'normal', 'low']).default('normal')
+
 export const taskFields = z.object({
   date: isoDate,
   title,
   goalId: uuid.nullable().default(null),
   doneAt: instant,
   position,
+  priority,
+  ruleId: uuid.nullable().default(null),
+  skippedAt: instant,
+})
+
+export const taskRuleFields = z.object({
+  title,
+  weekdays: z.array(z.number().int().min(0).max(6)).min(1).max(7),
+  monthDay: z.number().int().min(1).max(31).nullable().default(null),
+  startDate: isoDate,
+  endDate: isoDate.nullable().default(null),
+  priority,
+  goalId: uuid.nullable().default(null),
+  position,
+})
+
+export const subtaskFields = z.object({
+  taskId: uuid,
+  title,
+  position,
+  doneAt: instant,
+})
+
+export const focusFields = z.object({
+  taskId: uuid.nullable().default(null),
+  date: isoDate,
+  startedAt: moment.transform((value) => new Date(value)),
+  minutes: z.number().int().min(0).max(600),
+  plannedMinutes: z.number().int().min(1).max(600),
 })
 
 export const noteFields = z.object({

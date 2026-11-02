@@ -20,9 +20,10 @@ import {
 } from '../lib/progress'
 import { XP, hasTailwind, rankFor, type Rank } from '../lib/xp'
 import { ConnectionNeeded } from '../ui/ConnectionNeeded'
-import { setDayCompleted } from './dayActions'
+import { addTaskOn, setDayCompleted } from './dayActions'
 import { completeNextMilestone } from './goalActions'
 import { commit, useSnapshot } from './store'
+import { saveTask } from './taskActions'
 import type { Snapshot, Task } from './types'
 import { useRankUp } from './useRankUp'
 import { useToday } from './useToday'
@@ -56,7 +57,7 @@ type Day = {
   reward: Reward | null
   celebration: Celebration | null
   toggleHabit: (id: string) => number
-  toggleTask: (id: string) => number
+  toggleTask: (task: Task) => number
   addTask: (title: string) => void
   completeMilestone: (goal: GoalInFocus) => void
   arriveAtStation: (goal: GoalInFocus, station: number) => void
@@ -153,18 +154,8 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
   )
 
   const toggleTask = useCallback(
-    (id: string) => {
-      const task = snapshot.tasks.find((item) => item.id === id)
-      if (!task) return 0
-
-      const next = { ...task, doneAt: task.doneAt ? null : now() }
-      commit(
-        (current) => ({
-          ...current,
-          tasks: current.tasks.map((item) => (item.id === id ? next : item)),
-        }),
-        [{ method: 'PUT', path: `/tasks/${id}`, body: { ...next, editedAt: now() } }],
-      )
+    (task: Task) => {
+      saveTask({ ...task, doneAt: task.doneAt ? null : now() })
       haptic()
 
       if (task.doneAt) {
@@ -174,23 +165,11 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
       soundCheck(done)
       return XP.task
     },
-    [snapshot, done],
+    [done],
   )
 
   const addTask = useCallback(
-    (title: string) => {
-      const task: Task = {
-        id: newId(),
-        date,
-        title,
-        goalId: null,
-        doneAt: null,
-        position: snapshot.tasks.length,
-      }
-      commit((current) => ({ ...current, tasks: [...current.tasks, task] }), [
-        { method: 'PUT', path: `/tasks/${task.id}`, body: { ...task, editedAt: now() } },
-      ])
-    },
+    (title: string) => addTaskOn(date, title, snapshot.tasks.length),
     [snapshot, date],
   )
 

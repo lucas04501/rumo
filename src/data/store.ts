@@ -1,7 +1,9 @@
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import { MutationCache, MutationObserver, QueryClient, useQuery } from '@tanstack/react-query'
 import { del, get, set } from 'idb-keyval'
+import { complete } from '../lib/snapshot'
 import { ApiError, request } from './api'
+import { forgetFocusTimer } from './focusTimer'
 import { forgetRankSeen } from './rankSeen'
 import type { Snapshot } from './types'
 
@@ -82,11 +84,6 @@ export function resumeWrites() {
   for (const mutation of pending) void mutation.continue().catch(() => {})
 }
 
-// A foto salva no aparelho pode ser de uma versão anterior às notas. Sem internet,
-// é ela que abre o app até a próxima busca.
-const complete = (snapshot: Snapshot): Snapshot =>
-  snapshot.notes ? snapshot : { ...snapshot, notes: [] }
-
 export function useSnapshot() {
   return useQuery({ queryKey: SNAPSHOT_KEY, queryFn: fetchSnapshot, select: complete })
 }
@@ -112,5 +109,6 @@ export function commit(update: (snapshot: Snapshot) => Snapshot, writes: Write[]
 export async function clearDevice() {
   store.clear()
   forgetRankSeen()
+  forgetFocusTimer()
   await del(STORAGE_KEY).catch(() => {})
 }

@@ -211,6 +211,37 @@ export const days = pgTable(
   (table) => [primaryKey({ columns: [table.userId, table.date] })],
 )
 
+// Regra de tarefa recorrente. As ocorrências são calculadas no app, e a linha em
+// `tasks` só nasce quando a pessoa conclui, edita ou pula uma delas.
+export const taskRules = pgTable(
+  'task_rules',
+  {
+    id: uuid('id').primaryKey(),
+    userId: owner(),
+    title: text('title').notNull(),
+    weekdays: smallint('weekdays')
+      .array()
+      .notNull()
+      .default(sql`'{0,1,2,3,4,5,6}'::smallint[]`),
+    // Preenchido, repete nesse dia do mês e ignora os dias da semana.
+    monthDay: smallint('month_day'),
+    startDate: date('start_date').notNull(),
+    endDate: date('end_date'),
+    priority: text('priority').notNull().default('normal'),
+    goalId: uuid('goal_id'),
+    position: integer('position').notNull().default(0),
+    ...lifecycle(),
+  },
+  (table) => [
+    unique('task_rules_owner_key').on(table.userId, table.id),
+    foreignKey({
+      columns: [table.userId, table.goalId],
+      foreignColumns: [goals.userId, goals.id],
+      name: 'task_rules_goal_owner_fk',
+    }),
+  ],
+)
+
 export const tasks = pgTable(
   'tasks',
   {
@@ -221,15 +252,68 @@ export const tasks = pgTable(
     goalId: uuid('goal_id'),
     doneAt: moment('done_at'),
     position: integer('position').notNull().default(0),
+    priority: text('priority').notNull().default('normal'),
+    ruleId: uuid('rule_id'),
+    // Ocorrência pulada: a linha fica, para a regra não recriar a tarefa nesse dia.
+    skippedAt: moment('skipped_at'),
     ...lifecycle(),
   },
   (table) => [
+    unique('tasks_owner_key').on(table.userId, table.id),
     foreignKey({
       columns: [table.userId, table.goalId],
       foreignColumns: [goals.userId, goals.id],
       name: 'tasks_goal_owner_fk',
     }),
+    foreignKey({
+      columns: [table.userId, table.ruleId],
+      foreignColumns: [taskRules.userId, taskRules.id],
+      name: 'tasks_rule_owner_fk',
+    }),
     index('tasks_user_date_idx').on(table.userId, table.date),
+  ],
+)
+
+export const subtasks = pgTable(
+  'subtasks',
+  {
+    id: uuid('id').primaryKey(),
+    userId: owner(),
+    taskId: uuid('task_id').notNull(),
+    title: text('title').notNull(),
+    position: integer('position').notNull().default(0),
+    doneAt: moment('done_at'),
+    ...lifecycle(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.userId, table.taskId],
+      foreignColumns: [tasks.userId, tasks.id],
+      name: 'subtasks_task_owner_fk',
+    }),
+    index('subtasks_task_idx').on(table.taskId),
+  ],
+)
+
+export const focusSessions = pgTable(
+  'focus_sessions',
+  {
+    id: uuid('id').primaryKey(),
+    userId: owner(),
+    taskId: uuid('task_id'),
+    date: date('date').notNull(),
+    startedAt: moment('started_at').notNull(),
+    minutes: smallint('minutes').notNull(),
+    plannedMinutes: smallint('planned_minutes').notNull(),
+    ...lifecycle(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.userId, table.taskId],
+      foreignColumns: [tasks.userId, tasks.id],
+      name: 'focus_sessions_task_owner_fk',
+    }),
+    index('focus_sessions_user_date_idx').on(table.userId, table.date),
   ],
 )
 

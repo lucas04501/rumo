@@ -190,7 +190,7 @@ Cantos suaves em tudo o que é controle (12 px), um pouco mais em avisos (14 px)
 
 ### Navigation
 
-Cinco abas no rodapé do celular, sobre `abyss`, com a marca teal deslizando até a aba ativa. No computador, vira coluna lateral com a marca vertical.
+Cinco abas no rodapé do celular, sobre `abyss`, com a marca teal deslizando até a aba ativa: Hoje, Hábitos, Metas, Mês e Mais. A aba Mais reúne Notas, Foco e Ajustes, e fica ativa nessas telas. Item sem tela pronta não entra nela. No computador, vira coluna lateral com a marca vertical, com Notas, Foco e Ajustes direto na lista.
 
 ### Sheets
 
@@ -199,6 +199,12 @@ Folha inferior no celular e janela central de 460 px no computador, com o `<dial
 ### Item Row
 
 Check redondo, ícone opcional, título e informação à direita. Ao concluir: mola no check, ondulação, XP subindo em âmbar, som curto e maré subindo. Nada disso bloqueia o próximo toque.
+
+Na tarefa, a marca de prioridade fica antes do título: bandeira cheia em espuma para alta, seta em névoa para baixa, nada para normal. Prioridade não é ação nem recompensa, então não usa teal nem âmbar. À direita ficam o ícone de repetição, a contagem de subtarefas e o botão de detalhes, que abre a folha com prioridade, subtarefas, repetição e excluir.
+
+### Focus
+
+Uma tarefa, um relógio e dois botões. No celular, a navegação some enquanto há um bloco. O relógio usa Figtree com números tabulares, para não dançar a cada segundo, e tem de 76 a 112 px. Nesta tela, a maré mede o bloco: sobe durante o foco e desce na pausa. Sem âmbar: foco não dá XP.
 
 ### Reward Toast
 

@@ -8,7 +8,7 @@ import { DEFAULT_HABIT_ICON, HABIT_ICONS, type HabitIconName } from './habitIcon
 import { Sheet } from './Sheet'
 
 const EVERY_DAY = [0, 1, 2, 3, 4, 5, 6]
-const WEEK = [
+export const WEEK = [
   ['D', 'Domingo'],
   ['S', 'Segunda'],
   ['T', 'Terça'],

@@ -1,4 +1,4 @@
-import { Plus } from 'lucide-react'
+import { Plus, Repeat } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { addTaskOn, saveDayNote, setDayCompleted } from '../data/dayActions'
 import { setCheck } from '../data/habitActions'
@@ -6,6 +6,7 @@ import type { Snapshot } from '../data/types'
 import { formatLongDate } from '../lib/dates'
 import { isScheduled } from '../lib/habits'
 import { checksOf, dayProgress, indexSnapshot, planOf } from '../lib/progress'
+import { isPlanned, tasksOn } from '../lib/tasks'
 import { iconFor } from './habitIcons'
 import { ItemRow } from './ItemRow'
 import { Sheet } from './Sheet'
@@ -24,7 +25,7 @@ export function DaySheet({ date, today, snapshot, onClosed }: DaySheetProps) {
   const [title, setTitle] = useState('')
 
   const habits = snapshot.habits.filter((habit) => isScheduled(planOf(habit, snapshot), date))
-  const tasks = snapshot.tasks.filter((task) => task.date === date)
+  const tasks = tasksOn(snapshot, date)
   const isFuture = date > today
   const perfect = dayProgress(indexSnapshot(snapshot), date).perfect
 
@@ -83,7 +84,14 @@ export function DaySheet({ date, today, snapshot, onClosed }: DaySheetProps) {
             <ul className="mt-1 divide-y divide-white/8">
               {tasks.map((task) => (
                 <li key={task.id}>
-                  <TaskRow task={task} />
+                  {isPlanned(task, today, snapshot.tasks) ? (
+                    <p className="flex min-h-14 items-center gap-3 text-[17px] text-mist">
+                      <Repeat size={18} strokeWidth={1.75} className="mx-[5px] shrink-0" aria-hidden />
+                      <span className="min-w-0 flex-1 wrap-anywhere">{task.title}</span>
+                    </p>
+                  ) : (
+                    <TaskRow task={task} />
+                  )}
                 </li>
               ))}
               <li>

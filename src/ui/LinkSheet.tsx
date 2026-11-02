@@ -1,5 +1,6 @@
 import { linkHabit, linkTask } from '../data/goalActions'
 import type { Goal, Snapshot } from '../data/types'
+import { tasksOn } from '../lib/tasks'
 import { iconFor } from './habitIcons'
 import { Sheet } from './Sheet'
 
@@ -12,8 +13,8 @@ type LinkSheetProps = {
 
 export function LinkSheet({ goal, snapshot, today, onClosed }: LinkSheetProps) {
   const habits = snapshot.habits.filter((habit) => !habit.archivedAt)
-  const tasks = snapshot.tasks.filter(
-    (task) => task.date === today && !task.doneAt && (!task.goalId || task.goalId === goal.id),
+  const tasks = tasksOn(snapshot, today).filter(
+    (task) => !task.doneAt && (!task.goalId || task.goalId === goal.id),
   )
 
   const goalName = (id: string | null) =>

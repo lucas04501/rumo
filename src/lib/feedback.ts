@@ -95,6 +95,11 @@ export function soundCelebration() {
   phrase([0, 4, 7, 12, 16, 19, 24], 0.09)
 }
 
+/** Fim de um bloco de foco ou de uma pausa: audível de longe, sem festa. */
+export function soundFocusEnd() {
+  phrase([7, 12, 7, 12], 0.16)
+}
+
 /** Android vibra. No iPhone a chamada não faz nada, e o som e o visual seguem valendo. */
 export function haptic() {
   navigator.vibrate?.(10)

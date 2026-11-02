@@ -467,6 +467,24 @@ button.day-cell:active {
   }
 }
 
+.segmented-wide {
+  display: flex;
+}
+
+.segmented-wide button {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Relógio do foco: Figtree, porque os números tabulares não dançam a cada segundo */
+.focus-clock {
+  margin-top: 20px;
+  font-size: clamp(76px, 25vw, 112px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
 /* Vínculos e edição de marcos */
 .link-row {
   display: flex;

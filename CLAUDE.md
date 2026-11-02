@@ -18,6 +18,10 @@ PWA de metas, hábitos e planner mensal, em português do Brasil. Uso pessoal ag
 - Datas são dias locais `YYYY-MM-DD`. Toda "data de hoje" vem de `hoje()` em `src/lib/dates.ts`. Nunca usar UTC nem `toISOString()` para data.
 - XP e sequência são calculados a partir dos dados, em funções puras de `src/lib/`. Nunca são salvos.
 - Toda escrita passa por `commit()` em `src/data/store.ts`: atualiza a foto local e entra na fila. Não chame a API direto de uma tela.
+- Tarefas de um dia sempre vêm de `tasksOn()` ou `indexedTasks()`, nunca de `snapshot.tasks` direto: as ocorrências de regras recorrentes não têm linha até serem tocadas, e as puladas têm linha, mas não aparecem.
+- Ocorrência recorrente nunca usa `DELETE`, porque a regra a recriaria. Pular grava `skippedAt`. Regra não é excluída nem reescreve o passado: encerra com `endDate`.
+- Campo novo na foto precisa de tratamento em `complete()`, em `src/lib/snapshot.ts`, e teste com uma foto antiga de verdade.
+- Depois de `npm run db:generate`, leia o SQL: o drizzle-kit coloca a unicidade de tabela existente depois das chaves estrangeiras que dependem dela.
 - Offline se testa no build (`npm run build` e `npm run preview`), porque o service worker não roda em desenvolvimento. Teste também reabrir o app sem internet mais de uma vez.
 - Ao fim de cada etapa: testar, atualizar o vault, publicar em produção e enviar ao GitHub. O repositório é público: nunca versione nada privado.
 - Toda tabela tem `user_id NOT NULL` e toda rota filtra pelo usuário da sessão. Vínculos entre tabelas usam chave estrangeira composta com `user_id`, para o banco recusar dado de outro usuário.

@@ -3,12 +3,15 @@ import { Hono } from 'hono'
 import { db } from '../db/client.js'
 import {
   days,
+  focusSessions,
   goals,
   habitChecks,
   habitPauses,
   habits,
   milestones,
   notes,
+  subtasks,
+  taskRules,
   tasks,
   user,
 } from '../db/schema.js'
@@ -22,44 +25,71 @@ import type { AuthedEnv } from '../session.js'
 export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
   const userId = c.get('userId')
 
-  const [owner, goalRows, milestoneRows, habitRows, pauseRows, checkRows, taskRows, noteRows, dayRows] =
-    await Promise.all([
-      db.select({ name: user.name }).from(user).where(eq(user.id, userId)),
-      db
-        .select()
-        .from(goals)
-        .where(and(eq(goals.userId, userId), isNull(goals.deletedAt)))
-        .orderBy(asc(goals.position)),
-      db
-        .select()
-        .from(milestones)
-        .where(and(eq(milestones.userId, userId), isNull(milestones.deletedAt)))
-        .orderBy(asc(milestones.position)),
-      db
-        .select()
-        .from(habits)
-        .where(and(eq(habits.userId, userId), isNull(habits.deletedAt)))
-        .orderBy(asc(habits.position)),
-      db
-        .select()
-        .from(habitPauses)
-        .where(and(eq(habitPauses.userId, userId), isNull(habitPauses.deletedAt))),
-      db
-        .select({ habitId: habitChecks.habitId, date: habitChecks.date })
-        .from(habitChecks)
-        .where(eq(habitChecks.userId, userId)),
-      db
-        .select()
-        .from(tasks)
-        .where(and(eq(tasks.userId, userId), isNull(tasks.deletedAt)))
-        .orderBy(asc(tasks.position)),
-      db
-        .select()
-        .from(notes)
-        .where(and(eq(notes.userId, userId), isNull(notes.deletedAt)))
-        .orderBy(desc(notes.updatedAt)),
-      db.select().from(days).where(eq(days.userId, userId)),
-    ])
+  const [
+    owner,
+    goalRows,
+    milestoneRows,
+    habitRows,
+    pauseRows,
+    checkRows,
+    taskRows,
+    ruleRows,
+    subtaskRows,
+    focusRows,
+    noteRows,
+    dayRows,
+  ] = await Promise.all([
+    db.select({ name: user.name }).from(user).where(eq(user.id, userId)),
+    db
+      .select()
+      .from(goals)
+      .where(and(eq(goals.userId, userId), isNull(goals.deletedAt)))
+      .orderBy(asc(goals.position)),
+    db
+      .select()
+      .from(milestones)
+      .where(and(eq(milestones.userId, userId), isNull(milestones.deletedAt)))
+      .orderBy(asc(milestones.position)),
+    db
+      .select()
+      .from(habits)
+      .where(and(eq(habits.userId, userId), isNull(habits.deletedAt)))
+      .orderBy(asc(habits.position)),
+    db
+      .select()
+      .from(habitPauses)
+      .where(and(eq(habitPauses.userId, userId), isNull(habitPauses.deletedAt))),
+    db
+      .select({ habitId: habitChecks.habitId, date: habitChecks.date })
+      .from(habitChecks)
+      .where(eq(habitChecks.userId, userId)),
+    db
+      .select()
+      .from(tasks)
+      .where(and(eq(tasks.userId, userId), isNull(tasks.deletedAt)))
+      .orderBy(asc(tasks.position)),
+    db
+      .select()
+      .from(taskRules)
+      .where(and(eq(taskRules.userId, userId), isNull(taskRules.deletedAt)))
+      .orderBy(asc(taskRules.position)),
+    db
+      .select()
+      .from(subtasks)
+      .where(and(eq(subtasks.userId, userId), isNull(subtasks.deletedAt)))
+      .orderBy(asc(subtasks.position)),
+    db
+      .select()
+      .from(focusSessions)
+      .where(and(eq(focusSessions.userId, userId), isNull(focusSessions.deletedAt)))
+      .orderBy(asc(focusSessions.startedAt)),
+    db
+      .select()
+      .from(notes)
+      .where(and(eq(notes.userId, userId), isNull(notes.deletedAt)))
+      .orderBy(desc(notes.updatedAt)),
+    db.select().from(days).where(eq(days.userId, userId)),
+  ])
 
   return c.json({
     user: { name: owner[0]?.name ?? '' },
@@ -69,6 +99,9 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
     pauses: pauseRows,
     checks: checkRows,
     tasks: taskRows,
+    taskRules: ruleRows,
+    subtasks: subtaskRows,
+    focusSessions: focusRows,
     notes: noteRows,
     days: dayRows,
   })

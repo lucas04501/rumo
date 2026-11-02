@@ -50,8 +50,13 @@ const habitId = randomUUID()
 const taskId = randomUUID()
 const noteId = randomUUID()
 const pauseId = randomUUID()
+const ruleId = randomUUID()
+const subtaskId = randomUUID()
+const focusId = randomUUID()
 
 const habitBody = { title: 'Treinar', icon: 'dumbbell', weekdays: [1, 3, 5], startDate: DATE }
+const ruleBody = { title: 'Regar', weekdays: [1], startDate: DATE }
+const focusBody = { date: DATE, startedAt: `${DATE}T12:00:00Z`, minutes: 25, plannedMinutes: 25 }
 
 beforeAll(async () => {
   ana = await signUp('Ana', emails.ana)
@@ -67,8 +72,11 @@ beforeAll(async () => {
   const dependents = await Promise.all([
     call(ana, 'PUT', `/milestones/${milestoneId}`, { title: 'Marco da Ana', goalId }),
     call(ana, 'PUT', `/habits/${habitId}`, { ...habitBody, goalId }),
+    call(ana, 'PUT', `/task-rules/${ruleId}`, { ...ruleBody, title: 'Regra da Ana', goalId }),
+    call(ana, 'PUT', `/subtasks/${subtaskId}`, { title: 'Subtarefa da Ana', taskId }),
+    call(ana, 'PUT', `/focus-sessions/${focusId}`, { ...focusBody, taskId }),
   ])
-  expect(dependents.map((response) => response.status)).toEqual([200, 200])
+  expect(dependents.map((response) => response.status)).toEqual([200, 200, 200, 200, 200])
 
   const pause = { habitId, startDate: DATE, endDate: '2026-11-10' }
   expect((await call(ana, 'PUT', `/pauses/${pauseId}`, pause)).status).toBe(200)
@@ -86,6 +94,9 @@ const resources = [
   ['notes', () => noteId, { title: 'Invadido' }],
   ['habits', () => habitId, { ...habitBody, title: 'Invadido' }],
   ['milestones', () => milestoneId, { title: 'Invadido', goalId: randomUUID() }],
+  ['task-rules', () => ruleId, { ...ruleBody, title: 'Invadido' }],
+  ['subtasks', () => subtaskId, { title: 'Invadido', taskId: randomUUID() }],
+  ['focus-sessions', () => focusId, { ...focusBody, minutes: 1 }],
 ] as const
 
 describe('sem sessão', () => {
@@ -98,6 +109,15 @@ describe('sem sessão', () => {
     ['GET', '/tasks'],
     ['GET', '/notes'],
     ['GET', '/pauses'],
+    ['GET', '/task-rules'],
+    ['PUT', `/task-rules/${randomUUID()}`],
+    ['DELETE', `/task-rules/${randomUUID()}`],
+    ['GET', '/subtasks'],
+    ['PUT', `/subtasks/${randomUUID()}`],
+    ['DELETE', `/subtasks/${randomUUID()}`],
+    ['GET', '/focus-sessions'],
+    ['PUT', `/focus-sessions/${randomUUID()}`],
+    ['DELETE', `/focus-sessions/${randomUUID()}`],
     ['GET', '/snapshot'],
     ['GET', `/checks?${RANGE}`],
     ['GET', `/days?${RANGE}`],
@@ -134,16 +154,26 @@ describe('isolamento entre usuários', () => {
 
     expect(ofAna.user.name).toBe('Ana')
     expect(ofBia.user.name).toBe('Bia')
-    for (const key of ['goals', 'milestones', 'habits', 'pauses', 'checks', 'tasks', 'notes', 'days']) {
+    const lists = [
+      'goals',
+      'milestones',
+      'habits',
+      'pauses',
+      'checks',
+      'tasks',
+      'taskRules',
+      'subtasks',
+      'focusSessions',
+      'notes',
+      'days',
+    ]
+    for (const key of lists) {
       expect(ofAna[key], key).toHaveLength(1)
       expect(JSON.stringify(ofBia[key])).not.toContain('Ana')
     }
-    expect(ofBia.goals).toHaveLength(0)
-    expect(ofBia.habits).toHaveLength(0)
-    expect(ofBia.pauses).toHaveLength(0)
-    expect(ofBia.checks).toHaveLength(0)
-    expect(ofBia.tasks).toHaveLength(0)
-    expect(ofBia.notes).toHaveLength(0)
+    for (const key of lists.filter((name) => name !== 'days')) {
+      expect(ofBia[key], key).toHaveLength(0)
+    }
   })
 
   it('a foto traz a nota com o vínculo à meta e deixa de trazer depois de excluída', async () => {
@@ -197,6 +227,38 @@ describe('isolamento entre usuários', () => {
     expect(habit.status).toBe(404)
     expect(note.status).toBe(404)
     expect(task.status).toBe(404)
+  })
+
+  it('não vincula nada novo a tarefa, regra ou meta de outro usuário', async () => {
+    const own = randomUUID()
+    await call(bia, 'PUT', `/tasks/${own}`, { title: 'Da Bia', date: DATE })
+
+    const subtask = await call(bia, 'PUT', `/subtasks/${randomUUID()}`, { title: 'X', taskId })
+    const focus = await call(bia, 'PUT', `/focus-sessions/${randomUUID()}`, { ...focusBody, taskId })
+    const rule = await call(bia, 'PUT', `/task-rules/${randomUUID()}`, { ...ruleBody, goalId })
+    const task = await call(bia, 'PUT', `/tasks/${randomUUID()}`, {
+      title: 'X',
+      date: DATE,
+      ruleId,
+    })
+    expect(subtask.status).toBe(404)
+    expect(focus.status).toBe(404)
+    expect(rule.status).toBe(404)
+    expect(task.status).toBe(404)
+
+    await call(bia, 'DELETE', `/tasks/${own}`)
+  })
+
+  it('subtasks: não sobrescreve subtarefa de outro usuário usando tarefa própria', async () => {
+    const own = randomUUID()
+    await call(bia, 'PUT', `/tasks/${own}`, { title: 'Da Bia', date: DATE })
+
+    const response = await call(bia, 'PUT', `/subtasks/${subtaskId}`, { title: 'Invadido', taskId: own })
+    expect(response.status).toBe(404)
+
+    const [row] = (await (await call(ana, 'GET', '/subtasks')).json()) as { title: string }[]
+    expect(row.title).toBe('Subtarefa da Ana')
+    await call(bia, 'DELETE', `/tasks/${own}`)
   })
 
   it('vincula tarefa à meta do próprio usuário', async () => {
@@ -273,9 +335,89 @@ describe('sincronização', () => {
     const rows = (await (await call(bia, 'GET', '/notes')).json()) as { id: string; title: string }[]
     expect(rows.find((row) => row.id === id)?.title).toBe('Nova')
   })
+
+  describe('ocorrência de tarefa recorrente', () => {
+    const rule = randomUUID()
+    const occurrence = `20261102${rule.slice(8)}`
+    const body = { title: 'Regar', date: DATE, ruleId: rule }
+    const ofRule = async (person: Person) => {
+      const rows = (await (await call(person, 'GET', '/tasks')).json()) as {
+        id: string
+        doneAt: string | null
+        skippedAt: string | null
+        ruleId: string | null
+        priority: string
+      }[]
+      return rows.filter((row) => row.ruleId === rule)
+    }
+
+    beforeAll(async () => {
+      expect((await call(bia, 'PUT', `/task-rules/${rule}`, ruleBody)).status).toBe(200)
+    })
+
+    it('dois aparelhos sem internet gravam a mesma linha', async () => {
+      const doneAt = new Date(Date.now() - 2_000).toISOString()
+      const first = { ...body, doneAt, editedAt: doneAt }
+      const second = { ...body, doneAt, editedAt: new Date(Date.now() - 1_000).toISOString() }
+
+      expect((await call(bia, 'PUT', `/tasks/${occurrence}`, first)).status).toBe(200)
+      expect((await call(bia, 'PUT', `/tasks/${occurrence}`, second)).status).toBe(200)
+      expect(await ofRule(bia)).toHaveLength(1)
+    })
+
+    it('uma escrita antiga da fila não desfaz a conclusão mais nova', async () => {
+      const older = new Date(Date.now() - 60_000).toISOString()
+      const stale = { ...body, doneAt: null, editedAt: older }
+      expect((await call(bia, 'PUT', `/tasks/${occurrence}`, stale)).status).toBe(404)
+
+      const [row] = await ofRule(bia)
+      expect(row.doneAt).not.toBeNull()
+    })
+
+    it('a ocorrência pulada continua na foto, para a regra não recriar', async () => {
+      const skippedAt = new Date().toISOString()
+      const skip = { ...body, doneAt: null, skippedAt, editedAt: skippedAt }
+      expect((await call(bia, 'PUT', `/tasks/${occurrence}`, skip)).status).toBe(200)
+
+      const { tasks } = (await (await call(bia, 'GET', '/snapshot')).json()) as {
+        tasks: { id: string; skippedAt: string | null; doneAt: string | null }[]
+      }
+      const row = tasks.find((task) => task.id === occurrence)
+      expect(row?.skippedAt).toBeTruthy()
+      expect(row?.doneAt).toBeNull()
+    })
+
+    it('tarefa sem prioridade nasce normal, e a prioridade é gravada', async () => {
+      const id = randomUUID()
+      const plain = await call(bia, 'PUT', `/tasks/${id}`, { title: 'X', date: DATE })
+      expect(((await plain.json()) as { priority: string }).priority).toBe('normal')
+
+      const high = { title: 'X', date: DATE, priority: 'high' }
+      const edited = await call(bia, 'PUT', `/tasks/${id}`, high)
+      expect(((await edited.json()) as { priority: string }).priority).toBe('high')
+      await call(bia, 'DELETE', `/tasks/${id}`)
+    })
+  })
 })
 
 describe('validação', () => {
+  it('recusa prioridade desconhecida', async () => {
+    const body = { title: 'X', date: DATE, priority: 'urgente' }
+    expect((await call(bia, 'PUT', `/tasks/${randomUUID()}`, body)).status).toBe(400)
+  })
+
+  it('recusa regra sem dias e dia do mês fora do calendário', async () => {
+    const noDays = { ...ruleBody, weekdays: [] }
+    const badDay = { ...ruleBody, monthDay: 32 }
+    expect((await call(bia, 'PUT', `/task-rules/${randomUUID()}`, noDays)).status).toBe(400)
+    expect((await call(bia, 'PUT', `/task-rules/${randomUUID()}`, badDay)).status).toBe(400)
+  })
+
+  it('recusa sessão de foco sem duração válida', async () => {
+    const body = { ...focusBody, plannedMinutes: 0 }
+    expect((await call(bia, 'PUT', `/focus-sessions/${randomUUID()}`, body)).status).toBe(400)
+  })
+
   it('recusa data inválida', async () => {
     expect((await call(bia, 'PUT', `/days/2026-02-30`, {})).status).toBe(400)
   })

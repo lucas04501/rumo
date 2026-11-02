@@ -4,11 +4,12 @@ import { Link, useParams } from 'react-router'
 import { useDay } from '../data/DayProvider'
 import { addGoalTask, setMainGoal, undoLastMilestone } from '../data/goalActions'
 import { useSnapshot } from '../data/store'
-import type { Habit, Note, Snapshot, Task } from '../data/types'
+import type { Habit, Note, Snapshot } from '../data/types'
 import { formatShortDate } from '../lib/dates'
 import { consistency, deadlineLabel, goalProgress, paceSentence } from '../lib/goals'
 import { visibleNotes } from '../lib/notes'
 import { checksOf, planOf, withMilestones, type GoalInFocus } from '../lib/progress'
+import { goalTasks } from '../lib/tasks'
 import { GoalSheet } from '../ui/GoalSheet'
 import { iconFor } from '../ui/habitIcons'
 import { LinkSheet } from '../ui/LinkSheet'
@@ -242,9 +243,7 @@ function LinkedHabit({ habit, snapshot, today }: { habit: Habit; snapshot: Snaps
 function GoalTasks({ goal, snapshot, today }: { goal: GoalInFocus; snapshot: Snapshot; today: string }) {
   const [title, setTitle] = useState('')
 
-  const tasks: Task[] = snapshot.tasks
-    .filter((task) => task.goalId === goal.id)
-    .sort((a, b) => Number(Boolean(a.doneAt)) - Number(Boolean(b.doneAt)))
+  const tasks = goalTasks(snapshot, goal.id, today)
 
   const submit = (event: FormEvent) => {
     event.preventDefault()

@@ -1,17 +1,30 @@
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { auth, signupOpen } from './auth.js'
-import { goals, habitPauses, habits, milestones, notes, tasks } from './db/schema.js'
+import {
+  focusSessions,
+  goals,
+  habitPauses,
+  habits,
+  milestones,
+  notes,
+  subtasks,
+  taskRules,
+  tasks,
+} from './db/schema.js'
 import { checks } from './routes/checks.js'
 import { days } from './routes/days.js'
 import { resource } from './routes/resource.js'
 import {
+  focusFields,
   goalFields,
   habitFields,
   milestoneFields,
   noteFields,
   pauseFields,
+  subtaskFields,
   taskFields,
+  taskRuleFields,
 } from './routes/schemas.js'
 import { snapshot } from './routes/snapshot.js'
 import { requireUser, type AuthedEnv } from './session.js'
@@ -32,6 +45,9 @@ const data = new Hono<AuthedEnv>()
   .route('/habits', resource(habits, habitFields))
   .route('/pauses', resource(habitPauses, pauseFields))
   .route('/tasks', resource(tasks, taskFields))
+  .route('/task-rules', resource(taskRules, taskRuleFields))
+  .route('/subtasks', resource(subtasks, subtaskFields))
+  .route('/focus-sessions', resource(focusSessions, focusFields))
   .route('/notes', resource(notes, noteFields))
   .route('/checks', checks)
   .route('/days', days)

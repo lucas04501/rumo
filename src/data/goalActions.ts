@@ -1,6 +1,7 @@
 import { milestoneChanges } from '../lib/goals'
 import { newId } from '../lib/ids'
 import type { GoalInFocus } from '../lib/progress'
+import { newTask, upsertTask } from '../lib/tasks'
 import { commit, type Write } from './store'
 import type { Goal, Habit, Milestone, Task } from './types'
 
@@ -124,17 +125,13 @@ export function linkHabit(habit: Habit, goalId: string | null) {
 
 export function linkTask(task: Task, goalId: string | null) {
   const next = { ...task, goalId }
-  commit(
-    (current) => ({
-      ...current,
-      tasks: current.tasks.map((item) => (item.id === task.id ? next : item)),
-    }),
-    [{ method: 'PUT', path: `/tasks/${task.id}`, body: { ...next, editedAt: now() } }],
-  )
+  commit((current) => ({ ...current, tasks: upsertTask(current.tasks, next) }), [
+    { method: 'PUT', path: `/tasks/${task.id}`, body: { ...next, editedAt: now() } },
+  ])
 }
 
 export function addGoalTask(title: string, date: string, goalId: string, position: number) {
-  const task: Task = { id: newId(), date, title, goalId, doneAt: null, position }
+  const task = newTask({ id: newId(), date, title, goalId, position })
   commit((current) => ({ ...current, tasks: [...current.tasks, task] }), [
     { method: 'PUT', path: `/tasks/${task.id}`, body: { ...task, editedAt: now() } },
   ])

@@ -1,6 +1,7 @@
 import { newId } from '../lib/ids'
+import { newTask } from '../lib/tasks'
 import { commit } from './store'
-import type { Snapshot, Task } from './types'
+import type { Snapshot } from './types'
 
 const now = () => new Date().toISOString()
 
@@ -27,7 +28,7 @@ export function saveDayNote(date: string, note: string) {
 }
 
 export function addTaskOn(date: string, title: string, position: number) {
-  const task: Task = { id: newId(), date, title, goalId: null, doneAt: null, position }
+  const task = newTask({ id: newId(), date, title, position })
   commit((current) => ({ ...current, tasks: [...current.tasks, task] }), [
     { method: 'PUT', path: `/tasks/${task.id}`, body: { ...task, editedAt: now() } },
   ])

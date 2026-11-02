@@ -27,7 +27,8 @@ export function Sheet({ title, onClosed, children }: SheetProps) {
       aria-labelledby={titleId}
       onCancel={(event) => {
         event.preventDefault()
-        close()
+        // O React sobe o evento pela árvore: uma folha aberta dentro desta não a fecha.
+        if (event.target === dialog.current) close()
       }}
       onClick={(event) => {
         if (event.target === dialog.current) close()

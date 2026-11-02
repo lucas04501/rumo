@@ -1,10 +1,11 @@
-import { Anchor, Plus } from 'lucide-react'
+import { Anchor, Plus, Timer } from 'lucide-react'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
-import { authClient } from '../data/authClient'
 import { useDay, type HabitToday } from '../data/DayProvider'
-import { clearDevice } from '../data/store'
+import { useFocusTimer } from '../data/focusTimer'
+import { useNow } from '../data/useNow'
 import { formatLongDate } from '../lib/dates'
+import { formatClock, isOver, leftMs } from '../lib/focus'
 import { deadlineLabel } from '../lib/goals'
 import { isStreakMark } from '../lib/streaks'
 import { XP } from '../lib/xp'
@@ -16,11 +17,6 @@ import { SoundToggle } from '../ui/SoundToggle'
 import { TaskRow } from '../ui/TaskRow'
 import { Ticker } from '../ui/Ticker'
 import { Route } from '../voyage/Route'
-
-async function signOut() {
-  await authClient.signOut()
-  await clearDevice()
-}
 
 export function Hoje() {
   return (
@@ -35,14 +31,6 @@ export function Hoje() {
         <div className="lg:pt-8">
           <Habits />
           <Tasks />
-          <button
-            type="button"
-            className="mt-8 -ml-1 min-h-11 px-1 text-sm text-mist underline underline-offset-4"
-            onClick={signOut}
-          >
-            Sair da conta
-          </button>
-          <p className="text-sm text-mist">Versão {__APP_VERSION__}</p>
         </div>
       </div>
     </Screen>
@@ -248,6 +236,18 @@ function HabitRow({ habit }: { habit: HabitToday }) {
   )
 }
 
+function FocusShortcut() {
+  const timer = useFocusTimer()
+  const now = useNow(timer?.endsAt ? 1000 : null)
+
+  return (
+    <Link to="/foco" className="flex min-h-11 items-center gap-1.5 text-[15px] text-mist">
+      <Timer size={17} strokeWidth={1.75} aria-hidden />
+      {!timer ? 'Foco' : isOver(timer) ? 'Bloco concluído' : formatClock(leftMs(timer, now))}
+    </Link>
+  )
+}
+
 function Tasks() {
   const { tasks, addTask } = useDay()
   const [title, setTitle] = useState('')
@@ -262,10 +262,13 @@ function Tasks() {
 
   return (
     <section aria-labelledby="tarefas-de-hoje" className="mt-9">
-      <h2 id="tarefas-de-hoje" className="font-display text-xl font-semibold">
-        Tarefas
-      </h2>
-      <ul className="mt-2 divide-y divide-white/8">
+      <div className="flex items-center justify-between gap-4">
+        <h2 id="tarefas-de-hoje" className="font-display text-xl font-semibold">
+          Tarefas
+        </h2>
+        <FocusShortcut />
+      </div>
+      <ul className="mt-1 divide-y divide-white/8">
         {tasks.map((task) => (
           <li key={task.id}>
             <TaskRow task={task} />

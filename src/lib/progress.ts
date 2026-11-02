@@ -2,6 +2,7 @@ import type { Goal, Habit, Milestone, Snapshot } from '../data/types'
 import { toIsoDate } from './dates'
 import { isScheduled, type HabitPlan } from './habits'
 import { currentStreak } from './streaks'
+import { mergeDay, tasksOn } from './tasks'
 import { totalXp } from './xp'
 
 export type HabitToday = Habit & {
@@ -36,7 +37,7 @@ export function habitsOn(snapshot: Snapshot, date: string): HabitToday[] {
 /** Parte do dia concluída, somando hábitos programados e tarefas do dia. */
 export function summarizeDay(snapshot: Snapshot, date: string) {
   const habits = habitsOn(snapshot, date)
-  const tasks = snapshot.tasks.filter((task) => task.date === date)
+  const tasks = tasksOn(snapshot, date)
   const done = habits.filter((habit) => habit.done).length + tasks.filter((task) => task.doneAt).length
   const total = habits.length + tasks.length
 
@@ -55,6 +56,7 @@ export type SnapshotIndex = {
   plans: { id: string; plan: HabitPlan }[]
   checks: Map<string, Set<string>>
   tasks: Map<string, Snapshot['tasks']>
+  rules: Snapshot['taskRules']
 }
 
 /** Prepara a foto para consultar muitos dias sem refazer as buscas a cada dia. */
@@ -74,13 +76,18 @@ export function indexSnapshot(snapshot: Snapshot): SnapshotIndex {
     plans: snapshot.habits.map((habit) => ({ id: habit.id, plan: planOf(habit, snapshot) })),
     checks,
     tasks,
+    rules: snapshot.taskRules,
   }
 }
 
-export function dayProgress({ plans, checks, tasks }: SnapshotIndex, date: string) {
+export const indexedTasks = ({ tasks, rules }: SnapshotIndex, date: string) =>
+  mergeDay(tasks.get(date) ?? [], rules, date)
+
+export function dayProgress(index: SnapshotIndex, date: string) {
+  const { plans, checks } = index
   const scheduled = plans.filter(({ plan }) => isScheduled(plan, date))
   const habitDone = scheduled.filter(({ id }) => checks.get(id)?.has(date)).length
-  const dayTasks = tasks.get(date) ?? []
+  const dayTasks = indexedTasks(index, date)
   const done = habitDone + dayTasks.filter((task) => task.doneAt).length
   const total = scheduled.length + dayTasks.length
 
