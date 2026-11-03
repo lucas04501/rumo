@@ -32,7 +32,8 @@ Em desenvolvimento ativo.
 | Evolução, gráficos, padrões e fluxos rápidos | Concluída e publicada |
 | Rotina por dia da semana e relatório do dia no calendário | Concluída e publicada |
 | Redesign escuro, quadro de tarefas, criar e buscar de qualquer tela e conquistas | Concluída e publicada |
-| Treinos | Planejada |
+| Treinos: fichas, biblioteca, modo treino e histórico | Concluída e publicada |
+| Abrir ao público | Planejada |
 
 ## Stack
 
