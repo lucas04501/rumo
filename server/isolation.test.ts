@@ -5,9 +5,9 @@ vi.hoisted(() => {
   process.env.ALLOW_SIGNUP = 'true'
 })
 
-const { inArray } = await import('drizzle-orm')
+const { inArray, sql } = await import('drizzle-orm')
 const { app } = await import('./app.js')
-const { db } = await import('./db/client.js')
+const { claim, db } = await import('./db/client.js')
 const { goals, user } = await import('./db/schema.js')
 
 const stamp = Date.now()
@@ -280,6 +280,35 @@ describe('isolamento entre usuários', () => {
     const heavy = { ...setBody, sessionId: workoutId, loadKg: 5000 }
     expect((await call(ana, 'PUT', `/session-sets/${randomUUID()}`, heavy)).status).toBe(400)
     expect((await call(ana, 'PUT', `/workout-plans/${randomUUID()}`, { title: ' ' })).status).toBe(400)
+  })
+
+  it('a RLS segura uma consulta sem filtro de usuário', async () => {
+    const [, ofAna] = await db.batch([claim(ana.id), db.select().from(goals)])
+    const [, ofBia] = await db.batch([claim(bia.id), db.select().from(goals)])
+    expect(ofAna.map((goal) => goal.id)).toContain(goalId)
+    expect(ofBia.map((goal) => goal.id)).not.toContain(goalId)
+  })
+
+  it('a RLS recusa gravar em nome de outro usuário', async () => {
+    const write = db.batch([
+      claim(bia.id),
+      db.insert(goals).values({ id: randomUUID(), userId: ana.id, title: 'Invadido' }),
+    ])
+    await expect(write).rejects.toThrow()
+  })
+
+  it('toda tabela com dono tem RLS ligada e política', async () => {
+    const { rows } = await db.execute<{ tabela: string; rls: boolean; politicas: number }>(sql`
+      select c.table_name as tabela,
+             k.relrowsecurity as rls,
+             (select count(*)::int from pg_policies p where p.tablename = c.table_name) as politicas
+      from information_schema.columns c
+      join pg_class k on k.relname = c.table_name and k.relkind = 'r'
+      where c.table_schema = 'public' and c.column_name = 'user_id'
+        and c.table_name not in ('session', 'account')
+    `)
+    expect(rows.length).toBeGreaterThanOrEqual(19)
+    expect(rows.filter((row) => !row.rls || row.politicas === 0)).toEqual([])
   })
 
   it('recusa identificador de conquista inválido', async () => {

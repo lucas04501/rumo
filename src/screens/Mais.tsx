@@ -10,11 +10,14 @@ import {
   Timer,
   type LucideIcon,
 } from 'lucide-react'
+import { useState } from 'react'
 import { Link } from 'react-router'
 import { authClient } from '../data/authClient'
+import { exportMyData } from '../data/exportData'
 import { openLayer } from '../data/layers'
-import { clearDevice } from '../data/store'
+import { clearDevice, useSnapshot } from '../data/store'
 import { settleUndo } from '../data/undo'
+import { DeleteAccountSheet } from '../ui/DeleteAccountSheet'
 import { Screen } from '../ui/Screen'
 
 type Area = { to: string; label: string; icon: LucideIcon }
@@ -36,7 +39,14 @@ async function signOut() {
   await clearDevice()
 }
 
+const SETTING = '-ml-1 min-h-11 px-1 text-[15px] text-mist underline underline-offset-4'
+
 export function Mais() {
+  const { data: snapshot } = useSnapshot()
+  const { data: session } = authClient.useSession()
+  const [deleting, setDeleting] = useState(false)
+  const email = session?.user.email ?? ''
+
   return (
     <Screen>
       <div className="max-w-2xl">
@@ -73,16 +83,34 @@ export function Mais() {
           <h2 id="ajustes" className="font-display text-xl font-semibold lg:sr-only">
             Ajustes
           </h2>
-          <button
-            type="button"
-            className="mt-2 -ml-1 min-h-11 px-1 text-[15px] text-mist underline underline-offset-4"
-            onClick={signOut}
-          >
-            Sair da conta
-          </button>
-          <p className="text-[15px] text-mist">Versão {__APP_VERSION__}</p>
+          {email && <p className="mt-2 text-[15px] text-mist wrap-anywhere">{email}</p>}
+          <div className="mt-2 grid justify-items-start">
+            <button type="button" className={SETTING} onClick={signOut}>
+              Sair da conta
+            </button>
+            <button
+              type="button"
+              className={SETTING}
+              onClick={() => {
+                if (snapshot) void exportMyData(snapshot, email)
+              }}
+            >
+              Exportar meus dados
+            </button>
+            <a href="/termos" className={`${SETTING} grid place-items-center`}>
+              Termos de uso
+            </a>
+            <a href="/privacidade" className={`${SETTING} grid place-items-center`}>
+              Privacidade
+            </a>
+            <button type="button" className={SETTING} onClick={() => setDeleting(true)}>
+              Excluir minha conta
+            </button>
+          </div>
+          <p className="mt-2 text-[15px] text-mist">Versão {__APP_VERSION__}</p>
         </section>
       </div>
+      {deleting && <DeleteAccountSheet onClosed={() => setDeleting(false)} />}
     </Screen>
   )
 }

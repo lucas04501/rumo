@@ -1,6 +1,6 @@
 import { and, asc, eq, gte, lte } from 'drizzle-orm'
 import { Hono } from 'hono'
-import { db } from '../db/client.js'
+import { claim, db } from '../db/client.js'
 import { habitChecks } from '../db/schema.js'
 import type { AuthedEnv } from '../session.js'
 import { dateRange, isoDate, parse, uuid } from '../validation.js'
@@ -9,17 +9,17 @@ import { dateRange, isoDate, parse, uuid } from '../validation.js'
 export const checks = new Hono<AuthedEnv>()
   .get('/', async (c) => {
     const { from, to } = parse(dateRange, c.req.query())
-    const rows = await db
-      .select()
-      .from(habitChecks)
-      .where(
-        and(
-          eq(habitChecks.userId, c.get('userId')),
-          gte(habitChecks.date, from),
-          lte(habitChecks.date, to),
-        ),
-      )
-      .orderBy(asc(habitChecks.date))
+    const userId = c.get('userId')
+    const [, rows] = await db.batch([
+      claim(userId),
+      db
+        .select()
+        .from(habitChecks)
+        .where(
+          and(eq(habitChecks.userId, userId), gte(habitChecks.date, from), lte(habitChecks.date, to)),
+        )
+        .orderBy(asc(habitChecks.date)),
+    ])
     return c.json(rows)
   })
   .put('/:habitId/:date', async (c) => {
@@ -27,10 +27,11 @@ export const checks = new Hono<AuthedEnv>()
     const date = parse(isoDate, c.req.param('date'))
 
     // A chave estrangeira composta recusa hábito de outro usuário.
-    await db
-      .insert(habitChecks)
-      .values({ habitId, date, userId: c.get('userId') })
-      .onConflictDoNothing()
+    const userId = c.get('userId')
+    await db.batch([
+      claim(userId),
+      db.insert(habitChecks).values({ habitId, date, userId }).onConflictDoNothing(),
+    ])
 
     return c.body(null, 204)
   })
@@ -38,15 +39,19 @@ export const checks = new Hono<AuthedEnv>()
     const habitId = parse(uuid, c.req.param('habitId'))
     const date = parse(isoDate, c.req.param('date'))
 
-    await db
-      .delete(habitChecks)
-      .where(
-        and(
-          eq(habitChecks.habitId, habitId),
-          eq(habitChecks.date, date),
-          eq(habitChecks.userId, c.get('userId')),
+    const userId = c.get('userId')
+    await db.batch([
+      claim(userId),
+      db
+        .delete(habitChecks)
+        .where(
+          and(
+            eq(habitChecks.habitId, habitId),
+            eq(habitChecks.date, date),
+            eq(habitChecks.userId, userId),
+          ),
         ),
-      )
+    ])
 
     return c.body(null, 204)
   })

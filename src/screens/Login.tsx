@@ -111,6 +111,20 @@ export function Login() {
             </p>
           )}
 
+          {creating && (
+            <p className="text-[15px] text-mist">
+              Ao criar a conta, você aceita os{' '}
+              <a href="/termos" className="underline underline-offset-4">
+                Termos
+              </a>{' '}
+              e a{' '}
+              <a href="/privacidade" className="underline underline-offset-4">
+                Privacidade
+              </a>
+              .
+            </p>
+          )}
+
           <button type="submit" className="action mt-2 min-h-12" disabled={sending}>
             {sending ? 'Aguarde…' : creating ? 'Criar conta' : 'Entrar'}
           </button>

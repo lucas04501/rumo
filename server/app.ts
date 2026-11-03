@@ -1,6 +1,7 @@
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
 import { auth, signupOpen } from './auth.js'
+import { claim, db } from './db/client.js'
 import {
   customExercises,
   focusSessions,
@@ -46,6 +47,8 @@ import { requireUser, type AuthedEnv } from './session.js'
 
 const FOREIGN_KEY_VIOLATION = '23503'
 const CHECK_VIOLATION = '23514'
+// A RLS recusou: é o mesmo caso de um vínculo com dado de outro usuário.
+const RLS_VIOLATION = '42501'
 
 function postgresCode(error: unknown): string | undefined {
   const { code, cause } = error as { code?: string; cause?: unknown }
@@ -78,6 +81,11 @@ const data = new Hono<AuthedEnv>()
 export const app = new Hono()
   .basePath('/api')
   .get('/health', (c) => c.json({ ok: true }))
+  // Prova sem login que o papel restrito funciona aqui e que ele não enxerga nada de ninguém.
+  .get('/health/rls', async (c) => {
+    const [, rows] = await db.batch([claim('ninguem'), db.select({ id: goals.id }).from(goals).limit(1)])
+    return c.json({ ok: rows.length === 0 })
+  })
   .get('/signup-status', (c) => c.json({ open: signupOpen }))
   .on(['GET', 'POST'], '/auth/*', (c) => auth.handler(c.req.raw))
   .route('/', data)
@@ -85,8 +93,11 @@ export const app = new Hono()
 app.onError((error, c) => {
   if (error instanceof HTTPException) return c.json({ error: error.message }, error.status)
   // Vínculo com algo que não é do usuário: responde como se não existisse.
-  if (postgresCode(error) === FOREIGN_KEY_VIOLATION) return c.json({ error: 'not_found' }, 404)
-  if (postgresCode(error) === CHECK_VIOLATION) return c.json({ error: 'invalid_input' }, 400)
+  const code = postgresCode(error)
+  if (code === FOREIGN_KEY_VIOLATION || code === RLS_VIOLATION) {
+    return c.json({ error: 'not_found' }, 404)
+  }
+  if (code === CHECK_VIOLATION) return c.json({ error: 'invalid_input' }, 400)
 
   console.error(error)
   return c.json({ error: 'internal_error' }, 500)

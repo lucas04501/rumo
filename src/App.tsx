@@ -1,6 +1,7 @@
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client'
 import { MotionConfig } from 'motion/react'
 import { BrowserRouter, Route, Routes } from 'react-router'
+import { LEGAL_PAGES } from './content/legal'
 import { DayProvider } from './data/DayProvider'
 import { persistOptions, resumeWrites, store } from './data/store'
 import { AuthGate } from './ui/AuthGate'
@@ -12,6 +13,7 @@ import { Ficha } from './screens/Ficha'
 import { Foco } from './screens/Foco'
 import { Habitos } from './screens/Habitos'
 import { Hoje } from './screens/Hoje'
+import { Legal } from './screens/Legal'
 import { Mais } from './screens/Mais'
 import { Mes } from './screens/Mes'
 import { Meta } from './screens/Meta'
@@ -22,6 +24,9 @@ import { Treino } from './screens/Treino'
 import { Treinos } from './screens/Treinos'
 
 export function App() {
+  const legal = LEGAL_PAGES[window.location.pathname]
+  if (legal) return <Legal page={legal} />
+
   return (
     <MotionConfig reducedMotion="user">
       <PersistQueryClientProvider

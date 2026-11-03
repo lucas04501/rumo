@@ -2,7 +2,7 @@ import { and, asc, eq, isNull, lte, sql } from 'drizzle-orm'
 import type { AnyPgColumn, PgTable } from 'drizzle-orm/pg-core'
 import { Hono } from 'hono'
 import { z } from 'zod'
-import { db } from '../db/client.js'
+import { claim, db } from '../db/client.js'
 import type { AuthedEnv } from '../session.js'
 import { editedAt, parse, readJson, resolveEditTime, uuid } from '../validation.js'
 
@@ -28,11 +28,15 @@ export function resource<T extends z.ZodObject>(table: OwnedTable, fields: T) {
 
   return new Hono<AuthedEnv>()
     .get('/', async (c) => {
-      const rows = await db
-        .select()
-        .from(table as PgTable)
-        .where(and(eq(table.userId, c.get('userId')), isNull(table.deletedAt)))
-        .orderBy(asc(table.id))
+      const userId = c.get('userId')
+      const [, rows] = await db.batch([
+        claim(userId),
+        db
+          .select()
+          .from(table as PgTable)
+          .where(and(eq(table.userId, userId), isNull(table.deletedAt)))
+          .orderBy(asc(table.id)),
+      ])
       return c.json(rows)
     })
     .put('/:id', async (c) => {
@@ -41,25 +45,32 @@ export function resource<T extends z.ZodObject>(table: OwnedTable, fields: T) {
       const updatedAt = resolveEditTime(edited as string | undefined)
       const userId = c.get('userId')
 
-      const [row] = await db
-        .insert(table)
-        .values({ ...data, id, userId, updatedAt })
-        .onConflictDoUpdate({
-          target: table.id,
-          set: { ...data, updatedAt },
-          setWhere: and(eq(table.userId, userId), isNull(table.deletedAt), lte(table.updatedAt, updatedAt)),
-        })
-        .returning()
+      const [, [row]] = await db.batch([
+        claim(userId),
+        db
+          .insert(table)
+          .values({ ...data, id, userId, updatedAt })
+          .onConflictDoUpdate({
+            target: table.id,
+            set: { ...data, updatedAt },
+            setWhere: and(eq(table.userId, userId), isNull(table.deletedAt), lte(table.updatedAt, updatedAt)),
+          })
+          .returning(),
+      ])
 
       return row ? c.json(row) : c.json(notFound, 404)
     })
     .delete('/:id', async (c) => {
       const id = parse(uuid, c.req.param('id'))
-      const [row] = await db
-        .update(table)
-        .set({ deletedAt: sql`now()`, updatedAt: sql`now()` } as never)
-        .where(and(eq(table.id, id), eq(table.userId, c.get('userId')), isNull(table.deletedAt)))
-        .returning()
+      const userId = c.get('userId')
+      const [, [row]] = await db.batch([
+        claim(userId),
+        db
+          .update(table)
+          .set({ deletedAt: sql`now()`, updatedAt: sql`now()` } as never)
+          .where(and(eq(table.id, id), eq(table.userId, userId), isNull(table.deletedAt)))
+          .returning(),
+      ])
 
       return row ? c.body(null, 204) : c.json(notFound, 404)
     })

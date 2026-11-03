@@ -1,7 +1,7 @@
 import { and, asc, eq, gte, lte } from 'drizzle-orm'
 import { Hono } from 'hono'
 import { z } from 'zod'
-import { db } from '../db/client.js'
+import { claim, db } from '../db/client.js'
 import { days as daysTable } from '../db/schema.js'
 import type { AuthedEnv } from '../session.js'
 import { dateRange, editedAt, isoDate, moment, parse, readJson, resolveEditTime } from '../validation.js'
@@ -15,17 +15,15 @@ const dayBody = z.object({
 export const days = new Hono<AuthedEnv>()
   .get('/', async (c) => {
     const { from, to } = parse(dateRange, c.req.query())
-    const rows = await db
-      .select()
-      .from(daysTable)
-      .where(
-        and(
-          eq(daysTable.userId, c.get('userId')),
-          gte(daysTable.date, from),
-          lte(daysTable.date, to),
-        ),
-      )
-      .orderBy(asc(daysTable.date))
+    const userId = c.get('userId')
+    const [, rows] = await db.batch([
+      claim(userId),
+      db
+        .select()
+        .from(daysTable)
+        .where(and(eq(daysTable.userId, userId), gte(daysTable.date, from), lte(daysTable.date, to)))
+        .orderBy(asc(daysTable.date)),
+    ])
     return c.json(rows)
   })
   .put('/:date', async (c) => {
@@ -39,15 +37,18 @@ export const days = new Hono<AuthedEnv>()
       ...(note !== undefined && { note }),
     }
 
-    const [row] = await db
-      .insert(daysTable)
-      .values({ ...data, userId, date, updatedAt })
-      .onConflictDoUpdate({
-        target: [daysTable.userId, daysTable.date],
-        set: { ...data, updatedAt },
-        setWhere: lte(daysTable.updatedAt, updatedAt),
-      })
-      .returning()
+    const [, [row]] = await db.batch([
+      claim(userId),
+      db
+        .insert(daysTable)
+        .values({ ...data, userId, date, updatedAt })
+        .onConflictDoUpdate({
+          target: [daysTable.userId, daysTable.date],
+          set: { ...data, updatedAt },
+          setWhere: lte(daysTable.updatedAt, updatedAt),
+        })
+        .returning(),
+    ])
 
     return c.json(row ?? { error: 'stale' }, row ? 200 : 409)
   })

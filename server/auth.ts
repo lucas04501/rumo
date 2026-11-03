@@ -29,10 +29,13 @@ export const auth = betterAuth({
     customRules: {
       '/sign-in/email': { window: FIVE_MINUTES, max: 8 },
       '/sign-up/email': { window: ONE_HOUR, max: 5 },
+      '/delete-user': { window: FIVE_MINUTES, max: 5 },
       // Roda a cada abertura do app e não testa senha.
       '/get-session': false,
     },
   },
+  // A senha é pedida de novo. Todas as tabelas apagam junto, em cascata pelo `user_id`.
+  user: { deleteUser: { enabled: true } },
   emailAndPassword: {
     enabled: true,
     disableSignUp: !signupOpen,

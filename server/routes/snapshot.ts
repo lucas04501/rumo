@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, isNotNull, isNull } from 'drizzle-orm'
 import { Hono } from 'hono'
-import { db } from '../db/client.js'
+import { claim, db } from '../db/client.js'
 import {
   achievementsSeen,
   customExercises,
@@ -33,8 +33,11 @@ import type { AuthedEnv } from '../session.js'
 export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
   const userId = c.get('userId')
 
+  // `user` é do Better Auth e fica fora da RLS, então vem antes da transação do usuário.
+  const owner = await db.select({ name: user.name }).from(user).where(eq(user.id, userId))
+
   const [
-    owner,
+    ,
     goalRows,
     milestoneRows,
     habitRows,
@@ -54,8 +57,8 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
     workoutRows,
     setRows,
     customRows,
-  ] = await Promise.all([
-    db.select({ name: user.name }).from(user).where(eq(user.id, userId)),
+  ] = await db.batch([
+    claim(userId),
     db
       .select()
       .from(goals)
