@@ -1,6 +1,6 @@
 # Rumo
 
-PWA de metas, hábitos e planner mensal, em português do Brasil. Uso pessoal agora, multi-tenant com mensalidade depois.
+PWA de metas, hábitos, planner e treinos, em português do Brasil. Multi-usuário e gratuito, sem plano pago.
 
 ## Comandos
 

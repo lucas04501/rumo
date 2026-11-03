@@ -33,7 +33,8 @@ Em desenvolvimento ativo.
 | Rotina por dia da semana e relatório do dia no calendário | Concluída e publicada |
 | Redesign escuro, quadro de tarefas, criar e buscar de qualquer tela e conquistas | Concluída e publicada |
 | Treinos: fichas, biblioteca, modo treino e histórico | Concluída e publicada |
-| Abrir ao público | Planejada |
+| Segurança e privacidade: RLS, exportar e excluir dados, termos | Concluída e publicada |
+| Recuperação de senha | Planejada |
 
 ## Stack
 

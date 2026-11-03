@@ -12,7 +12,7 @@ Delegado ao Claude e aprovado no plano: Vite + React + TypeScript, Tailwind v4 e
 
 ## Users
 
-Por enquanto um usuário só: Lucas, em uso pessoal, no celular (o vídeo de referência sugere iPhone, ainda não confirmado) e no computador, com os mesmos dados nos dois. No futuro, assinantes individuais pagando mensalidade.
+Lucas, em uso pessoal, no celular e no computador, com os mesmos dados nos dois. O cadastro é aberto e o app é gratuito, sem cobrança.
 
 O trabalho a fazer: decidir o que importa, repetir isso todo dia e sentir que está avançando.
 
