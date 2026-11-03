@@ -1,6 +1,6 @@
 # Rumo
 
-PWA de metas, hábitos, planner e treinos, em português do Brasil. Multi-usuário e gratuito, sem plano pago.
+PWA de metas, hábitos, planner e treinos, em português do Brasil. Multi-usuário, com assinatura planejada e nenhum custo fixo de infraestrutura.
 
 ## Comandos
 
@@ -30,7 +30,8 @@ PWA de metas, hábitos, planner e treinos, em português do Brasil. Multi-usuár
 - Toda rota nova precisa de caso em `server/isolation.test.ts`.
 - RLS é a segunda trava: toda consulta de rota do app roda em `db.batch([claim(userId), ...])`, como o papel `rumo_app`. Tabela nova com `user_id` precisa, na migração, de `GRANT`, RLS ligada e a política `dono`, como em `drizzle/0007_rls.sql`. Um teste recusa tabela sem isso. Só o Better Auth e `user` ficam de fora.
 - `GET /api/health/rls` prova sem login que o papel funciona. Confira depois de todo deploy que mexa no banco.
-- O Rumo fica no gratuito, por decisão do Lucas: nada de plano pago. Termos e privacidade em `src/content/legal.ts` precisam continuar verdadeiros: mudou provedor ou o que é guardado, muda o texto.
+- Nenhum custo fixo, por decisão do Lucas: nada de plano pago de hospedagem ou banco. A cobrança é de R$ 14,90 por mês, com 7 dias grátis, pelo Mercado Pago, que só desconta taxa por venda. A Vercel Hobby não permite uso comercial: antes de cobrar ou anunciar preço, o app sai dela. A migração planejada é para a Netlify Free.
+- Termos e privacidade em `src/content/legal.ts` precisam continuar verdadeiros: mudou provedor, preço ou o que é guardado, muda o texto. Hoje eles dizem que o app é gratuito, então isso muda junto com a cobrança.
 - Em `server/` e `api/`, imports relativos terminam em `.js`: a Vercel roda ESM sem empacotar. `schema.ts` fica em um arquivo só, porque o drizzle-kit não resolve esses imports.
 - O `.env` aponta só para a branch `dev`. A conexão da branch principal não fica neste computador. Para migrar a principal, passe `DATABASE_URL` pelo ambiente, sem gravar em arquivo nem exibir. `vercel env run` não serve: a Vercel não libera valores do tipo Secret, e o CLI carrega o `.env`, então a migração cairia na `dev` dizendo sucesso. A conexão vem de `neonctl connection-string main`, guardada só em uma variável do comando. Confira que o endereço difere do `.env` antes de migrar. A migração vem antes do deploy, e a autorização do Lucas é pedida a cada vez.
 - Testes nunca tocam a branch principal.

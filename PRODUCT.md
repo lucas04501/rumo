@@ -12,7 +12,7 @@ Delegado ao Claude e aprovado no plano: Vite + React + TypeScript, Tailwind v4 e
 
 ## Users
 
-Lucas, em uso pessoal, no celular e no computador, com os mesmos dados nos dois. O cadastro é aberto e o app é gratuito, sem cobrança.
+Lucas, em uso pessoal, no celular e no computador, com os mesmos dados nos dois. O cadastro é aberto. Depois vem a assinatura de R$ 14,90 por mês, com 7 dias grátis.
 
 O trabalho a fazer: decidir o que importa, repetir isso todo dia e sentir que está avançando.
 
