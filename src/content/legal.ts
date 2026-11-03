@@ -85,6 +85,7 @@ export const LEGAL_PAGES: Record<string, LegalPage> = {
         heading: 'Seus direitos',
         text: [
           'Pela Lei Geral de Proteção de Dados, você pode acessar, corrigir, levar e excluir seus dados. No app, você corrige o que quiser, e em Ajustes pode exportar tudo e excluir a conta.',
+          'Para qualquer outro pedido sobre seus dados, escreva para lpds9081@gmail.com.',
         ],
       },
     ],
