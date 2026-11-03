@@ -1,4 +1,4 @@
-import { Anchor, ChevronRight, Plus, Timer } from 'lucide-react'
+import { Anchor, ChevronRight, Columns3, Plus, Timer } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { useDay, type HabitToday } from '../data/DayProvider'
@@ -444,7 +444,13 @@ function Tasks() {
         <h2 id="tarefas-de-hoje" className="font-display text-xl font-semibold">
           Tarefas
         </h2>
-        <FocusShortcut />
+        <div className="flex items-center gap-4">
+          <Link to="/quadro" className="flex min-h-11 items-center gap-1.5 text-[15px] text-mist">
+            <Columns3 size={17} strokeWidth={1.75} aria-hidden />
+            Quadro
+          </Link>
+          <FocusShortcut />
+        </div>
       </div>
       <Overdue />
       <ul className="mt-1 divide-y divide-line">

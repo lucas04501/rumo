@@ -36,9 +36,12 @@ export function Mes() {
     <Screen wide={pathname === '/quadro'}>
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 pt-3 lg:pt-8">
         <h1 className="font-display text-4xl font-semibold tracking-[-0.02em]">
-          {VIEWS.find((view) => view.path === pathname)?.label}
+          <span className="lg:hidden">Plano</span>
+          <span className="hidden lg:inline">
+            {VIEWS.find((view) => view.path === pathname)?.label}
+          </span>
         </h1>
-        <div className="segmented" role="group" aria-label="Visualização">
+        <div className="segmented segmented-wide w-full lg:w-auto" role="group" aria-label="Visualização">
           {VIEWS.map(({ path, label }) => (
             <button
               key={path}

@@ -42,6 +42,7 @@ PWA de metas, hábitos e planner mensal, em português do Brasil. Uso pessoal ag
 - `exercise_ref` aponta para a biblioteca fixa, em `src/content/exercicios.ts`, ou para `custom_exercises`, então não tem chave estrangeira. Trocar o ID de um exercício da biblioteca perde o histórico. Ficha se arquiva, não se exclui, porque as sessões apontam para ela.
 - O que acontece muitas vezes ao dia fica discreto. A onda em tela cheia fica para os grandes momentos.
 - Atalho de teclado abre sem animação.
+- Gesto nunca é o único caminho: toda ação no toque tem um controle visível. Mudança de toque também se testa no WebKit (`npx playwright install webkit`), porque o Chromium emulado não é o motor do iPhone.
 - Elemento com `position: fixed` que precisa ficar acima das abas vai por portal para o `body`, porque `main` cria um contexto de empilhamento.
 - Sempre respeitar `prefers-reduced-motion` e gatear `:hover`.
 - Nada de segredo no cliente. A conexão com o banco vive só no servidor.

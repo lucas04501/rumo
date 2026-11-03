@@ -2,6 +2,7 @@ import {
   CalendarClock,
   ChartNoAxesCombined,
   ChevronRight,
+  Columns3,
   Dumbbell,
   Medal,
   NotebookPen,
@@ -20,6 +21,7 @@ type Area = { to: string; label: string; icon: LucideIcon }
 
 // Item sem tela só atrapalha.
 const AREAS: Area[] = [
+  { to: '/quadro', label: 'Quadro', icon: Columns3 },
   { to: '/treinos', label: 'Treinos', icon: Dumbbell },
   { to: '/rotina', label: 'Rotina', icon: CalendarClock },
   { to: '/evolucao', label: 'Evolução', icon: ChartNoAxesCombined },

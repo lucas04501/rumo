@@ -1,11 +1,14 @@
-import { Flag, Repeat } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { Flag, GripVertical, Repeat } from 'lucide-react'
+import { useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useDay } from '../data/DayProvider'
+import { saveTask } from '../data/taskActions'
 import type { Snapshot, Task } from '../data/types'
-import { BOARD_COLUMNS, boardColumns, dueLabel, type Column } from '../lib/board'
+import { offerUndo } from '../data/undo'
+import { BOARD_COLUMNS, boardColumns, columnOf, dueLabel, type Column } from '../lib/board'
 import { XP } from '../lib/xp'
 import { CheckMark } from './ItemRow'
+import { Sheet } from './Sheet'
 import { TaskSheet } from './TaskSheet'
 import { useCardDrag } from './useCardDrag'
 
@@ -23,13 +26,21 @@ export function Board({ snapshot, today }: BoardProps) {
   const columns = useMemo(() => boardColumns(snapshot, today), [snapshot, today])
   const [shown, setShown] = useState<Column>('todo')
   const [opened, setOpened] = useState<Task | null>(null)
+  const [moving, setMoving] = useState<Task | null>(null)
   const [earned, setEarned] = useState<string | null>(null)
 
   const celebrate = (task: Task, xp: number) => {
     if (xp > 0) setEarned(task.id)
   }
 
-  const drag = useCardDrag((task, column) => celebrate(task, moveCard(task, column)))
+  // O cartão some da coluna à vista no celular: o aviso confirma para onde foi e permite voltar.
+  const move = (task: Task, column: Column) => {
+    celebrate(task, moveCard(task, column))
+    const { label } = BOARD_COLUMNS.find(({ id }) => id === column) ?? BOARD_COLUMNS[0]
+    offerUndo({ message: `Movida para ${label}`, undo: () => saveTask(task) })
+  }
+
+  const drag = useCardDrag(move)
   const everything = [...columns.todo, ...columns.doing, ...columns.done]
   const subtasksOf = (task: Task) => snapshot.subtasks.filter((item) => item.taskId === task.id)
 
@@ -43,6 +54,7 @@ export function Board({ snapshot, today }: BoardProps) {
             </button>
           ))}
         </div>
+        <p className="mt-2 text-sm text-mist">Toque na alça para mover, ou arraste por ela.</p>
       </div>
 
       <div className="board-columns">
@@ -97,6 +109,17 @@ export function Board({ snapshot, today }: BoardProps) {
                       >
                         <CardText task={task} today={today} subtasks={subtasksOf(task).length} />
                       </button>
+                      <button
+                        type="button"
+                        className="card-grip"
+                        data-grip
+                        aria-label={`Mover ${task.title}`}
+                        onClick={() => {
+                          if (!drag.justDragged()) setMoving(task)
+                        }}
+                      >
+                        <GripVertical size={20} strokeWidth={1.75} aria-hidden />
+                      </button>
                       {earned === task.id && (
                         <span className="xp-float" onAnimationEnd={() => setEarned(null)}>
                           +{XP.task} XP
@@ -137,6 +160,8 @@ export function Board({ snapshot, today }: BoardProps) {
         document.body,
       )}
 
+      {moving && <MoveSheet task={moving} onMove={move} onClosed={() => setMoving(null)} />}
+
       {opened && (
         <TaskSheet
           task={everything.find((task) => task.id === opened.id) ?? opened}
@@ -144,6 +169,55 @@ export function Board({ snapshot, today }: BoardProps) {
         />
       )}
     </div>
+  )
+}
+
+type MoveSheetProps = {
+  task: Task
+  onMove: (task: Task, column: Column) => void
+  onClosed: () => void
+}
+
+/** Mover sem gesto nenhum. Também é o caminho de quem usa teclado ou leitor de tela. */
+function MoveSheet({ task, onMove, onClosed }: MoveSheetProps) {
+  // Só move depois de fechar: o aviso de Desfazer entra na folha do topo.
+  const chosen = useRef<Column | null>(null)
+
+  return (
+    <Sheet
+      title="Mover para"
+      onClosed={() => {
+        if (chosen.current) onMove(task, chosen.current)
+        onClosed()
+      }}
+    >
+      {(close) => (
+        <>
+          <p className="text-[15px] text-mist wrap-anywhere">{task.title}</p>
+          <ul className="mt-2 divide-y divide-line">
+            {BOARD_COLUMNS.map(({ id, label }) => {
+              const here = columnOf(task) === id
+              return (
+                <li key={id}>
+                  <button
+                    type="button"
+                    className="flex min-h-14 w-full items-center justify-between gap-3 text-left text-[17px] font-[450]"
+                    disabled={here}
+                    onClick={() => {
+                      chosen.current = id
+                      close()
+                    }}
+                  >
+                    <span className={here ? 'text-mist' : ''}>{label}</span>
+                    {here && <span className="text-[15px] text-mist">Está aqui</span>}
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        </>
+      )}
+    </Sheet>
   )
 }
 

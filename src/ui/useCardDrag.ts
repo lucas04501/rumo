@@ -15,6 +15,8 @@ type Press = {
   grabX: number
   grabY: number
   width: number
+  /** Pela alça, o gesto é sempre arraste: a tela não rola e não precisa segurar. */
+  grip: boolean
   active: boolean
 }
 
@@ -23,9 +25,9 @@ const columnAt = (x: number, y: number) =>
     null) as Column | null
 
 /**
- * Arrastar cartões com o mesmo código no mouse e no toque. No toque, o gesto começa
- * ao segurar: antes disso, o dedo está só rolando a tela. Nada aqui re-renderiza a
- * cada movimento: o fantasma anda direto no estilo.
+ * Arrastar cartões com o mesmo código no mouse e no toque. No toque, a alça arrasta
+ * na hora, e o resto do cartão só depois de segurar: antes disso, o dedo está rolando
+ * a tela. Nada aqui re-renderiza a cada movimento: o fantasma anda direto no estilo.
  */
 export function useCardDrag(onDrop: (task: Task, column: Column) => void) {
   const board = useRef<HTMLDivElement>(null)
@@ -39,7 +41,7 @@ export function useCardDrag(onDrop: (task: Task, column: Column) => void) {
     // O Safari só aceita cancelar a rolagem com um ouvinte não passivo já registrado antes do toque.
     const node = board.current
     const hold = (event: TouchEvent) => {
-      if (press.current?.active) event.preventDefault()
+      if (press.current?.active || press.current?.grip) event.preventDefault()
     }
     node?.addEventListener('touchmove', hold, { passive: false })
     return () => node?.removeEventListener('touchmove', hold)
@@ -55,6 +57,7 @@ export function useCardDrag(onDrop: (task: Task, column: Column) => void) {
 
     const box = event.currentTarget.getBoundingClientRect()
     const started = { x: event.clientX, y: event.clientY }
+    const grip = target.closest('[data-grip]') !== null
     const touch = event.pointerType !== 'mouse'
     const current: Press = {
       task,
@@ -63,6 +66,7 @@ export function useCardDrag(onDrop: (task: Task, column: Column) => void) {
       grabX: event.clientX - box.left,
       grabY: event.clientY - box.top,
       width: box.width,
+      grip,
       active: false,
     }
     press.current = current
@@ -72,7 +76,7 @@ export function useCardDrag(onDrop: (task: Task, column: Column) => void) {
       if (touch) haptic()
       setDragged(task)
     }
-    const timer = touch ? setTimeout(activate, LONG_PRESS_MS) : undefined
+    const timer = touch && !grip ? setTimeout(activate, LONG_PRESS_MS) : undefined
 
     const stop = () => {
       clearTimeout(timer)
@@ -92,7 +96,7 @@ export function useCardDrag(onDrop: (task: Task, column: Column) => void) {
 
       if (!current.active) {
         if (Math.hypot(moved.clientX - started.x, moved.clientY - started.y) < MOVE_SLOP) return
-        if (touch) return stop()
+        if (touch && !grip) return stop()
         activate()
       }
       paint(current)

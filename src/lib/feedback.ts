@@ -48,7 +48,12 @@ export function setMuted(value: boolean) {
 function pluck(semitones: number, delay = 0, peak = 0.14) {
   if (muted) return
 
-  audio ??= new AudioContext()
+  // Sem áudio no aparelho, a ação segue: som é enfeite e nunca pode interromper um toque.
+  try {
+    audio ??= new AudioContext()
+  } catch {
+    return
+  }
   if (audio.state === 'suspended') void audio.resume()
 
   const start = audio.currentTime + delay

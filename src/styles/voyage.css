@@ -921,8 +921,29 @@ button.day-cell:active {
 .card-body {
   min-width: 0;
   flex: 1;
-  padding: 12px 12px 12px 0;
+  padding: 12px 0;
   text-align: left;
+}
+
+.card-grip {
+  display: grid;
+  width: 44px;
+  align-self: stretch;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--color-mist);
+  touch-action: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-grip {
+    cursor: grab;
+  }
+
+  .card-grip:hover {
+    color: var(--color-foam);
+  }
 }
 
 .card .xp-float {

@@ -119,4 +119,11 @@ describe('sons', () => {
     feedback.soundCheck(0)
     expect(FakeAudioContext.created).toBe(1)
   })
+
+  it('segue sem som quando o aparelho não tem áudio', async () => {
+    vi.resetModules()
+    vi.stubGlobal('AudioContext', undefined)
+    const { soundCheck } = await import('./feedback')
+    expect(() => soundCheck(0)).not.toThrow()
+  })
 })

@@ -213,7 +213,7 @@ Cantos suaves em tudo o que é controle e cartão (12 px), um pouco mais em avis
 
 ### Navigation
 
-Cinco abas no rodapé do celular, sobre `abyss`, com a marca teal deslizando até a aba ativa: Hoje, Hábitos, Metas, Plano e Mais. Plano reúne Mês, Semana e Quadro, em `/mes`, `/semana` e `/quadro`, com um seletor no topo. Mais reúne Buscar, Treinos, Rotina, Evolução, Conquistas, Notas, Foco e Ajustes, e fica ativa nessas telas. Item sem tela pronta não entra nela. No computador, vira coluna lateral com Criar e Buscar no topo e todas as áreas direto na lista, com o item ativo em `sea-2`.
+Cinco abas no rodapé do celular, sobre `abyss`, com a marca teal deslizando até a aba ativa: Hoje, Hábitos, Metas, Plano e Mais. Plano reúne Mês, Semana e Quadro, em `/mes`, `/semana` e `/quadro`, com um seletor na largura toda, no topo. A tarefa da Hoje e a lista de Mais também levam ao Quadro. Mais reúne Buscar, Quadro, Treinos, Rotina, Evolução, Conquistas, Notas, Foco e Ajustes, e fica ativa nessas telas. Item sem tela pronta não entra nela. No computador, vira coluna lateral com Criar e Buscar no topo e todas as áreas direto na lista, com o item ativo em `sea-2`.
 
 ### Create
 
@@ -241,7 +241,9 @@ A adição rápida da Hoje lê data, prioridade e repetição no fim do texto ("
 
 Três colunas fixas: A fazer, Fazendo e Feito. Mostra o dia, os atrasos, os próximos 7 dias e o que foi concluído nos últimos 7. Hoje vem primeiro, depois o atraso mais recente e os próximos dias. Dentro disso, a prioridade ordena: não há ordem manual.
 
-No computador, as colunas ficam lado a lado em `sea-1`, e arrastar começa ao mover o mouse. No celular, o seletor mostra uma coluna por vez. Segurar o cartão por 220 ms com vibração inicia o arraste e abre três alvos grandes acima das abas. Deslizar sem segurar continua rolando a tela. O fantasma acompanha o dedo, um pouco inclinado, e Esc cancela. Quem não arrasta muda o andamento na folha da tarefa.
+Todo cartão tem uma alça visível à direita. Tocar nela abre "Mover para", e arrastar por ela começa na hora, sem rolar a tela. Nenhum caminho depende de gesto escondido, e uma frase sob o seletor explica isso no celular. Depois de mover, um aviso diz para onde o cartão foi e oferece Desfazer.
+
+No computador, as colunas ficam lado a lado em `sea-1`, e arrastar começa ao mover o mouse. No celular, o seletor mostra uma coluna por vez, e arrastar abre três alvos grandes acima das abas. O corpo do cartão também arrasta depois de segurar por 220 ms, e deslizar sem segurar rola a tela. O fantasma acompanha o dedo, um pouco inclinado, e Esc cancela.
 
 Concluir no quadro passa pelo mesmo caminho do check: som, vibração e XP em âmbar. O XP vem dos dados, então mover não conta duas vezes.
 
