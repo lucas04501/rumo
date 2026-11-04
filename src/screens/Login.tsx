@@ -25,7 +25,10 @@ function messageFor(status: number, mode: Mode): string {
 
 export function Login() {
   const [signupOpen, setSignupOpen] = useState(false)
-  const [mode, setMode] = useState<Mode>('entrar')
+  // A landing manda para cá com ?conta=criar ou ?conta=entrar.
+  const [mode, setMode] = useState<Mode>(() =>
+    new URLSearchParams(window.location.search).get('conta') === 'criar' ? 'criar' : 'entrar',
+  )
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -36,7 +39,10 @@ export function Login() {
   useEffect(() => {
     fetch('/api/signup-status')
       .then((response) => response.json())
-      .then((status: { open: boolean }) => setSignupOpen(status.open))
+      .then((status: { open: boolean }) => {
+        setSignupOpen(status.open)
+        if (!status.open) setMode((current) => (current === 'criar' ? 'entrar' : current))
+      })
       .catch(() => setSignupOpen(false))
   }, [])
 

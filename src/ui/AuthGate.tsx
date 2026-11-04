@@ -1,8 +1,18 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { authClient } from '../data/authClient'
 import { Login } from '../screens/Login'
 
+const Landing = lazy(() => import('../landing/Landing').then((module) => ({ default: module.Landing })))
+
 const SIGNED_IN_KEY = 'rumo:conectado'
+
+/** A landing é para quem chega pelo navegador. Pedir a conta ou abrir o app instalado leva ao login. */
+function wantsLogin(): boolean {
+  const standalone =
+    window.matchMedia('(display-mode: standalone)').matches ||
+    (navigator as Navigator & { standalone?: boolean }).standalone === true
+  return standalone || new URLSearchParams(window.location.search).has('conta')
+}
 
 function readSignedIn(): boolean {
   try {
@@ -37,6 +47,7 @@ export function AuthGate({ children }: { children: ReactNode }) {
     if (confirmed) {
       saveSignedIn(true)
       setSignedIn(true)
+      if (window.location.search.includes('conta=')) history.replaceState(null, '', window.location.pathname)
     } else if (refused) {
       saveSignedIn(false)
       setSignedIn(false)
@@ -44,6 +55,13 @@ export function AuthGate({ children }: { children: ReactNode }) {
   }, [confirmed, refused])
 
   if (confirmed || signedIn) return children
+  // A landing não espera o banco acordar: quem nunca entrou neste aparelho a vê na hora.
+  if (!wantsLogin())
+    return (
+      <Suspense fallback={null}>
+        <Landing />
+      </Suspense>
+    )
   if (isPending) return null
   return <Login />
 }
