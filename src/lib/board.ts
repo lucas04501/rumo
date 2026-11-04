@@ -65,6 +65,23 @@ export function boardColumns(snapshot: Snapshot, today: string): Record<Column, 
   }
 }
 
+export type TodoGroup = { key: 'today' | 'late' | 'tomorrow' | 'later'; label: string; tasks: Task[] }
+
+/** Separa A fazer em blocos de dia, na ordem de urgência. Bloco vazio não aparece. */
+export function groupTodo(tasks: Task[], today: string): TodoGroup[] {
+  const tomorrow = addDays(today, 1)
+  const keyOf = ({ date }: Task): TodoGroup['key'] =>
+    date === today ? 'today' : date < today ? 'late' : date === tomorrow ? 'tomorrow' : 'later'
+  const groups: TodoGroup[] = [
+    { key: 'today', label: 'Hoje', tasks: [] },
+    { key: 'late', label: 'Atrasadas', tasks: [] },
+    { key: 'tomorrow', label: 'Amanhã', tasks: [] },
+    { key: 'later', label: 'Próximos dias', tasks: [] },
+  ]
+  for (const task of tasks) groups.find((group) => group.key === keyOf(task))?.tasks.push(task)
+  return groups.filter((group) => group.tasks.length > 0)
+}
+
 export function dueLabel(date: string, today: string, done: boolean): string {
   if (date === today) return 'Hoje'
   if (date === addDays(today, 1)) return 'Amanhã'

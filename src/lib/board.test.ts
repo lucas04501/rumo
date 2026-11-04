@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Snapshot, Task, TaskRule } from '../data/types'
-import { boardColumns, columnOf, dueLabel, placeOn } from './board'
+import { boardColumns, columnOf, dueLabel, groupTodo, placeOn } from './board'
 import { complete } from './snapshot'
 import { xpOf } from './progress'
 import { newTask, occurrenceId, upsertTask } from './tasks'
@@ -116,6 +116,26 @@ describe('boardColumns', () => {
       startedAt: AT,
     })
     expect(boardColumns(snapshotWith([started], [rule]), TODAY).doing).toHaveLength(1)
+  })
+})
+
+describe('groupTodo', () => {
+  it('separa por dia na ordem de urgência e esconde bloco vazio', () => {
+    const tasks = [
+      task('hoje', TODAY),
+      task('atrasada', '2026-10-30'),
+      task('amanha', '2026-11-03'),
+      task('depois', '2026-11-06'),
+    ]
+    const groups = groupTodo(tasks, TODAY)
+    expect(groups.map((group) => group.label)).toEqual(['Hoje', 'Atrasadas', 'Amanhã', 'Próximos dias'])
+    expect(groups.map((group) => group.tasks.map((item) => item.id))).toEqual([
+      ['hoje'],
+      ['atrasada'],
+      ['amanha'],
+      ['depois'],
+    ])
+    expect(groupTodo([task('amanha', '2026-11-03')], TODAY).map((group) => group.key)).toEqual(['tomorrow'])
   })
 })
 

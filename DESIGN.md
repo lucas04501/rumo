@@ -239,7 +239,9 @@ A adição rápida da Hoje lê data, prioridade e repetição no fim do texto ("
 
 ### Board
 
-Três colunas fixas: A fazer, Fazendo e Feito. Mostra o dia, os atrasos, os próximos 7 dias e o que foi concluído nos últimos 7. Hoje vem primeiro, depois o atraso mais recente e os próximos dias. Dentro disso, a prioridade ordena: não há ordem manual.
+Três colunas fixas: A fazer, Fazendo e Feito. Mostra o dia, os atrasos, os próximos 7 dias e o que foi concluído nos últimos 7. Hoje vem primeiro, depois o atraso mais recente e os próximos dias. Dentro disso, a prioridade ordena: não há ordem manual. A fazer se divide em blocos com título discreto em névoa: Hoje, Atrasadas, Amanhã e Próximos dias, cada um só quando tem cartão. No topo de A fazer, um campo cria a tarefa para hoje com a mesma leitura rápida da Hoje.
+
+O cartão mostra título, dia, prioridade, repetição e a meta ligada. Com subtarefas, ganha a barra fina e a conta "1/3". Em A fazer, um botão de começar leva o cartão para Fazendo com um toque.
 
 Todo cartão tem uma alça visível à direita. Tocar nela abre "Mover para", e arrastar por ela começa na hora, sem rolar a tela. Nenhum caminho depende de gesto escondido, e uma frase sob o seletor explica isso no celular. Depois de mover, um aviso diz para onde o cartão foi e oferece Desfazer.
 

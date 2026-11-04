@@ -956,6 +956,34 @@ button.day-cell:active {
   }
 }
 
+/* Criar no Quadro: mesmo fundo do cartão, sem o gesto de arrastar. */
+.board-add {
+  border-radius: 12px;
+  background: var(--color-sea-2);
+}
+
+.board-add:focus-within {
+  outline: 2px solid var(--color-tide);
+  outline-offset: -2px;
+}
+
+/* Começar: leva para Fazendo com um toque, sem gesto. */
+.card-start {
+  display: grid;
+  width: 40px;
+  align-self: stretch;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--color-mist);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-start:hover {
+    color: var(--color-tide);
+  }
+}
+
 .card .xp-float {
   left: 44px;
 }
