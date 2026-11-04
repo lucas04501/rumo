@@ -4,7 +4,7 @@ export type LegalPage = {
   sections: { heading: string; text: string[] }[]
 }
 
-const UPDATED = 'Versão de 2 de novembro de 2026'
+const UPDATED = 'Versão de 4 de novembro de 2026'
 
 // Tudo aqui precisa continuar verdadeiro: mudou o provedor ou o que é guardado, muda este texto.
 export const LEGAL_PAGES: Record<string, LegalPage> = {
@@ -22,7 +22,7 @@ export const LEGAL_PAGES: Record<string, LegalPage> = {
       {
         heading: 'Sua conta',
         text: [
-          'Você é responsável pela sua senha. Ainda não existe recuperação de senha: quem esquecer perde o acesso à conta.',
+          'Você é responsável pela sua senha. Se esquecer, peça um link na tela de entrar: ele chega no e-mail da conta e vale por 1 hora.',
           'Você pode excluir a conta quando quiser, em Ajustes.',
         ],
       },
@@ -68,7 +68,7 @@ export const LEGAL_PAGES: Record<string, LegalPage> = {
       {
         heading: 'Onde ficam',
         text: [
-          'O banco de dados fica na Neon, em São Paulo, e o app é hospedado na Vercel. O app também guarda uma cópia no seu aparelho, para funcionar sem internet.',
+          'O banco de dados fica na Neon, em São Paulo, e o app é hospedado na Vercel. O e-mail para redefinir a senha sai pelo Gmail, do Google, e só é enviado quando você pede. O app também guarda uma cópia no seu aparelho, para funcionar sem internet.',
         ],
       },
       {

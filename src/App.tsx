@@ -19,6 +19,7 @@ import { Mes } from './screens/Mes'
 import { Meta } from './screens/Meta'
 import { Metas } from './screens/Metas'
 import { Notas } from './screens/Notas'
+import { Redefinir } from './screens/Redefinir'
 import { Rotina } from './screens/Rotina'
 import { Treino } from './screens/Treino'
 import { Treinos } from './screens/Treinos'
@@ -26,6 +27,7 @@ import { Treinos } from './screens/Treinos'
 export function App() {
   const legal = LEGAL_PAGES[window.location.pathname]
   if (legal) return <Legal page={legal} />
+  if (window.location.pathname === '/redefinir') return <Redefinir />
 
   return (
     <MotionConfig reducedMotion="user">

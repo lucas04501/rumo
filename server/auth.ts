@@ -2,6 +2,7 @@ import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
 import { db } from './db/client.js'
 import { account, rateLimit, session, user, verification } from './db/schema.js'
+import { sendEmail } from './email.js'
 
 const NINETY_DAYS = 60 * 60 * 24 * 90
 const ONE_DAY = 60 * 60 * 24
@@ -30,6 +31,8 @@ export const auth = betterAuth({
       '/sign-in/email': { window: FIVE_MINUTES, max: 8 },
       '/sign-up/email': { window: ONE_HOUR, max: 5 },
       '/delete-user': { window: FIVE_MINUTES, max: 5 },
+      '/request-password-reset': { window: ONE_HOUR, max: 5 },
+      '/reset-password': { window: FIVE_MINUTES, max: 8 },
       // Roda a cada abertura do app e não testa senha.
       '/get-session': false,
     },
@@ -39,6 +42,15 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     disableSignUp: !signupOpen,
+    // O link vale 1 hora e serve uma vez. Trocar a senha encerra as outras sessões.
+    resetPasswordTokenExpiresIn: ONE_HOUR,
+    revokeSessionsOnPasswordReset: true,
+    sendResetPassword: ({ user, url }) =>
+      sendEmail(
+        user.email,
+        'Redefinir sua senha do Rumo',
+        `Olá, ${user.name}.\n\nPara criar uma senha nova, abra o link abaixo. Ele vale por 1 hora e funciona uma vez.\n\n${url}\n\nSe você não pediu isso, ignore este e-mail. Sua senha continua a mesma.`,
+      ),
   },
   // Sessão longa: o app instalado não deve pedir senha com frequência.
   session: { expiresIn: NINETY_DAYS, updateAge: ONE_DAY },
