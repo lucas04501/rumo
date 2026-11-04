@@ -32,6 +32,16 @@
   background: var(--color-sea-1);
 }
 
+/* Medidor da tela de Água: a maré enche o copo. Nenhum texto fica por cima. */
+.water-glass {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  height: 168px;
+  border-radius: 16px;
+  background: var(--color-sea-1);
+}
+
 .tide-band-text {
   position: relative;
   display: flex;
@@ -673,6 +683,15 @@ button.day-cell:active {
   white-space: nowrap;
 }
 
+/* Em tela larga o seletor tem largura do conteúdo: com flex: 1 e base 0 ele encolhia
+   e cortava "Semana" e "Quadro". */
+@media (min-width: 64rem) {
+  .segmented-wide button {
+    flex: none;
+    padding-inline: 16px;
+  }
+}
+
 /* Deslizar a tarefa: o gesto só aparece quando alguém começa a arrastar */
 .swipe-row {
   position: relative;
@@ -943,6 +962,34 @@ button.day-cell:active {
 
   .card-grip:hover {
     color: var(--color-foam);
+  }
+}
+
+/* Criar no Quadro: mesmo fundo do cartão, sem o gesto de arrastar. */
+.board-add {
+  border-radius: 12px;
+  background: var(--color-sea-2);
+}
+
+.board-add:focus-within {
+  outline: 2px solid var(--color-tide);
+  outline-offset: -2px;
+}
+
+/* Começar: leva para Fazendo com um toque, sem gesto. */
+.card-start {
+  display: grid;
+  width: 40px;
+  align-self: stretch;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 12px;
+  color: var(--color-mist);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .card-start:hover {
+    color: var(--color-tide);
   }
 }
 

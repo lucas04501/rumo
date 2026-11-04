@@ -20,6 +20,8 @@ import {
   taskRules,
   tasks,
   user,
+  waterLogs,
+  waterSettings,
   workoutPlans,
   workoutSessions,
 } from '../db/schema.js'
@@ -57,6 +59,8 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
     workoutRows,
     setRows,
     customRows,
+    waterSettingRows,
+    waterLogRows,
   ] = await db.batch([
     claim(userId),
     db
@@ -151,6 +155,16 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
       .select()
       .from(customExercises)
       .where(and(eq(customExercises.userId, userId), isNull(customExercises.deletedAt))),
+    db
+      .select()
+      .from(waterSettings)
+      .where(and(eq(waterSettings.userId, userId), isNull(waterSettings.deletedAt)))
+      .orderBy(asc(waterSettings.updatedAt)),
+    db
+      .select()
+      .from(waterLogs)
+      .where(and(eq(waterLogs.userId, userId), isNull(waterLogs.deletedAt)))
+      .orderBy(asc(waterLogs.loggedAt)),
   ])
 
   return c.json({
@@ -174,5 +188,7 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
     workoutSessions: workoutRows,
     sessionSets: setRows,
     customExercises: customRows,
+    waterSettings: waterSettingRows,
+    waterLogs: waterLogRows,
   })
 })

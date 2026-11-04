@@ -16,7 +16,8 @@ import { isStreakMark } from '../lib/streaks'
 import { overdueTasks } from '../lib/tasks'
 import { plansOn, runningSession, workoutsOn } from '../lib/workouts'
 import { XP } from '../lib/xp'
-import { Bars } from '../ui/EvolutionCharts'
+import { formatWater, totalOn, waterSettingsOf } from '../lib/water'
+import { Bars, Meter } from '../ui/EvolutionCharts'
 import { iconFor } from '../ui/habitIcons'
 import { ItemRow } from '../ui/ItemRow'
 import { QuickChips, useQuickAdd } from '../ui/QuickAdd'
@@ -42,6 +43,7 @@ export function Hoje() {
           <div>
             <WorkoutShortcut />
             <RoutineShortcut />
+            <WaterShortcut />
           </div>
           <Habits />
         </div>
@@ -314,6 +316,49 @@ function WorkoutShortcut() {
       </span>
       <ChevronRight size={18} strokeWidth={1.75} className="shrink-0 text-mist" aria-hidden />
     </Link>
+  )
+}
+
+/** Um toque soma o copo de sempre, sem abrir a área. Sem meta, leva à primeira vez guiada. */
+function WaterShortcut() {
+  const { date, drinkWater } = useDay()
+  const { data: snapshot } = useSnapshot()
+  if (!snapshot) return null
+
+  const settings = waterSettingsOf(snapshot)
+  if (!settings) {
+    return (
+      <Link to="/agua" className="flex min-h-11 items-center justify-between gap-3 text-[15px]">
+        <span className="min-w-0 truncate">
+          <span className="text-mist">Água: </span>
+          defina a sua meta do dia
+        </span>
+        <ChevronRight size={18} strokeWidth={1.75} className="shrink-0 text-mist" aria-hidden />
+      </Link>
+    )
+  }
+
+  const total = totalOn(snapshot.waterLogs, date)
+  const percent = Math.min(Math.round((total / settings.goalMl) * 100), 100)
+
+  return (
+    <div className="flex min-h-11 items-center gap-3 text-[15px]">
+      <Link to="/agua" className="grid min-h-11 min-w-0 flex-1 content-center gap-1.5">
+        <span className="truncate">
+          <span className="text-mist">Água: </span>
+          {formatWater(total)} de {formatWater(settings.goalMl)}
+        </span>
+        <Meter value={percent} label="Água de hoje" />
+      </Link>
+      <button
+        type="button"
+        className="icon-button"
+        aria-label={`Somar um copo de ${formatWater(settings.cupMl)}`}
+        onClick={() => drinkWater(settings.cupMl)}
+      >
+        <Plus size={18} strokeWidth={2} aria-hidden />
+      </button>
+    </div>
   )
 }
 

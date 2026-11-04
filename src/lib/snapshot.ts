@@ -13,6 +13,8 @@ type AddedLater =
   | 'workoutSessions'
   | 'sessionSets'
   | 'customExercises'
+  | 'waterSettings'
+  | 'waterLogs'
 
 type OldSnapshot = Omit<Snapshot, AddedLater | 'tasks'> &
   Partial<Pick<Snapshot, AddedLater>> & {
@@ -24,7 +26,7 @@ type OldSnapshot = Omit<Snapshot, AddedLater | 'tasks'> &
  * que abre o app até a próxima busca, então os campos novos precisam existir.
  */
 export function complete(snapshot: OldSnapshot): Snapshot {
-  if (snapshot.customExercises) return snapshot as Snapshot
+  if (snapshot.waterLogs) return snapshot as Snapshot
 
   return {
     ...snapshot,
@@ -46,6 +48,8 @@ export function complete(snapshot: OldSnapshot): Snapshot {
     planExercises: snapshot.planExercises ?? [],
     workoutSessions: snapshot.workoutSessions ?? [],
     sessionSets: snapshot.sessionSets ?? [],
-    customExercises: [],
+    customExercises: snapshot.customExercises ?? [],
+    waterSettings: snapshot.waterSettings ?? [],
+    waterLogs: [],
   }
 }

@@ -189,4 +189,23 @@ export type Snapshot = {
   workoutSessions: WorkoutSession[]
   sessionSets: SessionSet[]
   customExercises: CustomExercise[]
+  /** Vale a mais recente: dois aparelhos sem internet podem criar uma cada. */
+  waterSettings: WaterSettings[]
+  waterLogs: WaterLog[]
+}
+
+/** O peso da calculadora não fica aqui: só a meta que saiu dele. */
+export type WaterSettings = {
+  id: string
+  goalMl: number
+  cupMl: number
+  habitId: string | null
+  updatedAt: string
+}
+
+export type WaterLog = {
+  id: string
+  date: string
+  amountMl: number
+  loggedAt: string
 }

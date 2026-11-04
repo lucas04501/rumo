@@ -4,6 +4,7 @@ import {
   ChevronRight,
   Columns3,
   Dumbbell,
+  GlassWater,
   Medal,
   NotebookPen,
   Search,
@@ -26,6 +27,7 @@ type Area = { to: string; label: string; icon: LucideIcon }
 const AREAS: Area[] = [
   { to: '/quadro', label: 'Quadro', icon: Columns3 },
   { to: '/treinos', label: 'Treinos', icon: Dumbbell },
+  { to: '/agua', label: 'Água', icon: GlassWater },
   { to: '/rotina', label: 'Rotina', icon: CalendarClock },
   { to: '/evolucao', label: 'Evolução', icon: ChartNoAxesCombined },
   { to: '/conquistas', label: 'Conquistas', icon: Medal },

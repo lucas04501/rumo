@@ -147,3 +147,15 @@ export const customExerciseFields = z.object({
   muscle: z.string().trim().min(1).max(40),
   instructions: z.string().max(2_000).default(''),
 })
+
+export const waterSettingsFields = z.object({
+  goalMl: z.number().int().min(500).max(8_000),
+  cupMl: z.number().int().min(50).max(2_000),
+  habitId: uuid.nullable().default(null),
+})
+
+export const waterLogFields = z.object({
+  date: isoDate,
+  amountMl: z.number().int().min(1).max(3_000),
+  loggedAt: moment.transform((value) => new Date(value)),
+})

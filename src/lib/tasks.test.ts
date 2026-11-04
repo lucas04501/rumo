@@ -53,6 +53,8 @@ const snapshot = (overrides: Partial<Snapshot> = {}): Snapshot => ({
   workoutSessions: [],
   sessionSets: [],
   customExercises: [],
+  waterSettings: [],
+  waterLogs: [],
   notes: [],
   days: [],
   ...overrides,

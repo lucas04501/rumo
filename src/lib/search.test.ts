@@ -48,6 +48,8 @@ const snapshot: Snapshot = complete({
   workoutSessions: [],
   sessionSets: [],
   customExercises: [],
+  waterSettings: [],
+  waterLogs: [],
 })
 
 describe('searchAll', () => {

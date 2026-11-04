@@ -127,7 +127,7 @@ Só dentro de gráficos, e a cor segue a coisa medida, em qualquer tela.
 - **Azul Tarefa** (`chart-task`): tarefas concluídas.
 - **Rosa Foco** (`chart-focus`): tempo de foco.
 - **Roxo Treino** (`chart-workout`): frequência e carga dos treinos. Passa nos pares vizinhos, e nunca divide o plano com o azul, com quem se confunde em daltonismo.
-- Hábitos e andamento do dia usam `tide`. XP usa `sun`.
+- Hábitos e andamento do dia usam `tide`. XP usa `sun`. A água bebida também usa `tide`, porque bater a meta é concluir um hábito.
 - A carta de consistência é uma rampa de uma cor só: `#115a53`, `#16806f`, `#20a892` e `tide`.
 
 Validação com `validate_palette.js`, sobre `#0a0f11`, em todos os pares: daltonismo com ΔE 8,8, visão normal com ΔE 23 e contraste de pelo menos 3:1. A rampa passa em `--ordinal`. O teste de faixa de claridade reprova as quatro cores porque ele pede até 0,67, e elas vão de 0,69 a 0,82. É uma escolha: cumprir esse limite apagaria as cores, e o pedido é de gráfico forte em fundo quase preto. Texto nunca usa cor de gráfico.
@@ -136,7 +136,7 @@ Validação com `validate_palette.js`, sobre `#0a0f11`, em todos os pares: dalto
 
 - **Abismo** (`abyss`): fundo do app, navegação, campos e avisos.
 - **Mar 1, 2 e 3** (`sea-1`, `sea-2`, `sea-3`): degraus de superfície. O primeiro é painel, coluna e folha. O segundo é cartão e item ativo da navegação. O terceiro é seleção e fantasma do arraste.
-- **Água** (`water-1`, `water-2`, `water-3`): as camadas da maré. Só existem na faixa da Hoje, no foco, no login e na onda.
+- **Água** (`water-1`, `water-2`, `water-3`): as camadas da maré. Só existem na faixa da Hoje, no foco, no login, na onda e no copo da tela de Água, aprovado pelo Lucas em 2026-11-04. No copo, nenhum texto fica por cima: os números ficam acima dele.
 - **Onda** (`wash-mid`, `wash`): camadas da onda em tela cheia.
 - **Espuma** (`foam`): texto principal.
 - **Névoa** (`mist`): texto secundário e ícones em repouso, 10:1 sobre o fundo.
@@ -239,7 +239,9 @@ A adição rápida da Hoje lê data, prioridade e repetição no fim do texto ("
 
 ### Board
 
-Três colunas fixas: A fazer, Fazendo e Feito. Mostra o dia, os atrasos, os próximos 7 dias e o que foi concluído nos últimos 7. Hoje vem primeiro, depois o atraso mais recente e os próximos dias. Dentro disso, a prioridade ordena: não há ordem manual.
+Três colunas fixas: A fazer, Fazendo e Feito. Mostra o dia, os atrasos, os próximos 7 dias e o que foi concluído nos últimos 7. Hoje vem primeiro, depois o atraso mais recente e os próximos dias. Dentro disso, a prioridade ordena: não há ordem manual. A fazer se divide em blocos com título discreto em névoa: Hoje, Atrasadas, Amanhã e Próximos dias, cada um só quando tem cartão. No topo de A fazer, um campo cria a tarefa para hoje com a mesma leitura rápida da Hoje.
+
+O cartão mostra título, dia, prioridade, repetição e a meta ligada. Com subtarefas, ganha a barra fina e a conta "1/3". Em A fazer, um botão de começar leva o cartão para Fazendo com um toque.
 
 Todo cartão tem uma alça visível à direita. Tocar nela abre "Mover para", e arrastar por ela começa na hora, sem rolar a tela. Nenhum caminho depende de gesto escondido, e uma frase sob o seletor explica isso no celular. Depois de mover, um aviso diz para onde o cartão foi e oferece Desfazer.
 
@@ -262,6 +264,10 @@ Aviso neutro no rodapé por 5 s, em `abyss` com borda de espuma e Desfazer em te
 ### Charts
 
 A cor segue a coisa medida, como descrito em Chart. Marca fina e cor cheia: linha de 2,5 px, colunas de até 24 px com cantos de 4 px em cima, e área com lavagem de 34% a 0. A coluna selecionada ganha uma tampa em espuma. Sem cartões de estatística: números em lista aberta com linhas finas, e um único número grande por tela. A maré do período usa curva com média móvel nos períodos longos, e a legenda diz isso. Tocar lê o valor em uma linha acima do gráfico, sem balão, e abre o dia. Quando não há dados, a seção some ou diz o que falta, e nunca mostra zero como se fosse resultado.
+
+### Water
+
+A primeira vez é guiada, em três passos: meta (digitada ou calculada a 35 ml por kg, sem salvar o peso), copo de sempre e hábito ligado. Depois, o número do dia e o copo de água enchendo, com os botões de copo e garrafa logo abaixo, a lista do dia com Desfazer e as colunas dos últimos 7 dias em `tide`. Cada copo é discreto: vibração e uma nota que sobe a cada copo do dia. A festa é só ao bater a meta, que marca o hábito ligado e dá o XP dele. Na Hoje, uma linha com a barra fina e um botão de somar o copo.
 
 ### Focus
 
