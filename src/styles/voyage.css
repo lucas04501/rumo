@@ -683,6 +683,15 @@ button.day-cell:active {
   white-space: nowrap;
 }
 
+/* Em tela larga o seletor tem largura do conteúdo: com flex: 1 e base 0 ele encolhia
+   e cortava "Semana" e "Quadro". */
+@media (min-width: 64rem) {
+  .segmented-wide button {
+    flex: none;
+    padding-inline: 16px;
+  }
+}
+
 /* Deslizar a tarefa: o gesto só aparece quando alguém começa a arrastar */
 .swipe-row {
   position: relative;
