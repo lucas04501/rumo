@@ -32,6 +32,16 @@
   background: var(--color-sea-1);
 }
 
+/* Medidor da tela de Água: a maré enche o copo. Nenhum texto fica por cima. */
+.water-glass {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  height: 168px;
+  border-radius: 16px;
+  background: var(--color-sea-1);
+}
+
 .tide-band-text {
   position: relative;
   display: flex;

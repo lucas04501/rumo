@@ -7,6 +7,7 @@ import {
   Compass,
   Dumbbell,
   Ellipsis,
+  GlassWater,
   ListChecks,
   Medal,
   NotebookPen,
@@ -43,7 +44,7 @@ const PHONE_TABS: Tab[] = [
     to: '/mais',
     label: 'Mais',
     icon: Ellipsis,
-    also: ['/rotina', '/evolucao', '/conquistas', '/notas', '/foco', '/treinos', '/treino'],
+    also: ['/rotina', '/evolucao', '/conquistas', '/notas', '/foco', '/treinos', '/treino', '/agua'],
   },
 ]
 
@@ -59,6 +60,7 @@ const WIDE_TABS: Tab[] = [
   { to: '/notas', label: 'Notas', icon: NotebookPen },
   { to: '/foco', label: 'Foco', icon: Timer },
   { to: '/treinos', label: 'Treinos', icon: Dumbbell },
+  { to: '/agua', label: 'Água', icon: GlassWater },
   { to: '/mais', label: 'Ajustes', icon: Settings },
 ]
 

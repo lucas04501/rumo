@@ -28,7 +28,10 @@ import { completeNextMilestone } from './goalActions'
 import { setCheck } from './habitActions'
 import { commit, useSnapshot } from './store'
 import { saveTask } from './taskActions'
-import type { Snapshot, Task, WorkoutSession } from './types'
+import type { Snapshot, Task, WaterLog, WorkoutSession } from './types'
+import { offerUndo } from './undo'
+import { deleteWaterLog, hideWaterLog, restoreWaterLog, saveWaterLog } from './waterActions'
+import { formatWater, totalOn, waterSettingsOf } from '../lib/water'
 import { useAchievements } from './useAchievements'
 import { useRankUp } from './useRankUp'
 import { useToday } from './useToday'
@@ -69,6 +72,10 @@ type Day = {
   moveCard: (task: Task, column: Column) => number
   /** Fecha o treino e marca o hábito ligado. O XP sai do hábito e dos recordes, nunca do treino em si. */
   finishWorkout: (session: WorkoutSession) => void
+  /** Registra um copo. Bater a meta marca o hábito ligado: o copo em si não dá XP. */
+  drinkWater: (amountMl: number) => void
+  /** Tira o copo com Desfazer. Se o dia cair abaixo da meta, o hábito desmarca. */
+  removeWater: (log: WaterLog) => void
   completeMilestone: (goal: GoalInFocus) => void
   arriveAtStation: (goal: GoalInFocus, station: number) => void
   dismissReward: () => void
@@ -236,6 +243,68 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
     [snapshot, addReward],
   )
 
+  const waterHabitId = useCallback(() => {
+    const settings = waterSettingsOf(snapshot)
+    const habit = snapshot.habits.find((item) => item.id === settings?.habitId && !item.archivedAt)
+    return habit?.id ?? null
+  }, [snapshot])
+
+  const drinkWater = useCallback(
+    (amountMl: number) => {
+      const settings = waterSettingsOf(snapshot)
+      if (!settings) return
+      const before = totalOn(snapshot.waterLogs, date)
+      const after = before + amountMl
+      const glasses = snapshot.waterLogs.filter((log) => log.date === date).length
+
+      saveWaterLog({ id: newId(), date, amountMl, loggedAt: now() })
+      haptic()
+
+      if (before >= settings.goalMl || after < settings.goalMl) {
+        // Discreto: a nota sobe a cada copo do dia, e a festa fica para a meta.
+        soundCheck(glasses)
+        return
+      }
+
+      const habitId = waterHabitId()
+      const checked = snapshot.checks.some((check) => check.habitId === habitId && check.date === date)
+      if (habitId && !checked) setCheck(habitId, date, true)
+      addReward({
+        title: 'Meta de água batida',
+        detail: habitId && !checked ? `${formatWater(after)} hoje. Mais ${XP.habit} XP.` : `${formatWater(after)} hoje.`,
+        sound: soundArrival,
+      })
+    },
+    [snapshot, date, waterHabitId, addReward],
+  )
+
+  const removeWater = useCallback(
+    (log: WaterLog) => {
+      const settings = waterSettingsOf(snapshot)
+      const before = totalOn(snapshot.waterLogs, log.date)
+      const habitId = waterHabitId()
+      const wasChecked = snapshot.checks.some(
+        (check) => check.habitId === habitId && check.date === log.date,
+      )
+      const drops = !!settings && before >= settings.goalMl && before - log.amountMl < settings.goalMl
+      const uncheck = drops && !!habitId && wasChecked
+
+      hideWaterLog(log)
+      if (uncheck) setCheck(habitId, log.date, false)
+      soundUncheck()
+
+      offerUndo({
+        message: `${formatWater(log.amountMl)} tirados`,
+        undo: () => {
+          restoreWaterLog(log)
+          if (uncheck) setCheck(habitId, log.date, true)
+        },
+        expire: () => deleteWaterLog(log),
+      })
+    },
+    [snapshot, waterHabitId],
+  )
+
   const completeMilestone = useCallback((target: GoalInFocus) => {
     haptic()
     if (target.reached + 1 === target.milestones.length) setArrivingGoalId(target.id)
@@ -280,6 +349,8 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
     toggleTask,
     moveCard,
     finishWorkout,
+    drinkWater,
+    removeWater,
     completeMilestone,
     arriveAtStation,
     dismissReward: useCallback(() => setRewards((current) => current.slice(1)), []),

@@ -60,6 +60,8 @@ const planExerciseId = randomUUID()
 const workoutId = randomUUID()
 const setId = randomUUID()
 const customId = randomUUID()
+const waterSettingsId = randomUUID()
+const waterLogId = randomUUID()
 
 const habitBody = { title: 'Treinar', icon: 'dumbbell', weekdays: [1, 3, 5], startDate: DATE }
 const ruleBody = { title: 'Regar', weekdays: [1], startDate: DATE }
@@ -69,6 +71,7 @@ const planExerciseBody = { exerciseRef: 'supino-reto', sets: 3, reps: 10, restSe
 const workoutBody = { date: DATE, startedAt: `${DATE}T12:00:00Z` }
 const setBody = { exerciseRef: 'supino-reto', reps: 10, loadKg: 60, doneAt: `${DATE}T12:10:00Z` }
 const customBody = { name: 'Exercício da Ana', muscle: 'Peito' }
+const waterLogBody = { date: DATE, amountMl: 250, loggedAt: `${DATE}T12:00:00Z` }
 
 beforeAll(async () => {
   ana = await signUp('Ana', emails.ana)
@@ -106,6 +109,11 @@ beforeAll(async () => {
   expect(planned.map((response) => response.status)).toEqual([200, 200])
   const set = { ...setBody, sessionId: workoutId }
   expect((await call(ana, 'PUT', `/session-sets/${setId}`, set)).status).toBe(200)
+  const water = await Promise.all([
+    call(ana, 'PUT', `/water-settings/${waterSettingsId}`, { goalMl: 2500, cupMl: 250, habitId }),
+    call(ana, 'PUT', `/water-logs/${waterLogId}`, waterLogBody),
+  ])
+  expect(water.map((response) => response.status)).toEqual([200, 200])
 
   const pause = { habitId, startDate: DATE, endDate: '2026-11-10' }
   expect((await call(ana, 'PUT', `/pauses/${pauseId}`, pause)).status).toBe(200)
@@ -133,6 +141,8 @@ const resources = [
   ['workout-sessions', () => workoutId, { ...workoutBody, planId: randomUUID() }],
   ['session-sets', () => setId, { ...setBody, sessionId: randomUUID() }],
   ['custom-exercises', () => customId, { ...customBody, name: 'Invadido' }],
+  ['water-settings', () => waterSettingsId, { goalMl: 999, cupMl: 50 }],
+  ['water-logs', () => waterLogId, { ...waterLogBody, amountMl: 999 }],
 ] as const
 
 describe('sem sessão', () => {
@@ -175,6 +185,12 @@ describe('sem sessão', () => {
     ['GET', '/custom-exercises'],
     ['PUT', `/custom-exercises/${randomUUID()}`],
     ['DELETE', `/custom-exercises/${randomUUID()}`],
+    ['GET', '/water-settings'],
+    ['PUT', `/water-settings/${randomUUID()}`],
+    ['DELETE', `/water-settings/${randomUUID()}`],
+    ['GET', '/water-logs'],
+    ['PUT', `/water-logs/${randomUUID()}`],
+    ['DELETE', `/water-logs/${randomUUID()}`],
     ['GET', '/achievements'],
     ['PUT', '/achievements/habitos-1'],
     ['GET', '/snapshot'],
@@ -198,6 +214,7 @@ describe('isolamento entre usuários', () => {
     expect((await call(bia, 'PUT', `/${name}/${id()}`, body)).status).toBe(404)
     const [row] = (await (await call(ana, 'GET', `/${name}`)).json()) as { title: string }[]
     expect(row.title).not.toBe('Invadido')
+    expect(Object.values(row)).not.toContain(999)
   })
 
   it.each(resources)('%s: não exclui item de outro usuário', async (name, id) => {
@@ -232,6 +249,8 @@ describe('isolamento entre usuários', () => {
       'workoutSessions',
       'sessionSets',
       'customExercises',
+      'waterSettings',
+      'waterLogs',
     ]
     for (const key of lists) {
       expect(ofAna[key], key).toHaveLength(1)
@@ -274,6 +293,18 @@ describe('isolamento entre usuários', () => {
     expect((await call(bia, 'PUT', `/workout-sessions/${randomUUID()}`, workout)).status).toBe(404)
     const set = { ...setBody, sessionId: workoutId }
     expect((await call(bia, 'PUT', `/session-sets/${randomUUID()}`, set)).status).toBe(404)
+  })
+
+  it('não liga a meta de água a hábito de outro usuário', async () => {
+    const settings = { goalMl: 2000, cupMl: 250, habitId }
+    expect((await call(bia, 'PUT', `/water-settings/${randomUUID()}`, settings)).status).toBe(404)
+  })
+
+  it('recusa meta e copo de água fora do limite', async () => {
+    const huge = { goalMl: 50_000, cupMl: 250 }
+    expect((await call(ana, 'PUT', `/water-settings/${randomUUID()}`, huge)).status).toBe(400)
+    const bucket = { ...waterLogBody, amountMl: 10_000 }
+    expect((await call(ana, 'PUT', `/water-logs/${randomUUID()}`, bucket)).status).toBe(400)
   })
 
   it('recusa carga fora do limite e ficha sem nome', async () => {

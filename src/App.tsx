@@ -5,6 +5,7 @@ import { LEGAL_PAGES } from './content/legal'
 import { DayProvider } from './data/DayProvider'
 import { persistOptions, resumeWrites, store } from './data/store'
 import { AuthGate } from './ui/AuthGate'
+import { Agua } from './screens/Agua'
 import { Shell } from './ui/Shell'
 import { Biblioteca } from './screens/Biblioteca'
 import { Conquistas } from './screens/Conquistas'
@@ -58,6 +59,7 @@ export function App() {
                   <Route path="treinos/:id" element={<Ficha />} />
                   <Route path="treino" element={<Treino />} />
                   <Route path="mais" element={<Mais />} />
+                  <Route path="agua" element={<Agua />} />
                 </Route>
               </Routes>
             </BrowserRouter>

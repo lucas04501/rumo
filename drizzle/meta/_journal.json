@@ -57,6 +57,13 @@
       "when": 1793669315155,
       "tag": "0007_rls",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1793803106573,
+      "tag": "0008_flawless_maestro",
+      "breakpoints": true
     }
   ]
 }

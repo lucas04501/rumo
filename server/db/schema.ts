@@ -517,3 +517,39 @@ export const customExercises = pgTable(
   },
   (table) => [index('custom_exercises_user_idx').on(table.userId)],
 )
+
+// Meta de água. O peso da calculadora nunca chega aqui: a conta é feita no aparelho.
+// Pode haver mais de uma linha se dois aparelhos configurarem sem internet; vale a mais recente.
+export const waterSettings = pgTable(
+  'water_settings',
+  {
+    id: uuid('id').primaryKey(),
+    userId: owner(),
+    goalMl: integer('goal_ml').notNull(),
+    cupMl: integer('cup_ml').notNull(),
+    habitId: uuid('habit_id'),
+    ...lifecycle(),
+  },
+  (table) => [
+    index('water_settings_user_idx').on(table.userId),
+    foreignKey({
+      columns: [table.userId, table.habitId],
+      foreignColumns: [habits.userId, habits.id],
+      name: 'water_settings_habit_owner_fk',
+    }),
+  ],
+)
+
+// Cada copo é uma linha: desfazer exclui só aquele copo.
+export const waterLogs = pgTable(
+  'water_logs',
+  {
+    id: uuid('id').primaryKey(),
+    userId: owner(),
+    date: date('date').notNull(),
+    amountMl: integer('amount_ml').notNull(),
+    loggedAt: moment('logged_at').notNull(),
+    ...lifecycle(),
+  },
+  (table) => [index('water_logs_user_date_idx').on(table.userId, table.date)],
+)

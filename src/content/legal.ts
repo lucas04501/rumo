@@ -55,7 +55,7 @@ export const LEGAL_PAGES: Record<string, LegalPage> = {
       {
         heading: 'O que é guardado',
         text: [
-          'Seu nome, seu e-mail e tudo o que você registra no app. A senha é guardada só em forma de hash, que não permite ler a senha original.',
+          'Seu nome, seu e-mail e tudo o que você registra no app. A senha é guardada só em forma de hash, que não permite ler a senha original. Na área de Água, o peso usado para calcular a meta fica só na tela e não é guardado: o app salva apenas a meta e os copos.',
           'Para manter o login e limitar tentativas, também ficam guardados o endereço de internet e o tipo de aparelho das sessões.',
         ],
       },

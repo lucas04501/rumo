@@ -17,6 +17,8 @@ import {
   subtasks,
   taskRules,
   tasks,
+  waterLogs,
+  waterSettings,
   workoutPlans,
   workoutSessions,
 } from './db/schema.js'
@@ -39,6 +41,8 @@ import {
   subtaskFields,
   taskFields,
   taskRuleFields,
+  waterLogFields,
+  waterSettingsFields,
   workoutPlanFields,
   workoutSessionFields,
 } from './routes/schemas.js'
@@ -74,6 +78,8 @@ const data = new Hono<AuthedEnv>()
   .route('/workout-sessions', resource(workoutSessions, workoutSessionFields))
   .route('/session-sets', resource(sessionSets, sessionSetFields))
   .route('/custom-exercises', resource(customExercises, customExerciseFields))
+  .route('/water-settings', resource(waterSettings, waterSettingsFields))
+  .route('/water-logs', resource(waterLogs, waterLogFields))
   .route('/checks', checks)
   .route('/achievements', achievements)
   .route('/days', days)
