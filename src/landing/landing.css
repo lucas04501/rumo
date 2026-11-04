@@ -170,8 +170,26 @@ html.landing-page body {
   transform: rotate(45deg);
 }
 
+/* Convite para tocar: o primeiro check pulsa uma vez. Teal, porque é ação. */
+.landing-invite .check {
+  border-color: var(--color-tide);
+  animation: landing-invite 600ms var(--ease-in-out) 1;
+}
+
+@keyframes landing-invite {
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+/* O botão da demo de treino é apertado como um dedo apertaria */
+.landing .landing-pressed {
+  transform: scale(0.97);
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .landing-caret {
+  .landing-caret,
+  .landing-invite .check {
     animation: none;
   }
 }

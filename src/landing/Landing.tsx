@@ -1,4 +1,15 @@
-import { MonitorSmartphone, NotebookPen, Plus, Search, ShieldCheck, Smartphone, Undo2, WifiOff } from 'lucide-react'
+import {
+  CalendarDays,
+  GlassWater,
+  MonitorSmartphone,
+  NotebookPen,
+  Plus,
+  Search,
+  ShieldCheck,
+  Smartphone,
+  Undo2,
+  WifiOff,
+} from 'lucide-react'
 import {
   motion,
   useInView,
@@ -16,6 +27,7 @@ import {
   BoardDemo,
   ConsistencyDemo,
   FocusDemo,
+  HERO_ROWS,
   HeroPhone,
   MedalsDemo,
   QuickAddDemo,
@@ -49,14 +61,15 @@ function useStepped(value: MotionValue<number>, step = 0.02) {
   return current
 }
 
-function Reveal({ children, className, delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
+/** Só as demonstrações entram. Títulos e texto ficam parados, para ler na hora. */
+function Reveal({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <motion.div
       className={className}
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 8 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.55, delay, ease: EASE_OUT }}
+      transition={{ duration: 0.4, ease: EASE_OUT }}
     >
       {children}
     </motion.div>
@@ -138,30 +151,38 @@ function Nav() {
   )
 }
 
+const HERO_START = 2
+const HERO_CHECK_MS = 900
+
 function Hero() {
-  const ref = useRef<HTMLElement>(null)
   const reduceMotion = useReducedMotion()
-  const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end start'] })
-  const scrolled = useStepped(useTransform(scrollYProgress, [0, 1], [0.35, 0.85]))
+  const [done, setDone] = useState(reduceMotion ? HERO_START + 1 : HERO_START)
   const [arrived, setArrived] = useState(false)
 
-  // A maré sobe do fundo ao abrir a página, e depois acompanha o scroll.
-  useEffect(() => setArrived(true), [])
-  const level = reduceMotion ? 0.35 : arrived ? scrolled : 0
+  // A página abre com o dia pela metade e conclui um item: a mecânica do app no primeiro segundo.
+  useEffect(() => {
+    setArrived(true)
+    if (reduceMotion) return
+    const timer = setTimeout(() => setDone(HERO_START + 1), HERO_CHECK_MS)
+    return () => clearTimeout(timer)
+  }, [reduceMotion])
+
+  // Uma maré só: o mar do fundo e o sol seguem o dia do celular.
+  const level = done / HERO_ROWS.length
 
   return (
-    <section ref={ref} id="topo" className="landing-hero">
-      <SunGlow level={0.6} />
-      <div className={`${WRAP} relative z-10 grid items-center gap-12 pt-32 pb-[22svh] lg:grid-cols-[1.15fr_0.85fr] lg:pt-36`}>
+    <section id="topo" className="landing-hero">
+      <SunGlow level={level} />
+      <div className={`${WRAP} relative z-10 grid items-center gap-10 pt-24 pb-20 sm:pt-32 lg:grid-cols-[1.15fr_0.85fr] lg:gap-12 lg:pt-36 lg:pb-[22svh]`}>
         <div>
-          <h1 className="font-display text-[clamp(48px,9vw,96px)]/[0.98] font-semibold tracking-[-0.035em]">
+          <h1 className="font-display text-[clamp(44px,9vw,96px)]/[0.98] font-semibold tracking-[-0.035em]">
             Sua vida tem um rumo.
           </h1>
-          <p className={`mt-6 max-w-[46ch] ${LEAD}`}>
+          <p className={`mt-5 max-w-[46ch] sm:mt-6 ${LEAD}`}>
             Metas, hábitos, tarefas e treinos em um lugar só, vividos como uma viagem. A meta é a rota, cada marco é uma
             estação e o seu dia é uma maré que sobe.
           </p>
-          <div className="mt-9 flex flex-wrap items-center gap-3">
+          <div className="mt-7 flex flex-wrap items-center gap-3 sm:mt-9">
             <a href={START} className="action landing-cta">
               Começar a viagem
             </a>
@@ -170,10 +191,10 @@ function Hero() {
             </a>
           </div>
         </div>
-        <HeroPhone />
+        <HeroPhone done={done} />
       </div>
       <div className="landing-hero-sea" aria-hidden>
-        <Tide level={level} />
+        <Tide level={reduceMotion || arrived ? level : 0} />
       </div>
     </section>
   )
@@ -183,13 +204,13 @@ const PROBLEM = ['Metas em um app.', 'Hábitos em outro.', 'Tarefas no papel.', 
 
 function Problem() {
   return (
-    <section className={`${WRAP} py-28 sm:py-36`} aria-label="Por que o Rumo">
+    <section className={`${WRAP} py-20 sm:py-28`} aria-label="Por que o Rumo">
       {PROBLEM.map((line) => (
         <Reveal key={line}>
           <p className="font-display text-[clamp(32px,6vw,64px)]/[1.15] font-semibold tracking-[-0.03em] text-haze">{line}</p>
         </Reveal>
       ))}
-      <Reveal className="mt-10" delay={0.1}>
+      <Reveal className="mt-8">
         <p className="font-display text-[clamp(38px,7.4vw,84px)]/[1.02] font-semibold tracking-[-0.035em]">
           No Rumo, tudo vira uma viagem só.
         </p>
@@ -201,7 +222,7 @@ function Problem() {
 const STEPS = [
   {
     title: 'A meta é a rota.',
-    text: 'Escolha um destino e um prazo. O caminho se desenha na tela.',
+    text: 'Escolha um destino e um prazo. Ele vira uma rota, com o barco no porto de partida.',
   },
   {
     title: 'Cada marco é uma estação.',
@@ -246,7 +267,8 @@ function Voyage() {
             </div>
           ))}
           <p className="max-w-[40ch] pb-4 font-display text-[clamp(24px,3vw,30px)]/[1.25] font-semibold lg:pb-28">
-            Um dia ruim não afunda a viagem. A âncora perdoa uma falta isolada na sequência.
+            Um dia ruim não afunda a viagem. A âncora perdoa uma falta isolada na sequência, e você pode pausar um hábito
+            nas férias.
           </p>
         </div>
         <div className="hidden lg:block">
@@ -259,15 +281,15 @@ function Voyage() {
   )
 }
 
-/** No celular não há painel fixo: cada passo anima o seu quando aparece. */
+/** No celular não há painel fixo: cada passo mostra só a sua parte e anima quando aparece. */
 function MobileStep({ index }: { index: number }) {
   const ref = useRef<HTMLDivElement>(null)
   const seen = useInView(ref, { once: true, amount: 0.7 })
-  const reached = index === 0 ? 0 : index === 1 ? (seen ? 2 : 0) : 3
-  const tide = index === 2 && seen ? 0.85 : 0.1
   return (
     <div ref={ref}>
-      <VoyagePanel reached={reached} tide={tide} />
+      {index === 0 && <VoyagePanel show="route" reached={0} tide={0} />}
+      {index === 1 && <VoyagePanel show="route" reached={seen ? 2 : 0} tide={0} />}
+      {index === 2 && <VoyagePanel show="tide" reached={0} tide={seen ? 0.85 : 0.1} />}
     </div>
   )
 }
@@ -275,25 +297,27 @@ function MobileStep({ index }: { index: number }) {
 function TryIt() {
   return (
     <section className={`${WRAP} grid items-center gap-10 py-24 sm:py-32 lg:grid-cols-2 lg:gap-16`}>
-      <Reveal>
+      <div>
         <h2 className={H2}>Experimente a maré.</h2>
         <p className={`mt-5 max-w-[40ch] ${LEAD}`}>Toque para concluir. Quando tudo estiver feito, é dia perfeito.</p>
-      </Reveal>
-      <Reveal delay={0.1}>
+      </div>
+      <Reveal>
         <TodayDemo />
       </Reveal>
     </section>
   )
 }
 
-function Feature({ title, children, visual, flip = false }: { title: string; children: ReactNode; visual: ReactNode; flip?: boolean }) {
+type FeatureProps = { title: string; children: ReactNode; visual: ReactNode; flip?: boolean; wide?: boolean }
+
+function Feature({ title, children, visual, flip = false, wide = false }: FeatureProps) {
   return (
-    <div className="grid items-center gap-8 py-14 sm:py-20 lg:grid-cols-2 lg:gap-16">
-      <Reveal className={flip ? 'lg:order-2' : undefined}>
+    <div className={`grid items-center gap-8 py-14 sm:py-20 ${wide ? '' : 'lg:grid-cols-2 lg:gap-16'}`}>
+      <div className={flip ? 'lg:order-2' : undefined}>
         <h3 className={H3}>{title}</h3>
-        <div className={`mt-4 grid max-w-[44ch] gap-4 ${LEAD}`}>{children}</div>
-      </Reveal>
-      <Reveal delay={0.1}>{visual}</Reveal>
+        <div className={`mt-4 grid max-w-[44ch] gap-4 ${LEAD} ${wide ? 'lg:max-w-[60ch]' : ''}`}>{children}</div>
+      </div>
+      <Reveal>{visual}</Reveal>
     </div>
   )
 }
@@ -305,6 +329,16 @@ const ROUTINE = [
 ]
 
 const SMALL = [
+  {
+    icon: GlassWater,
+    title: 'Água',
+    text: 'Defina sua meta ou calcule pelo peso, registre cada copo com um toque na Hoje e, ao bater a meta, o hábito se marca sozinho.',
+  },
+  {
+    icon: CalendarDays,
+    title: 'Relatório do dia',
+    text: 'No calendário, cada dia mostra o que foi feito: hábitos, tarefas, foco e a nota.',
+  },
   { icon: NotebookPen, title: 'Notas e registro do dia', text: 'Uma nota por dia, e notas livres com busca e fixar.' },
   { icon: Search, title: 'Busca em tudo', text: 'Tarefas, hábitos, metas, fichas e notas, sem se preocupar com acento.' },
   { icon: Plus, title: 'Criar de qualquer tela', text: 'Um botão, ou a tecla N no computador.' },
@@ -314,9 +348,7 @@ const SMALL = [
 function Features() {
   return (
     <section id="funcoes" className={`${WRAP} landing-anchor py-16`}>
-      <Reveal>
-        <h2 className={`${H2} max-w-[18ch]`}>Tudo o que o dia pede, em um lugar.</h2>
-      </Reveal>
+      <h2 className={`${H2} max-w-[18ch]`}>Tudo o que o dia pede, em um lugar.</h2>
 
       <Feature title="Escreva do seu jeito." visual={<QuickAddDemo />}>
         <p>
@@ -325,8 +357,11 @@ function Features() {
         </p>
       </Feature>
 
-      <Feature title="O mês de relance." visual={<BoardDemo />} flip>
-        <p>Mês, Semana e Quadro com A fazer, Fazendo e Feito. O que ficou para trás volta para hoje com um toque.</p>
+      <Feature title="O mês de relance." visual={<BoardDemo />} wide>
+        <p>
+          Mês, Semana e Quadro com A fazer, Fazendo e Feito, separados por dia. O que ficou para trás volta para hoje com
+          um toque.
+        </p>
       </Feature>
 
       <Feature title="Uma tarefa, um relógio." visual={<FocusDemo />}>
@@ -372,17 +407,18 @@ function Features() {
 function Workouts() {
   return (
     <section id="treinos" className={`${WRAP} landing-anchor grid items-center gap-10 py-24 sm:py-32 lg:grid-cols-2 lg:gap-16`}>
-      <Reveal>
+      <div>
         <h2 className={H2}>Treino sem caderno.</h2>
         <p className={`mt-5 max-w-[42ch] ${LEAD}`}>
           Monte a ficha, use a biblioteca de 46 exercícios com instruções e registre cada série com uma mão. O descanso
           conta sozinho.
         </p>
         <p className={`mt-4 max-w-[42ch] ${LEAD}`}>
-          Finalizar o treino marca o hábito ligado a ele. Bater a sua maior carga vira recorde.
+          O calendário mostra o planejado e o feito, e o gráfico de carga mostra a evolução. Finalizar o treino marca o
+          hábito ligado a ele. Bater a sua maior carga vira recorde.
         </p>
-      </Reveal>
-      <Reveal delay={0.1}>
+      </div>
+      <Reveal>
         <WorkoutDemo />
       </Reveal>
     </section>
