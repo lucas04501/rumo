@@ -110,31 +110,29 @@ export function Perfil() {
 
       <div className="mt-8 lg:grid lg:grid-cols-[minmax(0,4fr)_minmax(0,5fr)] lg:gap-16">
         <div>
-          {snapshot.plan.billing && (
-            <section aria-labelledby="plano" className={SECTION}>
-              <h2 id="plano" className={HEADING}>
-                Plano
-              </h2>
-              <Link to="/assinatura" className="mt-2 flex items-center gap-3 rounded-xl bg-sea-2 p-4">
-                <span className="min-w-0 flex-1">
-                  <span className="block text-[17px] font-semibold">{summary.title}</span>
-                  <span className="block text-[15px] text-mist">{summary.line}</span>
-                  <span className="mt-2 block text-[15px] font-semibold text-tide">{summary.action}</span>
-                </span>
-                <ChevronRight size={18} strokeWidth={1.75} className="shrink-0 text-mist" aria-hidden />
-              </Link>
-              {hasInvoices(snapshot.plan) && (
-                <button type="button" className={`${LINK} mt-1`} disabled={busy} onClick={() => void openInvoices()}>
-                  Faturas e pagamento
-                </button>
-              )}
-              {error && (
-                <p role="alert" className="mt-2 text-[15px]">
-                  {error}
-                </p>
-              )}
-            </section>
-          )}
+          <section aria-labelledby="plano" className={SECTION}>
+            <h2 id="plano" className={HEADING}>
+              Plano
+            </h2>
+            <Link to="/assinatura" className="mt-2 flex items-center gap-3 rounded-xl bg-sea-2 p-4">
+              <span className="min-w-0 flex-1">
+                <span className="block text-[17px] font-semibold">{summary.title}</span>
+                <span className="block text-[15px] text-mist">{summary.line}</span>
+                <span className="mt-2 block text-[15px] font-semibold text-tide">{summary.action}</span>
+              </span>
+              <ChevronRight size={18} strokeWidth={1.75} className="shrink-0 text-mist" aria-hidden />
+            </Link>
+            {hasInvoices(snapshot.plan) && (
+              <button type="button" className={`${LINK} mt-1`} disabled={busy} onClick={() => void openInvoices()}>
+                Faturas e pagamento
+              </button>
+            )}
+            {error && (
+              <p role="alert" className="mt-2 text-[15px]">
+                {error}
+              </p>
+            )}
+          </section>
 
           <section aria-labelledby="atividade" className={SECTION}>
             <h2 id="atividade" className={HEADING}>

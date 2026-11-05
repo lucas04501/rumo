@@ -81,6 +81,12 @@ describe('planSummary', () => {
     ).toMatch(/^Cancelada\. Segue até 2 de dezembro/)
   })
 
+  it('cobrança desligada diz que está liberado, sem data nem preço', () => {
+    expect(planSummary(plan({ billing: false, tier: 'pro', trialAvailable: false })).line).toBe(
+      'Liberado para todos por enquanto.',
+    )
+  })
+
   it('só há faturas para quem já assinou', () => {
     expect(hasInvoices(plan({ trialAvailable: true }))).toBe(false)
     expect(hasInvoices(plan({ tier: 'pro', trialAvailable: false }))).toBe(true)

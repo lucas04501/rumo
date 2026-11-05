@@ -45,6 +45,9 @@ export type PlanSummary = { title: string; line: string; action: string }
 
 /** O cartão do plano no Perfil. O detalhe e a compra ficam em Assinatura. */
 export function planSummary(plan: PlanInfo): PlanSummary {
+  if (!plan.billing) {
+    return { title: 'Rumo Pro', line: 'Liberado para todos por enquanto.', action: 'Ver assinatura' }
+  }
   if (plan.tier === 'free') {
     return {
       title: 'Plano grátis',
