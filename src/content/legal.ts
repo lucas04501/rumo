@@ -30,7 +30,7 @@ export const LEGAL_PAGES: Record<string, LegalPage> = {
         heading: 'Assinatura e pagamento',
         text: [
           'O plano Pro custa R$ 14,90 por mês. Os 7 primeiros dias são grátis: você informa o cartão ao começar, e a primeira cobrança acontece quando os 7 dias de teste acabam. Cancelando antes do fim do teste, nada é cobrado. O teste vale uma vez por conta.',
-          'A assinatura renova todo mês, no mesmo cartão, até você cancelar. Cancele quando quiser em Perfil, Plano: cancelar impede a próxima cobrança, e o Pro segue até o fim do período já pago. Não há reembolso de períodos já pagos.',
+          'A assinatura renova todo mês, no mesmo cartão, até você cancelar. Cancele quando quiser em Perfil, Plano: cancelar impede a próxima cobrança, e o Pro segue até o fim do período já pago. Depois que uma cobrança acontece, não há reembolso do período pago: os 7 dias grátis existem para isso, como prazo para testar e cancelar sem pagar nada.',
           'Ao voltar ao plano grátis, tudo o que você criou continua guardado, pode ser exportado e fica visível para leitura. Nas áreas do Pro, você não cria nem edita nada, e não ativa hábitos acima do limite do plano grátis.',
           'O pagamento é feito na Stripe. O Rumo não vê nem guarda os dados do seu cartão. Para dúvidas sobre uma cobrança, escreva para lucaspds9@hotmail.com.',
         ],

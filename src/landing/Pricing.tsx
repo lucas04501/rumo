@@ -35,15 +35,15 @@ const REASONS = [
   { title: 'Menos de 50 centavos por dia.', text: 'R$ 14,90 por mês.' },
   {
     title: 'Sem pegadinha.',
-    text: 'A primeira cobrança acontece quando os 7 dias acabam. Cancele quando quiser, em Perfil, Plano: o Pro segue até o fim do período já pago e não renova. Não há reembolso de períodos já pagos.',
+    text: 'Os 7 dias grátis são o seu prazo para decidir: cancele até o 7º dia, em Perfil, Plano, e você não paga nada. Se não cancelar, a primeira cobrança acontece quando os 7 dias acabam. Depois disso, cancelar impede as próximas cobranças e o Pro segue até o fim do período já pago, sem reembolso.',
   },
 ]
 
 const QUESTIONS = [
   { q: 'Preciso de cartão para o plano grátis?', a: 'Não.' },
   {
-    q: 'Posso pedir reembolso?',
-    a: 'Não. Cancelando, você usa o Pro até o fim do período pago e não é cobrado de novo. Seus dados continuam guardados no plano grátis, e você pode exportá-los.',
+    q: 'E o reembolso?',
+    a: 'Os 7 dias grátis são o seu prazo: cancele até o 7º dia e você não paga nada. Depois da primeira cobrança, não há reembolso. Cancelando, você usa o Pro até o fim do período pago e não é cobrado de novo. Seus dados continuam guardados no plano grátis, e você pode exportá-los.',
   },
   { q: 'Como pago?', a: 'No cartão, pela Stripe. O Rumo não vê nem guarda os dados do cartão.' },
   { q: 'Onde cancelo?', a: 'No app, em Perfil, Plano.' },
