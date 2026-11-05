@@ -41,6 +41,10 @@ export function initialsOf(name: string): string {
 const day = (iso: string) =>
   new Date(iso).toLocaleDateString('pt-BR', { day: 'numeric', month: 'long' })
 
+/** Pro sem fim de período nem teste: uma assinatura real da Stripe sempre tem fim, então é cortesia (sem Stripe). */
+export const isCortesia = (plan: PlanInfo) =>
+  plan.billing && plan.tier === 'pro' && plan.periodEnd === null && plan.trialEndsAt === null
+
 export type PlanSummary = { title: string; line: string; action: string }
 
 /** O cartão do plano no Perfil. O detalhe e a compra ficam em Assinatura. */
@@ -54,6 +58,9 @@ export function planSummary(plan: PlanInfo): PlanSummary {
       line: `Hoje, Metas e até ${FREE_MAX_HABITS} hábitos ativos.`,
       action: plan.trialAvailable ? `Teste ${TRIAL_DAYS} dias grátis` : 'Ver o Pro',
     }
+  }
+  if (isCortesia(plan)) {
+    return { title: 'Rumo Pro', line: 'Pro de cortesia, sem cobrança.', action: 'Ver assinatura' }
   }
   if (plan.cancelAtPeriodEnd && plan.periodEnd) {
     return { title: 'Rumo Pro', line: `Cancelada. Segue até ${day(plan.periodEnd)}.`, action: 'Ver assinatura' }
@@ -71,6 +78,7 @@ export function planSummary(plan: PlanInfo): PlanSummary {
 /** O plano em uma palavra, para o rodapé da barra lateral. */
 export function planWord(plan: PlanInfo, now = new Date()): string {
   if (effectiveTier(plan, now) === 'free') return 'Grátis'
+  if (isCortesia(plan)) return 'Cortesia'
   if (plan.trialEndsAt) {
     const end = new Date(plan.trialEndsAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
     return `Teste até ${end}`
@@ -78,5 +86,5 @@ export function planWord(plan: PlanInfo, now = new Date()): string {
   return 'Pro'
 }
 
-/** O portal da Stripe só existe para quem já assinou alguma vez, e `trialAvailable` cai na primeira. */
-export const hasInvoices = (plan: PlanInfo) => plan.billing && !plan.trialAvailable
+/** O portal da Stripe só existe para quem já assinou alguma vez, e `trialAvailable` cai na primeira. Cortesia não tem cliente lá. */
+export const hasInvoices = (plan: PlanInfo) => plan.billing && !plan.trialAvailable && !isCortesia(plan)

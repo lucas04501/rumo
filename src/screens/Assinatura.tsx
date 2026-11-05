@@ -3,6 +3,7 @@ import { Link, useSearchParams } from 'react-router'
 import { request } from '../data/api'
 import { refreshSnapshot, useSnapshot } from '../data/store'
 import { FREE_MAX_HABITS, TRIAL_DAYS } from '../lib/plan'
+import { isCortesia } from '../lib/profile'
 import { Screen } from '../ui/Screen'
 
 const PRICE = 'R$ 14,90 por mês'
@@ -56,7 +57,9 @@ export function Assinatura() {
         ) : plan.tier === 'pro' ? (
           <div className="mt-4 grid gap-3">
             <p className="font-display text-2xl font-semibold">Rumo Pro</p>
-            {plan.cancelAtPeriodEnd && plan.periodEnd ? (
+            {isCortesia(plan) ? (
+              <p className="text-[17px]/snug">Cortesia do Rumo: o Pro está liberado na sua conta, sem cobrança.</p>
+            ) : plan.cancelAtPeriodEnd && plan.periodEnd ? (
               <p className="text-[17px]/snug">
                 Cancelada. Você segue com o Pro até {day(plan.periodEnd)} e não será cobrado de novo.
               </p>
@@ -69,9 +72,11 @@ export function Assinatura() {
                 Ativa, {PRICE}.{plan.periodEnd ? ` Próxima cobrança em ${day(plan.periodEnd)}.` : ''}
               </p>
             )}
-            <button type="button" className="ghost min-h-12 justify-self-start" disabled={busy} onClick={() => void open('/billing/portal')}>
-              Gerenciar assinatura
-            </button>
+            {!isCortesia(plan) && (
+              <button type="button" className="ghost min-h-12 justify-self-start" disabled={busy} onClick={() => void open('/billing/portal')}>
+                Gerenciar assinatura
+              </button>
+            )}
           </div>
         ) : (
           <div className="mt-4 grid gap-3">

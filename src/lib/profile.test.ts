@@ -74,7 +74,7 @@ describe('planSummary', () => {
 
   it('a palavra do plano diz grátis, Pro ou até quando vai o teste', () => {
     expect(planWord(plan({}))).toBe('Grátis')
-    expect(planWord(plan({ tier: 'pro', trialAvailable: false }))).toBe('Pro')
+    expect(planWord(plan({ tier: 'pro', trialAvailable: false, periodEnd: '2026-12-02T15:00:00.000Z' }))).toBe('Pro')
     expect(planWord(plan({ tier: 'pro', trialEndsAt: '2026-11-12T15:00:00.000Z' }))).toBe('Teste até 12/11')
     expect(planWord(plan({ billing: false, tier: 'pro' }))).toBe('Pro')
   })
@@ -94,9 +94,16 @@ describe('planSummary', () => {
     )
   })
 
+  it('Pro sem fim de período nem teste é cortesia, sem cobrança nem faturas', () => {
+    const cortesia = plan({ tier: 'pro', trialAvailable: false })
+    expect(planWord(cortesia)).toBe('Cortesia')
+    expect(planSummary(cortesia).line).toBe('Pro de cortesia, sem cobrança.')
+    expect(hasInvoices(cortesia)).toBe(false)
+  })
+
   it('só há faturas para quem já assinou', () => {
     expect(hasInvoices(plan({ trialAvailable: true }))).toBe(false)
-    expect(hasInvoices(plan({ tier: 'pro', trialAvailable: false }))).toBe(true)
+    expect(hasInvoices(plan({ tier: 'pro', trialAvailable: false, periodEnd: '2026-12-02T15:00:00.000Z' }))).toBe(true)
     expect(hasInvoices(plan({ billing: false, trialAvailable: false }))).toBe(false)
   })
 })

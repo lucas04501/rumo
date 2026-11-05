@@ -12,6 +12,7 @@ const stripeMock = vi.hoisted(() => {
     checkouts: [] as Record<string, unknown>[],
     portals: [] as Record<string, unknown>[],
     deleted: [] as string[],
+    cancelled: [] as string[],
   }
 })
 
@@ -21,7 +22,13 @@ vi.mock('./stripe.js', async () => {
   return {
     stripe: () => ({
       webhooks: real.webhooks,
-      subscriptions: { retrieve: async () => stripeMock.subscription },
+      subscriptions: {
+        retrieve: async () => stripeMock.subscription,
+        cancel: async (id: string) => {
+          stripeMock.cancelled.push(id)
+          return {}
+        },
+      },
       customers: {
         del: async (id: string) => {
           stripeMock.deleted.push(id)
@@ -196,6 +203,45 @@ describe('cobrança', () => {
     expect((await webhook({ type: 'customer.subscription.created', data: { object: { id: 'sub_orfa' } } })).status).toBe(200)
 
     expect(await db.select().from(subscriptions).where(eq(subscriptions.stripeCustomerId, 'cus_orfa'))).toHaveLength(0)
+  })
+
+  it('conta de cortesia é Pro sem Stripe: não abre portal nem outro checkout', async () => {
+    await db.insert(subscriptions).values({ userId: gil.id, stripeCustomerId: `cortesia_${gil.id}`, status: 'active' })
+    const portals = stripeMock.portals.length
+    const checkouts = stripeMock.checkouts.length
+
+    expect(await planOf(gil)).toMatchObject({ tier: 'pro', trialEndsAt: null, periodEnd: null })
+    expect((await post(gil, '/billing/portal')).status).toBe(404)
+    expect((await post(gil, '/billing/checkout')).status).toBe(409)
+    expect(stripeMock.portals).toHaveLength(portals)
+    expect(stripeMock.checkouts).toHaveLength(checkouts)
+
+    await db.delete(subscriptions).where(eq(subscriptions.userId, gil.id))
+  })
+
+  it('segunda assinatura paga ao mesmo tempo é cancelada e não mexe na linha', async () => {
+    await webhook(stripeSubscription(gil, 'active'))
+    const rowOf = async () => (await db.select().from(subscriptions).where(eq(subscriptions.userId, gil.id)))[0]
+    expect((await rowOf()).stripeSubscriptionId).toBe(`sub_${gil.id}`)
+
+    await webhook(stripeSubscription(gil, 'trialing', { id: 'sub_duplicada', customer: 'cus_duplicado' }))
+    expect(stripeMock.cancelled).toEqual(['sub_duplicada'])
+    expect(await rowOf()).toMatchObject({ stripeSubscriptionId: `sub_${gil.id}`, stripeCustomerId: `cus_${gil.id}`, status: 'active' })
+
+    // A mesma assinatura chegando de novo é normal: nada é cancelado.
+    await webhook(stripeSubscription(gil, 'active'))
+    expect(stripeMock.cancelled).toEqual(['sub_duplicada'])
+  })
+
+  it('com a assinatura cancelada, uma nova substitui a linha', async () => {
+    await webhook(stripeSubscription(gil, 'canceled'))
+    await webhook(stripeSubscription(gil, 'active', { id: 'sub_nova' }))
+
+    expect(stripeMock.cancelled).toEqual(['sub_duplicada'])
+    expect((await db.select().from(subscriptions).where(eq(subscriptions.userId, gil.id)))[0]).toMatchObject({
+      stripeSubscriptionId: 'sub_nova',
+      status: 'active',
+    })
   })
 
   it('excluir a conta apaga o cliente na Stripe, que cancela a assinatura', async () => {

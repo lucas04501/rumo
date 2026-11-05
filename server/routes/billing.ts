@@ -45,7 +45,8 @@ export const billing = new Hono<AuthedEnv>()
   })
   .post('/portal', async (c) => {
     const row = await ownSubscription(c.get('userId'))
-    if (!row) throw new HTTPException(404, { message: 'not_found' })
+    // Conta de cortesia não tem cliente na Stripe.
+    if (!row || row.stripeCustomerId.startsWith('cortesia_')) throw new HTTPException(404, { message: 'not_found' })
 
     const portal = await stripe().billingPortal.sessions.create({
       customer: row.stripeCustomerId,
@@ -71,6 +72,18 @@ async function syncSubscription(subscriptionId: string) {
   // Conta excluída entre o evento e agora: não há onde gravar.
   const [owner] = await db.select({ id: user.id }).from(user).where(eq(user.id, userId))
   if (!owner) return
+
+  // Duas abas pagando ao mesmo tempo: a assinatura que chegou depois é duplicata e é cancelada.
+  const [existing] = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId))
+  if (
+    existing?.stripeSubscriptionId &&
+    existing.stripeSubscriptionId !== subscription.id &&
+    PAYING.has(existing.status) &&
+    PAYING.has(subscription.status)
+  ) {
+    await stripe().subscriptions.cancel(subscription.id)
+    return
+  }
 
   // Durante o teste, o fim do período é o fim dos 7 dias.
   const periodEnd = subscription.items.data[0]?.current_period_end
