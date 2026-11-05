@@ -30,14 +30,17 @@ PWA de metas, hábitos, planner e treinos, em português do Brasil. Multi-usuár
 - Toda rota nova precisa de caso em `server/isolation.test.ts`.
 - RLS é a segunda trava: toda consulta de rota do app roda em `db.batch([claim(userId), ...])`, como o papel `rumo_app`. Tabela nova com `user_id` precisa, na migração, de `GRANT`, RLS ligada e a política `dono`, como em `drizzle/0007_rls.sql`. Um teste recusa tabela sem isso. Só o Better Auth e `user` ficam de fora.
 - `GET /api/health/rls` prova sem login que o papel funciona. Confira depois de todo deploy que mexa no banco.
-- Nenhum custo fixo, por decisão do Lucas: nada de plano pago de hospedagem ou banco. A cobrança é de R$ 14,90 por mês, com 7 dias grátis, pelo Mercado Pago, que só desconta taxa por venda. A Vercel Hobby não permite uso comercial: antes de cobrar ou anunciar preço, o app sai dela. A migração planejada é para a Netlify Free.
-- Termos e privacidade em `src/content/legal.ts` precisam continuar verdadeiros: mudou provedor, preço ou o que é guardado, muda o texto. Hoje eles dizem que o app é gratuito, então isso muda junto com a cobrança.
+- Nenhum custo fixo, por decisão do Lucas: nada de plano pago de hospedagem ou banco. A cobrança é de R$ 14,90 por mês pela Stripe, que só desconta taxa por venda. A Vercel Hobby não permite uso comercial, então o app roda na Netlify Free (`rumo-app.netlify.app`). A Vercel segue no ar só com a versão antiga, até o Lucas validar a Netlify. Antes de ligar a cobrança, as chaves reais e `BILLING_ENABLED` dependem de autorização dele.
+- Termos e privacidade em `src/content/legal.ts` precisam continuar verdadeiros: mudou provedor, preço ou o que é guardado, muda o texto. Eles descrevem o plano grátis, o Pro, a Stripe e a Netlify.
 - Em `server/` e `api/`, imports relativos terminam em `.js`: a Vercel roda ESM sem empacotar. `schema.ts` fica em um arquivo só, porque o drizzle-kit não resolve esses imports.
 - O `.env` aponta só para a branch `dev`. A conexão da branch principal não fica neste computador. Para migrar a principal, passe `DATABASE_URL` pelo ambiente, sem gravar em arquivo nem exibir. `vercel env run` não serve: a Vercel não libera valores do tipo Secret, e o CLI carrega o `.env`, então a migração cairia na `dev` dizendo sucesso. A conexão vem de `neonctl connection-string main`, guardada só em uma variável do comando. Confira que o endereço difere do `.env` antes de migrar. A migração vem antes do deploy, e a autorização do Lucas é pedida a cada vez.
 - Testes nunca tocam a branch principal.
 - Em produção, verificação é só leitura. Nunca confirme "cadastro fechado" tentando cadastrar: use `GET /api/signup-status`. Depois de um deploy, o endereço principal leva alguns segundos para apontar para a versão nova.
 - Cadastro fechado por padrão no código (`ALLOW_SIGNUP`). Em produção, está aberto a qualquer pessoa desde 2026-11-02, por decisão do Lucas, ainda sem confirmação de e-mail. A recuperação de senha está no ar desde 2026-11-04 e envia pelo Gmail, com senha de app em `GMAIL_USER` e `GMAIL_APP_PASSWORD`, só na Vercel. Em produção, não teste pedindo link: isso envia e-mail de verdade. O limite de tentativas fica no banco, em `rate_limit`, e só liga em produção. Para fechar: remova a variável na Vercel e publique de novo.
-- Deploy em produção: `npx vercel deploy --prod --yes`. Autorizado pelo Lucas em 2026-11-02. Sem o `--prod`, o deploy vira pré-visualização.
+- Deploy na Vercel (hospedagem antiga): `npx vercel deploy --prod --yes`. Autorizado pelo Lucas em 2026-11-02. Sem o `--prod`, o deploy vira pré-visualização.
+- Plano: a regra é `server/plan.ts` (pura, sem imports), reexportada em `src/lib/plan.ts`. Os 7 dias grátis são a assinatura `trialing` da Stripe: só começam com cartão informado no checkout e só valem para quem nunca assinou. Nunca volte a contar teste por data de cadastro. `BILLING_ENABLED` desligado deixa todo mundo Pro.
+- Assinatura só é escrita pelo webhook (`POST /api/stripe/webhook`, no papel dono, sem login e protegido pela assinatura do corpo): ele busca a assinatura de novo na Stripe antes de gravar. Por isso a rota é registrada antes de `data` em `server/app.ts`. Checkout e portal ficam em `server/routes/billing.ts` e o app nunca vê dado de cartão. Excluir a conta apaga o cliente na Stripe, e se isso falhar a exclusão para.
+- Variáveis da cobrança, só no ambiente (nunca no repositório): `STRIPE_SECRET_KEY`, `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET`, `BILLING_ENABLED`. Testes da API simulam a Stripe e nunca falam com ela.
 - Teal é ação e progresso. Âmbar é só recompensa. Azul, rosa e roxo existem só em gráficos: tarefa, foco e treino.
 - A coluna do Quadro vem dos dados, em `columnOf()`. Concluir é só `doneAt`, e `startedAt` não dá XP. Toda mudança de coluna passa por `placeOn()`.
 - Conquista é calculada dos mesmos agregados da Evolução. `achievements_seen` só impede a animação de repetir.
@@ -55,7 +58,7 @@ PWA de metas, hábitos, planner e treinos, em português do Brasil. Multi-usuár
 
 ## Onde está cada coisa
 
-- `C:\Users\Pichau\ObsidianVault\04 - Projetos\Rumo\`: fonte viva de roadmap, funcionalidades, decisões e estado. Comece por `Rumo.md`.
+- `C:\Users\lucas\ObsidianVault\04 - Projetos\Rumo\`: fonte viva de roadmap, funcionalidades, decisões e estado. Comece por `Rumo.md`.
 - `docs/`: registro inicial, congelado em 2026-11-02
 - `PRODUCT.md`: quem usa e o que o produto promete
 - `DESIGN.md`: sistema visual, com tokens e regras. Leia antes de criar telas

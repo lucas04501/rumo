@@ -89,6 +89,8 @@ export function useSnapshot() {
   return useQuery({ queryKey: SNAPSHOT_KEY, queryFn: fetchSnapshot, select: complete })
 }
 
+export const refreshSnapshot = () => store.invalidateQueries({ queryKey: SNAPSHOT_KEY })
+
 /** A foto que está na tela agora, para as ações decidirem sem ser componentes. */
 export const currentSnapshot = (): Snapshot | undefined => {
   const current = store.getQueryData<Snapshot>(SNAPSHOT_KEY)

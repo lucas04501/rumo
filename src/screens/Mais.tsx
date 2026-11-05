@@ -87,6 +87,11 @@ export function Mais() {
           </h2>
           {email && <p className="mt-2 text-[15px] text-mist wrap-anywhere">{email}</p>}
           <div className="mt-2 grid justify-items-start">
+            {snapshot?.plan.billing && (
+              <Link to="/assinatura" className={`${SETTING} grid place-items-center`}>
+                Assinatura
+              </Link>
+            )}
             <button type="button" className={SETTING} onClick={signOut}>
               Sair da conta
             </button>

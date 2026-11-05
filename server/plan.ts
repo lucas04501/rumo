@@ -2,21 +2,26 @@
  * Regra do plano. É pura e não importa nada, para o servidor e o app usarem o mesmo
  * arquivo (o app o reexporta em `src/lib/plan.ts`).
  *
- * - Trial: 7 dias de Pro a partir do cadastro, sem cartão.
- * - Pro: assinatura ativa na Stripe.
+ * - Pro: assinatura na Stripe em `trialing`, `active` ou `past_due`. Os 7 dias grátis são
+ *   da própria assinatura: só começam com o cartão informado, e a cobrança vem depois.
  * - Grátis: o resto. Mantém tudo o que já tem, mas não cria além do limite.
  */
 
 export const TRIAL_DAYS = 7
 export const FREE_MAX_HABITS = 3
 
-export type Tier = 'trial' | 'pro' | 'free'
+export type Tier = 'pro' | 'free'
 
 /** O que o servidor entrega na foto. `tier` vale para o instante em que ela foi montada. */
 export type PlanInfo = {
   tier: Tier
-  /** Instantes ISO. Só `trialEndsAt` existe fora do Pro, e só `periodEnd` no Pro. */
+  /** Cobrança ligada. Desligada, todo mundo é Pro e a tela de assinatura não tem o que vender. */
+  billing: boolean
+  /** Quem nunca assinou ainda tem os 7 dias grátis. Só é falso depois da primeira assinatura. */
+  trialAvailable: boolean
+  /** Instante ISO do fim dos 7 dias grátis. Só existe enquanto a assinatura está em teste. */
   trialEndsAt: string | null
+  /** Instante ISO do fim do período atual, no Pro com assinatura. */
   periodEnd: string | null
   cancelAtPeriodEnd: boolean
 }
@@ -35,47 +40,42 @@ export type Subscription = {
 
 // `past_due` segue como Pro: a Stripe ainda tenta cobrar de novo e não faz sentido
 // travar a pessoa no meio disso. Quando desiste, o status vira `canceled` ou `unpaid`.
-const PAYING = new Set(['active', 'trialing', 'past_due'])
-
-const DAY_MS = 86_400_000
+export const PAYING = new Set(['active', 'trialing', 'past_due'])
 
 export function limitsOf(tier: Tier): Limits {
   return tier === 'free' ? { maxHabits: FREE_MAX_HABITS, treinos: false } : { maxHabits: null, treinos: true }
 }
 
-/**
- * Fim do teste. Quem já tinha conta quando a cobrança ligou conta a partir de
- * `billingStartsAt`, não do cadastro, para não encontrar o teste já vencido.
- */
-export function trialEndsAt(createdAt: Date, billingStartsAt: Date): Date {
-  const start = Math.max(createdAt.getTime(), billingStartsAt.getTime())
-  return new Date(start + TRIAL_DAYS * DAY_MS)
-}
-
 export function resolvePlan(input: {
-  billing: { enabled: boolean; startsAt: Date }
-  createdAt: Date
+  billing: { enabled: boolean }
   subscription: Subscription | null
-  now: Date
 }): PlanInfo {
-  const { billing, createdAt, subscription, now } = input
+  const { billing, subscription } = input
 
   // Cobrança desligada: todo mundo tem tudo, e nada muda para ninguém.
-  if (!billing.enabled) return { tier: 'pro', trialEndsAt: null, periodEnd: null, cancelAtPeriodEnd: false }
+  if (!billing.enabled) {
+    return { tier: 'pro', billing: false, trialAvailable: false, trialEndsAt: null, periodEnd: null, cancelAtPeriodEnd: false }
+  }
 
+  const periodEnd = subscription?.currentPeriodEnd?.toISOString() ?? null
   if (subscription && PAYING.has(subscription.status)) {
     return {
       tier: 'pro',
-      trialEndsAt: null,
-      periodEnd: subscription.currentPeriodEnd?.toISOString() ?? null,
+      billing: true,
+      trialAvailable: false,
+      // Durante o teste, o fim do período da Stripe é o fim dos 7 dias.
+      trialEndsAt: subscription.status === 'trialing' ? periodEnd : null,
+      periodEnd,
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
     }
   }
 
-  const ends = trialEndsAt(createdAt, billing.startsAt)
   return {
-    tier: now < ends ? 'trial' : 'free',
-    trialEndsAt: ends.toISOString(),
+    tier: 'free',
+    billing: true,
+    // Teste só na primeira vez: quem já teve assinatura, mesmo cancelada, não ganha outro.
+    trialAvailable: subscription === null,
+    trialEndsAt: null,
     periodEnd: null,
     cancelAtPeriodEnd: false,
   }
@@ -86,7 +86,6 @@ export function resolvePlan(input: {
  * vencido. Isto só rebaixa, e só para a tela: quem decide de verdade é o servidor.
  */
 export function effectiveTier(plan: PlanInfo, now: Date): Tier {
-  if (plan.tier === 'trial' && plan.trialEndsAt && now >= new Date(plan.trialEndsAt)) return 'free'
   if (plan.tier === 'pro' && plan.cancelAtPeriodEnd && plan.periodEnd && now >= new Date(plan.periodEnd)) {
     return 'free'
   }

@@ -5,7 +5,7 @@ vi.hoisted(() => {
   process.env.ALLOW_SIGNUP = 'true'
 })
 
-const { eq, inArray } = await import('drizzle-orm')
+const { inArray } = await import('drizzle-orm')
 const { app } = await import('./app.js')
 const { db } = await import('./db/client.js')
 const { subscriptions, user } = await import('./db/schema.js')
@@ -42,9 +42,15 @@ const addHabit = (person: Person, extra: object = {}) =>
   call(person, 'PUT', `/habits/${randomUUID()}`, { ...habitBody, ...extra })
 
 const planOf = async (person: Person) =>
-  ((await (await call(person, 'GET', '/snapshot')).json()) as { plan: { tier: string; trialEndsAt: string | null } }).plan
+  ((await (await call(person, 'GET', '/snapshot')).json()) as { plan: { tier: string; trialAvailable: boolean; trialEndsAt: string | null } }).plan
 
-const daysAgo = (days: number) => new Date(Date.now() - days * 86_400_000)
+const inDays = (days: number) => new Date(Date.now() + days * 86_400_000)
+
+const setSubscription = (person: Person, status: string) =>
+  db
+    .insert(subscriptions)
+    .values({ userId: person.id, stripeCustomerId: `cus_teste_${stamp}_${person.id}`, status, currentPeriodEnd: inDays(7) })
+    .onConflictDoUpdate({ target: subscriptions.userId, set: { status } })
 
 let cris: Person
 let davi: Person
@@ -62,19 +68,23 @@ afterAll(async () => {
 describe('plano grátis', () => {
   it('com a cobrança desligada, todo mundo tem tudo', async () => {
     delete process.env.BILLING_ENABLED
-    await db.update(user).set({ createdAt: daysAgo(30) }).where(eq(user.id, cris.id))
 
     for (let i = 0; i < 5; i++) expect((await addHabit(cris)).status).toBe(200)
     expect((await planOf(cris)).tier).toBe('pro')
   })
 
-  it('no teste não há limite', async () => {
+  it('quem nunca assinou é grátis e ainda tem o teste a oferecer', async () => {
     process.env.BILLING_ENABLED = 'true'
-    await db.update(user).set({ createdAt: new Date() }).where(eq(user.id, davi.id))
+    expect(await planOf(davi)).toMatchObject({ tier: 'free', trialAvailable: true })
+  })
+
+  it('no teste, que só existe com a assinatura em trialing, não há limite', async () => {
+    process.env.BILLING_ENABLED = 'true'
+    await setSubscription(davi, 'trialing')
 
     for (let i = 0; i < 4; i++) expect((await addHabit(davi)).status).toBe(200)
     const plan = await planOf(davi)
-    expect(plan.tier).toBe('trial')
+    expect(plan.tier).toBe('pro')
     expect(plan.trialEndsAt).not.toBeNull()
     expect((await call(davi, 'PUT', `/workout-plans/${randomUUID()}`, { title: 'Ficha', weekdays: [1] })).status).toBe(200)
   })
@@ -109,12 +119,12 @@ describe('plano grátis', () => {
   it('no grátis, Treinos fica em leitura, mas excluir continua liberado', async () => {
     process.env.BILLING_ENABLED = 'true'
     const planId = randomUUID()
-    // Davi ainda está no teste e cria a ficha; depois o teste acaba.
-    await db.update(user).set({ createdAt: new Date() }).where(eq(user.id, davi.id))
+    // Davi ainda está no teste e cria a ficha; depois a assinatura é cancelada.
+    await setSubscription(davi, 'trialing')
     expect((await call(davi, 'PUT', `/workout-plans/${planId}`, { title: 'Ficha', weekdays: [1] })).status).toBe(200)
-    await db.update(user).set({ createdAt: daysAgo(30) }).where(eq(user.id, davi.id))
+    await setSubscription(davi, 'canceled')
 
-    expect((await planOf(davi)).tier).toBe('free')
+    expect(await planOf(davi)).toMatchObject({ tier: 'free', trialAvailable: false })
     expect((await call(davi, 'PUT', `/workout-plans/${planId}`, { title: 'Outra', weekdays: [1] })).status).toBe(402)
     expect((await call(davi, 'PUT', `/custom-exercises/${randomUUID()}`, { name: 'X', muscle: 'Peito' })).status).toBe(402)
     expect((await call(davi, 'GET', '/workout-plans')).status).toBe(200)
@@ -123,12 +133,7 @@ describe('plano grátis', () => {
 
   it('assinatura ativa libera tudo e é só da própria pessoa', async () => {
     process.env.BILLING_ENABLED = 'true'
-    await db.insert(subscriptions).values({
-      userId: cris.id,
-      stripeCustomerId: `cus_teste_${stamp}`,
-      status: 'active',
-      currentPeriodEnd: new Date(Date.now() + 20 * 86_400_000),
-    })
+    await setSubscription(cris, 'active')
 
     expect((await planOf(cris)).tier).toBe('pro')
     expect((await addHabit(cris)).status).toBe(200)

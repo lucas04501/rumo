@@ -74,6 +74,12 @@ describe('complete', () => {
     expect(complete({ ...base, tasks: [], notes: [note] }).notes).toEqual([note])
   })
 
+  it('completa um plano de antes da assinatura, sem os campos de cobrança', () => {
+    const old = { tier: 'pro', trialEndsAt: null, periodEnd: null, cancelAtPeriodEnd: false }
+    const photo = complete({ ...base, tasks: [], plan: old } as never)
+    expect(photo.plan).toMatchObject({ tier: 'pro', billing: false, trialAvailable: false })
+  })
+
   it('devolve a mesma foto quando ela já está completa', () => {
     const full = complete({ ...base, tasks: [] })
     expect(complete(full)).toBe(full)

@@ -39,7 +39,7 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
 
   // `user` é do Better Auth e fica fora da RLS, então vem antes da transação do usuário.
   const owner = await db
-    .select({ name: user.name, createdAt: user.createdAt })
+    .select({ name: user.name })
     .from(user)
     .where(eq(user.id, userId))
 
@@ -197,6 +197,6 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
     customExercises: customRows,
     waterSettings: waterSettingRows,
     waterLogs: waterLogRows,
-    plan: planFrom(owner[0]?.createdAt ?? new Date(), subscriptionRows[0]),
+    plan: planFrom(subscriptionRows[0]),
   })
 })

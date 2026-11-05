@@ -9,8 +9,8 @@ import { offerUndo } from './undo'
  */
 
 const MESSAGES = {
-  habits: 'No plano grátis, são até 3 hábitos ativos.',
-  treinos: 'Treinos é do plano Pro. Seu histórico continua aqui.',
+  habits: 'No plano grátis, são até 3 hábitos ativos. Veja o Pro em Mais, Assinatura.',
+  treinos: 'Treinos é do plano Pro. Seu histórico continua aqui. Veja em Mais, Assinatura.',
 }
 
 export function usePlanView(): PlanView {

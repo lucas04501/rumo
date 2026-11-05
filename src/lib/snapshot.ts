@@ -1,4 +1,15 @@
 import type { Snapshot, Task } from '../data/types'
+import type { PlanInfo } from './plan'
+
+// Foto de antes dos planos: sem internet, vale o mais generoso. A trava de verdade é do servidor.
+const DEFAULT_PLAN: PlanInfo = {
+  tier: 'pro',
+  billing: false,
+  trialAvailable: false,
+  trialEndsAt: null,
+  periodEnd: null,
+  cancelAtPeriodEnd: false,
+}
 
 type AddedLater =
   | 'notes'
@@ -27,7 +38,9 @@ type OldSnapshot = Omit<Snapshot, AddedLater | 'tasks'> &
  * que abre o app até a próxima busca, então os campos novos precisam existir.
  */
 export function complete(snapshot: OldSnapshot): Snapshot {
-  if (snapshot.plan) return snapshot as Snapshot
+  // Foto de antes de a assinatura existir pode ter `plan` sem os campos de cobrança.
+  if (snapshot.plan && 'billing' in snapshot.plan) return snapshot as Snapshot
+  if (snapshot.plan) return { ...snapshot, plan: { ...DEFAULT_PLAN, ...(snapshot.plan as Partial<PlanInfo>) } } as Snapshot
 
   return {
     ...snapshot,
@@ -53,6 +66,6 @@ export function complete(snapshot: OldSnapshot): Snapshot {
     waterSettings: snapshot.waterSettings ?? [],
     waterLogs: snapshot.waterLogs ?? [],
     // Foto de antes dos planos: sem internet, vale o mais generoso. A trava de verdade é do servidor.
-    plan: { tier: 'pro', trialEndsAt: null, periodEnd: null, cancelAtPeriodEnd: false },
+    plan: DEFAULT_PLAN,
   }
 }

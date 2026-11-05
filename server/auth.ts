@@ -1,8 +1,10 @@
 import { betterAuth } from 'better-auth'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { eq } from 'drizzle-orm'
 import { db } from './db/client.js'
-import { account, rateLimit, session, user, verification } from './db/schema.js'
+import { account, rateLimit, session, subscriptions, user, verification } from './db/schema.js'
 import { sendEmail } from './email.js'
+import { stripe } from './stripe.js'
 
 const NINETY_DAYS = 60 * 60 * 24 * 90
 const ONE_DAY = 60 * 60 * 24
@@ -14,7 +16,7 @@ export const signupOpen = process.env.ALLOW_SIGNUP === 'true'
 
 // Na Vercel o endereço vem do ambiente, então um domínio próprio não exige mudança aqui.
 const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL
-const baseURL = process.env.BETTER_AUTH_URL ?? (productionHost && `https://${productionHost}`)
+export const baseURL = process.env.BETTER_AUTH_URL ?? (productionHost && `https://${productionHost}`)
 
 export const auth = betterAuth({
   baseURL,
@@ -40,7 +42,22 @@ export const auth = betterAuth({
     },
   },
   // A senha é pedida de novo. Todas as tabelas apagam junto, em cascata pelo `user_id`.
-  user: { deleteUser: { enabled: true } },
+  user: {
+    deleteUser: {
+      enabled: true,
+      // Excluir o cliente na Stripe cancela as assinaturas na hora: ninguém é cobrado por conta apagada.
+      // Se a Stripe falhar, a exclusão para: apagar só o nosso lado deixaria a cobrança viva.
+      beforeDelete: async ({ id }) => {
+        const [row] = await db.select({ customer: subscriptions.stripeCustomerId }).from(subscriptions).where(eq(subscriptions.userId, id))
+        if (!row) return
+        try {
+          await stripe().customers.del(row.customer)
+        } catch (error) {
+          if ((error as { code?: string }).code !== 'resource_missing') throw error
+        }
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     disableSignUp: !signupOpen,

@@ -6,6 +6,7 @@ import { DayProvider } from './data/DayProvider'
 import { persistOptions, resumeWrites, store } from './data/store'
 import { AuthGate } from './ui/AuthGate'
 import { Agua } from './screens/Agua'
+import { Assinatura } from './screens/Assinatura'
 import { Shell } from './ui/Shell'
 import { Biblioteca } from './screens/Biblioteca'
 import { Conquistas } from './screens/Conquistas'
@@ -60,6 +61,7 @@ export function App() {
                   <Route path="treino" element={<Treino />} />
                   <Route path="mais" element={<Mais />} />
                   <Route path="agua" element={<Agua />} />
+                  <Route path="assinatura" element={<Assinatura />} />
                 </Route>
               </Routes>
             </BrowserRouter>

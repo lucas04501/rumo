@@ -5,6 +5,5 @@ export {
   limitsOf,
   resolvePlan,
   TRIAL_DAYS,
-  trialEndsAt,
 } from '../../server/plan'
 export type { Limits, PlanInfo, Subscription, Tier } from '../../server/plan'

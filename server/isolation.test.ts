@@ -194,6 +194,8 @@ describe('sem sessão', () => {
     ['GET', '/achievements'],
     ['PUT', '/achievements/habitos-1'],
     ['GET', '/snapshot'],
+    ['POST', '/billing/checkout'],
+    ['POST', '/billing/portal'],
     ['GET', `/checks?${RANGE}`],
     ['GET', `/days?${RANGE}`],
     ['PUT', `/days/${DATE}`],

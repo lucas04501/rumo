@@ -11,7 +11,7 @@ function snapshot(plan: PlanInfo, habits: Habit[]): Snapshot {
   return { ...complete({ user: { name: 'Ana' }, goals: [], milestones: [], habits: [], pauses: [], checks: [], days: [], tasks: [] }), plan, habits }
 }
 
-const free: PlanInfo = { tier: 'free', trialEndsAt: null, periodEnd: null, cancelAtPeriodEnd: false }
+const free: PlanInfo = { tier: 'free', billing: true, trialAvailable: true, trialEndsAt: null, periodEnd: null, cancelAtPeriodEnd: false }
 const pro: PlanInfo = { ...free, tier: 'pro' }
 
 describe('planView', () => {
@@ -34,9 +34,9 @@ describe('planView', () => {
     expect(planView(snapshot(pro, many))).toEqual({ habitRoom: true, treinos: true })
   })
 
-  it('um teste vencido na foto vale como grátis', () => {
-    const expired: PlanInfo = { ...free, tier: 'trial', trialEndsAt: '2026-11-01T00:00:00Z' }
-    expect(planView(snapshot(expired, []), new Date('2026-11-05T00:00:00Z')).treinos).toBe(false)
-    expect(planView(snapshot(expired, []), new Date('2026-10-30T00:00:00Z')).treinos).toBe(true)
+  it('um Pro cancelado e vencido na foto vale como grátis', () => {
+    const canceled: PlanInfo = { ...pro, periodEnd: '2026-11-01T00:00:00Z', cancelAtPeriodEnd: true }
+    expect(planView(snapshot(canceled, []), new Date('2026-11-05T00:00:00Z')).treinos).toBe(false)
+    expect(planView(snapshot(canceled, []), new Date('2026-10-30T00:00:00Z')).treinos).toBe(true)
   })
 })

@@ -23,6 +23,7 @@ import {
   workoutSessions,
 } from './db/schema.js'
 import { achievements } from './routes/achievements.js'
+import { billing, stripeWebhook } from './routes/billing.js'
 import { checks } from './routes/checks.js'
 import { days } from './routes/days.js'
 import { habitRoom, treinosOpen } from './routes/limits.js'
@@ -81,6 +82,7 @@ const data = new Hono<AuthedEnv>()
   .route('/custom-exercises', resource(customExercises, customExerciseFields, treinosOpen))
   .route('/water-settings', resource(waterSettings, waterSettingsFields))
   .route('/water-logs', resource(waterLogs, waterLogFields))
+  .route('/billing', billing)
   .route('/checks', checks)
   .route('/achievements', achievements)
   .route('/days', days)
@@ -95,6 +97,8 @@ export const app = new Hono()
   })
   .get('/signup-status', (c) => c.json({ open: signupOpen }))
   .on(['GET', 'POST'], '/auth/*', (c) => auth.handler(c.req.raw))
+  // Antes de `data`, que exige login em tudo o que vem depois dele.
+  .route('/stripe/webhook', stripeWebhook)
   .route('/', data)
 
 app.onError((error, c) => {
