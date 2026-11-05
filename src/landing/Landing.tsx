@@ -35,9 +35,10 @@ import {
   VoyagePanel,
   WorkoutDemo,
 } from './demos'
+import { Pricing, SHOW_PRICING } from './Pricing'
 import './landing.css'
 
-// Sem preço e sem "grátis" até a cobrança existir: os termos e a hospedagem mudam junto.
+// Preço só aparece com VITE_SHOW_PRICING, ligada junto com a cobrança no servidor.
 const START = '/?conta=criar'
 const SIGN_IN = '/?conta=entrar'
 
@@ -45,6 +46,7 @@ const NAV = [
   { id: 'como-funciona', label: 'Como funciona' },
   { id: 'funcoes', label: 'Funções' },
   { id: 'treinos', label: 'Treinos' },
+  ...(SHOW_PRICING ? [{ id: 'planos', label: 'Preços' }] : []),
 ]
 
 const WRAP = 'mx-auto w-full max-w-6xl px-5 sm:px-8 lg:px-10'
@@ -95,6 +97,7 @@ export function Landing() {
         <Workouts />
         <Everyday />
         <Questions />
+        {SHOW_PRICING && <Pricing start={START} />}
         <FinalCall />
       </main>
       <Footer />

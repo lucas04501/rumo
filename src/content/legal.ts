@@ -15,7 +15,7 @@ export const LEGAL_PAGES: Record<string, LegalPage> = {
       {
         heading: 'O que é o Rumo',
         text: [
-          'O Rumo reúne metas, hábitos, tarefas, planejamento, notas e treinos. Tem um plano grátis, com até 3 hábitos ativos e a área de Treinos só para leitura, e o plano Pro, com tudo liberado. Não tem anúncios.',
+          'O Rumo reúne metas, hábitos, tarefas, planejamento, notas e treinos. O plano grátis inclui só Hábitos, com até 3 ativos, Hoje e Metas. Todas as outras áreas, como Plano e tarefas, Foco, Rotina, Notas, Água, Evolução, Conquistas e Treinos, são do plano Pro. Não tem anúncios.',
           'É um projeto pessoal, oferecido como está. Ele pode mudar, ficar fora do ar ou ser encerrado, sem garantia de disponibilidade.',
         ],
       },
@@ -29,8 +29,9 @@ export const LEGAL_PAGES: Record<string, LegalPage> = {
       {
         heading: 'Assinatura e pagamento',
         text: [
-          'O plano Pro custa R$ 14,90 por mês. Os 7 primeiros dias são grátis: você informa o cartão ao começar e só é cobrado depois dos 7 dias. Cancelando antes do fim do teste, nada é cobrado. O teste vale uma vez por conta.',
-          'A assinatura renova todo mês, no mesmo cartão, até você cancelar. Cancele quando quiser em Mais, Assinatura: o Pro segue até o fim do período já pago, sem nova cobrança, e depois o app volta ao plano grátis. Você mantém tudo o que já criou, mas não cria hábitos acima do limite do plano grátis nem altera Treinos.',
+          'O plano Pro custa R$ 14,90 por mês. Os 7 primeiros dias são grátis: você informa o cartão ao começar, e a primeira cobrança acontece quando os 7 dias de teste acabam. Cancelando antes do fim do teste, nada é cobrado. O teste vale uma vez por conta.',
+          'A assinatura renova todo mês, no mesmo cartão, até você cancelar. Cancele quando quiser em Perfil, Plano: cancelar impede a próxima cobrança, e o Pro segue até o fim do período já pago. Não há reembolso de períodos já pagos.',
+          'Ao voltar ao plano grátis, tudo o que você criou continua guardado, pode ser exportado e fica visível para leitura. Nas áreas do Pro, você não cria nem edita nada, e não ativa hábitos acima do limite do plano grátis.',
           'O pagamento é feito na Stripe. O Rumo não vê nem guarda os dados do seu cartão. Para dúvidas sobre uma cobrança, escreva para lucaspds9@hotmail.com.',
         ],
       },
