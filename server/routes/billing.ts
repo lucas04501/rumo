@@ -75,13 +75,9 @@ async function syncSubscription(subscriptionId: string) {
 
   // Duas abas pagando ao mesmo tempo: a assinatura que chegou depois é duplicata e é cancelada.
   const [existing] = await db.select().from(subscriptions).where(eq(subscriptions.userId, userId))
-  if (
-    existing?.stripeSubscriptionId &&
-    existing.stripeSubscriptionId !== subscription.id &&
-    PAYING.has(existing.status) &&
-    PAYING.has(subscription.status)
-  ) {
-    await stripe().subscriptions.cancel(subscription.id)
+  if (existing?.stripeSubscriptionId && existing.stripeSubscriptionId !== subscription.id && PAYING.has(existing.status)) {
+    // O aviso da duplicata já cancelada também chega aqui, e não pode apagar a assinatura que vale.
+    if (PAYING.has(subscription.status)) await stripe().subscriptions.cancel(subscription.id)
     return
   }
 

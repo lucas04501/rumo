@@ -228,6 +228,12 @@ describe('cobrança', () => {
     expect(stripeMock.cancelled).toEqual(['sub_duplicada'])
     expect(await rowOf()).toMatchObject({ stripeSubscriptionId: `sub_${gil.id}`, stripeCustomerId: `cus_${gil.id}`, status: 'active' })
 
+    // O aviso de que a duplicata foi cancelada também chega, e não pode apagar a assinatura que vale.
+    await webhook(stripeSubscription(gil, 'canceled', { id: 'sub_duplicada', customer: 'cus_duplicado' }))
+    expect(stripeMock.cancelled).toEqual(['sub_duplicada'])
+    expect(await rowOf()).toMatchObject({ stripeSubscriptionId: `sub_${gil.id}`, status: 'active' })
+    expect(await planOf(gil)).toMatchObject({ tier: 'pro' })
+
     // A mesma assinatura chegando de novo é normal: nada é cancelado.
     await webhook(stripeSubscription(gil, 'active'))
     expect(stripeMock.cancelled).toEqual(['sub_duplicada'])
