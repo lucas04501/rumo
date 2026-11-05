@@ -21,6 +21,7 @@ import { Mes } from './screens/Mes'
 import { Meta } from './screens/Meta'
 import { Metas } from './screens/Metas'
 import { Notas } from './screens/Notas'
+import { Perfil } from './screens/Perfil'
 import { Redefinir } from './screens/Redefinir'
 import { Rotina } from './screens/Rotina'
 import { Treino } from './screens/Treino'
@@ -61,7 +62,8 @@ export function App() {
                   <Route path="treino" element={<Treino />} />
                   <Route path="mais" element={<Mais />} />
                   <Route path="agua" element={<Agua />} />
-                  <Route path="assinatura" element={<Assinatura />} />
+                  <Route path="perfil" element={<Perfil />} />
+                  <Route path="assinatura"element={<Assinatura />} />
                 </Route>
               </Routes>
             </BrowserRouter>

@@ -18,6 +18,8 @@ import { exportMyData } from '../data/exportData'
 import { openLayer } from '../data/layers'
 import { clearDevice, useSnapshot } from '../data/store'
 import { settleUndo } from '../data/undo'
+import { useAvatar } from '../data/useAvatar'
+import { Avatar } from '../ui/Avatar'
 import { DeleteAccountSheet } from '../ui/DeleteAccountSheet'
 import { Screen } from '../ui/Screen'
 
@@ -48,6 +50,8 @@ export function Mais() {
   const { data: session } = authClient.useSession()
   const [deleting, setDeleting] = useState(false)
   const email = session?.user.email ?? ''
+  const name = snapshot?.user.name || session?.user.name || ''
+  const avatar = useAvatar(session?.user.id)
 
   return (
     <Screen>
@@ -59,6 +63,16 @@ export function Mais() {
 
         <nav aria-label="Outras áreas" className="mt-3 lg:hidden">
           <ul className="divide-y divide-line">
+            <li>
+              <Link to="/perfil" className="flex min-h-16 items-center gap-3 text-[17px]">
+                <Avatar name={name} avatar={avatar} size={36} />
+                <span className="min-w-0 flex-1">
+                  <span className="block">Perfil</span>
+                  {name && <span className="block truncate text-[15px] text-mist">{name}</span>}
+                </span>
+                <ChevronRight size={18} strokeWidth={1.75} className="text-mist" aria-hidden />
+              </Link>
+            </li>
             <li>
               <button
                 type="button"
@@ -87,11 +101,6 @@ export function Mais() {
           </h2>
           {email && <p className="mt-2 text-[15px] text-mist wrap-anywhere">{email}</p>}
           <div className="mt-2 grid justify-items-start">
-            {snapshot?.plan.billing && (
-              <Link to="/assinatura" className={`${SETTING} grid place-items-center`}>
-                Assinatura
-              </Link>
-            )}
             <button type="button" className={SETTING} onClick={signOut}>
               Sair da conta
             </button>

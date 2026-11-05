@@ -16,6 +16,7 @@ import {
   Settings,
   Sunrise,
   Timer,
+  UserRound,
   type LucideIcon,
 } from 'lucide-react'
 import { useEffect, useSyncExternalStore } from 'react'
@@ -44,7 +45,7 @@ const PHONE_TABS: Tab[] = [
     to: '/mais',
     label: 'Mais',
     icon: Ellipsis,
-    also: ['/rotina', '/evolucao', '/conquistas', '/notas', '/foco', '/treinos', '/treino', '/agua'],
+    also: ['/rotina', '/evolucao', '/conquistas', '/notas', '/foco', '/treinos', '/treino', '/agua', '/perfil', '/assinatura'],
   },
 ]
 
@@ -61,6 +62,7 @@ const WIDE_TABS: Tab[] = [
   { to: '/foco', label: 'Foco', icon: Timer },
   { to: '/treinos', label: 'Treinos', icon: Dumbbell },
   { to: '/agua', label: 'Água', icon: GlassWater },
+  { to: '/perfil', label: 'Perfil', icon: UserRound, also: ['/assinatura'] },
   { to: '/mais', label: 'Ajustes', icon: Settings },
 ]
 

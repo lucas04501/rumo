@@ -46,7 +46,7 @@ export function Assinatura() {
   return (
     <Screen>
       <div className="max-w-2xl">
-        <Link to="/mais" className="-ml-1 inline-flex min-h-11 items-center px-1 text-[15px] text-mist underline underline-offset-4">
+        <Link to="/perfil" className="-ml-1 inline-flex min-h-11 items-center px-1 text-[15px] text-mist underline underline-offset-4">
           Voltar
         </Link>
         <h1 className="font-display text-4xl font-semibold tracking-[-0.02em]">Assinatura</h1>
