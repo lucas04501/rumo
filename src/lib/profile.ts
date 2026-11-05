@@ -1,6 +1,6 @@
 import type { Snapshot } from '../data/types'
 import { toIsoDate } from './dates'
-import { FREE_MAX_HABITS, TRIAL_DAYS, type PlanInfo } from './plan'
+import { effectiveTier, FREE_MAX_HABITS, TRIAL_DAYS, type PlanInfo } from './plan'
 import { finishedSessions } from './workouts'
 
 export type Activity = {
@@ -51,7 +51,7 @@ export function planSummary(plan: PlanInfo): PlanSummary {
   if (plan.tier === 'free') {
     return {
       title: 'Plano grátis',
-      line: `Até ${FREE_MAX_HABITS} hábitos ativos.`,
+      line: `Hoje, Metas e até ${FREE_MAX_HABITS} hábitos ativos.`,
       action: plan.trialAvailable ? `Teste ${TRIAL_DAYS} dias grátis` : 'Ver o Pro',
     }
   }
@@ -66,6 +66,16 @@ export function planSummary(plan: PlanInfo): PlanSummary {
     line: plan.periodEnd ? `Próxima cobrança em ${day(plan.periodEnd)}.` : 'Assinatura ativa.',
     action: 'Ver assinatura',
   }
+}
+
+/** O plano em uma palavra, para o rodapé da barra lateral. */
+export function planWord(plan: PlanInfo, now = new Date()): string {
+  if (effectiveTier(plan, now) === 'free') return 'Grátis'
+  if (plan.trialEndsAt) {
+    const end = new Date(plan.trialEndsAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+    return `Teste até ${end}`
+  }
+  return 'Pro'
 }
 
 /** O portal da Stripe só existe para quem já assinou alguma vez, e `trialAvailable` cai na primeira. */

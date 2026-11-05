@@ -13,6 +13,9 @@ export default defineConfig({
     env: {
       TZ: 'America/Sao_Paulo',
       BETTER_AUTH_URL: 'http://localhost:8787',
+      // O `.env` local pode ter a cobrança ligada. Os testes partem dela desligada, e os
+      // de plano e cobrança ligam onde precisam: o resultado não depende do `.env`.
+      BILLING_ENABLED: 'false',
     },
   },
 })

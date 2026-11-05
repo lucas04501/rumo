@@ -16,7 +16,7 @@ export function saveWaterSettings(settings: Omit<WaterSettings, 'updatedAt'>) {
 }
 
 export function saveWaterLog(log: WaterLog) {
-  commit((current) => ({ ...current, waterLogs: [...current.waterLogs, log] }), [
+  return commit((current) => ({ ...current, waterLogs: [...current.waterLogs, log] }), [
     { method: 'PUT', path: `/water-logs/${log.id}`, body: { ...log, editedAt: now() } },
   ])
 }

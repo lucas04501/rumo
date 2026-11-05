@@ -3,6 +3,8 @@ export {
   effectiveTier,
   FREE_MAX_HABITS,
   limitsOf,
+  needsPro,
+  PRO_PATHS,
   resolvePlan,
   TRIAL_DAYS,
 } from '../../server/plan'

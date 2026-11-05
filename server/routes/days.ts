@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { claim, db } from '../db/client.js'
 import { days as daysTable } from '../db/schema.js'
 import type { AuthedEnv } from '../session.js'
+import { proOpen } from './limits.js'
 import { dateRange, editedAt, isoDate, moment, parse, readJson, resolveEditTime } from '../validation.js'
 
 const dayBody = z.object({
@@ -31,6 +32,9 @@ export const days = new Hono<AuthedEnv>()
     const { editedAt: edited, completedAt, note } = await readJson(c, dayBody)
     const updatedAt = resolveEditTime(edited)
     const userId = c.get('userId')
+    // O dia concluído é dos hábitos e fica livre. Escrever no registro diário é de Notas, do
+    // Pro. Apagar o texto (vazio ou nulo) é excluir e continua livre.
+    if (note) await proOpen({ userId })
 
     const data = {
       ...(completedAt !== undefined && { completedAt: completedAt ? new Date(completedAt) : null }),

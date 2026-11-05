@@ -26,7 +26,7 @@ import { achievements } from './routes/achievements.js'
 import { billing, stripeWebhook } from './routes/billing.js'
 import { checks } from './routes/checks.js'
 import { days } from './routes/days.js'
-import { habitRoom, treinosOpen } from './routes/limits.js'
+import { habitRoom, proOpen } from './routes/limits.js'
 import { resource } from './routes/resource.js'
 import {
   customExerciseFields,
@@ -68,20 +68,21 @@ const data = new Hono<AuthedEnv>()
   .route('/snapshot', snapshot)
   .route('/habits', resource(habits, habitFields, habitRoom))
   .route('/pauses', resource(habitPauses, pauseFields))
-  .route('/tasks', resource(tasks, taskFields))
-  .route('/task-rules', resource(taskRules, taskRuleFields))
-  .route('/subtasks', resource(subtasks, subtaskFields))
-  .route('/focus-sessions', resource(focusSessions, focusFields))
-  .route('/routine-steps', resource(routineSteps, routineStepFields))
-  .route('/routine-checks', resource(routineChecks, routineCheckFields))
-  .route('/notes', resource(notes, noteFields))
-  .route('/workout-plans', resource(workoutPlans, workoutPlanFields, treinosOpen))
-  .route('/plan-exercises', resource(planExercises, planExerciseFields, treinosOpen))
-  .route('/workout-sessions', resource(workoutSessions, workoutSessionFields, treinosOpen))
-  .route('/session-sets', resource(sessionSets, sessionSetFields, treinosOpen))
-  .route('/custom-exercises', resource(customExercises, customExerciseFields, treinosOpen))
-  .route('/water-settings', resource(waterSettings, waterSettingsFields))
-  .route('/water-logs', resource(waterLogs, waterLogFields))
+  // Áreas do Pro, as mesmas de `PRO_PATHS` em `plan.ts`: no grátis, só leitura e exclusão.
+  .route('/tasks', resource(tasks, taskFields, proOpen))
+  .route('/task-rules', resource(taskRules, taskRuleFields, proOpen))
+  .route('/subtasks', resource(subtasks, subtaskFields, proOpen))
+  .route('/focus-sessions', resource(focusSessions, focusFields, proOpen))
+  .route('/routine-steps', resource(routineSteps, routineStepFields, proOpen))
+  .route('/routine-checks', resource(routineChecks, routineCheckFields, proOpen))
+  .route('/notes', resource(notes, noteFields, proOpen))
+  .route('/workout-plans', resource(workoutPlans, workoutPlanFields, proOpen))
+  .route('/plan-exercises', resource(planExercises, planExerciseFields, proOpen))
+  .route('/workout-sessions', resource(workoutSessions, workoutSessionFields, proOpen))
+  .route('/session-sets', resource(sessionSets, sessionSetFields, proOpen))
+  .route('/custom-exercises', resource(customExercises, customExerciseFields, proOpen))
+  .route('/water-settings', resource(waterSettings, waterSettingsFields, proOpen))
+  .route('/water-logs', resource(waterLogs, waterLogFields, proOpen))
   .route('/billing', billing)
   .route('/checks', checks)
   .route('/achievements', achievements)

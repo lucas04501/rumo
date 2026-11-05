@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import { Link } from 'react-router'
 import { useDay, type HabitToday } from '../data/DayProvider'
 import { useFocusTimer } from '../data/focusTimer'
+import { usePlanView } from '../data/planGate'
 import { useSnapshot } from '../data/store'
 import { bringToToday } from '../data/taskActions'
 import { useNow } from '../data/useNow'
@@ -30,6 +31,36 @@ import { Route } from '../voyage/Route'
 import { TideBand } from '../voyage/TideBand'
 
 export function Hoje() {
+  const { pro } = usePlanView()
+
+  // No grátis, a Hoje é a visão geral do que o plano tem: hábitos e metas.
+  if (!pro) {
+    return (
+      <Screen wide>
+        <div className="relative">
+          <TopBar />
+          <Greeting />
+        </div>
+        <DayTide />
+        <Quote />
+        <div className="mt-6 grid grid-cols-1 gap-9 lg:grid-cols-2 lg:items-start lg:gap-5">
+          <div className="panel">
+            <Habits />
+          </div>
+          <div className="panel">
+            <FocusGoal />
+          </div>
+        </div>
+        <p className="mt-6 text-[15px] text-mist">
+          Tarefas, rotina, água, foco, treinos e Evolução são do plano Pro.{' '}
+          <Link to="/assinatura" className="inline-grid min-h-11 place-items-center font-semibold text-tide">
+            Ver o Pro
+          </Link>
+        </p>
+      </Screen>
+    )
+  }
+
   return (
     <Screen wide>
       <div className="relative">

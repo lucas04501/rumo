@@ -131,6 +131,52 @@ describe('plano grátis', () => {
     expect((await call(davi, 'DELETE', `/workout-plans/${planId}`)).status).toBe(204)
   })
 
+  it('no grátis, toda área do Pro fica em leitura, mas listar e excluir continuam livres', async () => {
+    process.env.BILLING_ENABLED = 'true'
+    await setSubscription(davi, 'canceled')
+    expect((await planOf(davi)).tier).toBe('free')
+
+    const writes: [string, object][] = [
+      ['/tasks', { date: DATE, title: 'Pagar luz', position: 0 }],
+      ['/notes', { title: 'Ideia', body: 'texto' }],
+      ['/routine-steps', { weekday: 1, time: '07:00', title: 'Acordar', position: 0 }],
+      ['/water-settings', { goalMl: 2000, cupMl: 250 }],
+      ['/water-logs', { date: DATE, amountMl: 250, loggedAt: new Date().toISOString() }],
+      ['/custom-exercises', { name: 'X', muscle: 'Peito' }],
+    ]
+    for (const [path, body] of writes) {
+      const response = await call(davi, 'PUT', `${path}/${randomUUID()}`, body)
+      expect(response.status, path).toBe(402)
+      expect(await response.json()).toEqual({ error: 'plan_required' })
+      expect((await call(davi, 'GET', path)).status, path).toBe(200)
+      // Excluir nunca depende do plano: o que não existe responde 404, não 402.
+      expect((await call(davi, 'DELETE', `${path}/${randomUUID()}`)).status, path).toBe(404)
+    }
+
+    // No dia, concluir é dos hábitos e fica livre. Escrever no registro diário é de Notas.
+    expect((await call(davi, 'PUT', `/days/${DATE}`, { completedAt: new Date().toISOString() })).status).toBe(200)
+    expect((await call(davi, 'PUT', `/days/${DATE}`, { note: 'Diário' })).status).toBe(402)
+    expect((await call(davi, 'PUT', `/days/${DATE}`, { note: '' })).status).toBe(200)
+
+    // Metas, marcos e checks seguem livres.
+    const goalId = randomUUID()
+    expect((await call(davi, 'PUT', `/goals/${goalId}`, { title: 'Correr 5 km', position: 0 })).status).toBe(200)
+    expect((await call(davi, 'PUT', `/milestones/${randomUUID()}`, { goalId, title: '1 km', position: 0 })).status).toBe(200)
+  })
+
+  it('no teste, as áreas do Pro ficam abertas', async () => {
+    process.env.BILLING_ENABLED = 'true'
+    await setSubscription(davi, 'trialing')
+    expect((await call(davi, 'PUT', `/tasks/${randomUUID()}`, { date: DATE, title: 'Pagar luz', position: 0 })).status).toBe(200)
+    expect((await call(davi, 'PUT', `/days/${DATE}`, { note: 'Diário' })).status).toBe(200)
+    await setSubscription(davi, 'canceled')
+  })
+
+  it('com a cobrança desligada, as áreas do Pro ficam abertas até para quem cancelou', async () => {
+    delete process.env.BILLING_ENABLED
+    expect((await call(davi, 'PUT', `/notes/${randomUUID()}`, { title: 'Ideia', body: 'texto' })).status).toBe(200)
+  })
+
   it('assinatura ativa libera tudo e é só da própria pessoa', async () => {
     process.env.BILLING_ENABLED = 'true'
     await setSubscription(cris, 'active')

@@ -31,7 +31,7 @@ const putRule = (rule: TaskRule, editedAt = now()): Write => ({
 
 /** Grava a tarefa. Em uma ocorrência sem linha, é isso que cria a linha. */
 export function saveTask(task: Task) {
-  commit((current) => ({ ...current, tasks: upsertTask(current.tasks, task) }), [putTask(task)])
+  return commit((current) => ({ ...current, tasks: upsertTask(current.tasks, task) }), [putTask(task)])
 }
 
 /** Subtarefas e sessões de foco apontam para uma linha: a ocorrência precisa existir antes. */

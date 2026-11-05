@@ -34,7 +34,7 @@ export const habitRoom: Guard = async ({ userId, id, data }) => {
   if (!wasActive && active.length >= maxHabits) throw planRequired()
 }
 
-/** Treinos ficam em leitura no grátis. Excluir continua liberado: ninguém fica preso a dados. */
-export const treinosOpen: Guard = async ({ userId }) => {
-  if (!limitsOf((await loadPlan(userId)).tier).treinos) throw planRequired()
+/** As áreas do Pro ficam em leitura no grátis. Excluir continua liberado: ninguém fica preso a dados. */
+export const proOpen = async ({ userId }: { userId: string }) => {
+  if (!limitsOf((await loadPlan(userId)).tier).proAreas) throw planRequired()
 }

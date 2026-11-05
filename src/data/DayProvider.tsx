@@ -12,6 +12,7 @@ import {
   soundWind,
 } from '../lib/feedback'
 import { newId } from '../lib/ids'
+import { planView } from '../lib/planView'
 import {
   goalInFocus,
   summarizeDay,
@@ -101,7 +102,11 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
   // Ao concluir o último marco, a meta continua na tela até o barco chegar.
   const [arrivingGoalId, setArrivingGoalId] = useState<string | null>(null)
 
-  const { habits, tasks, done, level, remaining, perfect } = summarizeDay(snapshot, date)
+  // No grátis, a Hoje mostra só hábitos: tarefas que ficaram de antes não contam na maré do dia.
+  const { habits, tasks, done, level, remaining, perfect } = summarizeDay(
+    planView(snapshot).pro ? snapshot : { ...snapshot, tasks: [], taskRules: [] },
+    date,
+  )
   const wasPerfect = useRef(perfect)
   const arriving = snapshot.goals.find((item) => item.id === arrivingGoalId)
   const goal = arriving ? withMilestones(arriving, snapshot) : goalInFocus(snapshot, date)
@@ -122,9 +127,10 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
     }),
   )
 
-  useAchievements(snapshot, date, ({ title, detail }) =>
-    addReward({ title: `Conquista: ${title}`, detail, isMedal: true, sound: soundArrival }),
-  )
+  // Conquistas é do Pro: no grátis, a medalha fica vista sem festa.
+  useAchievements(snapshot, date, ({ title, detail }) => {
+    if (planView(snapshot).pro) addReward({ title: `Conquista: ${title}`, detail, isMedal: true, sound: soundArrival })
+  })
 
   useEffect(() => {
     const reopened = wasPerfect.current && !perfect
@@ -176,7 +182,7 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
 
   const toggleTask = useCallback(
     (task: Task) => {
-      saveTask({ ...task, doneAt: task.doneAt ? null : now() })
+      if (!saveTask({ ...task, doneAt: task.doneAt ? null : now() })) return 0
       haptic()
 
       if (task.doneAt) {
@@ -192,8 +198,7 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
   const moveCard = useCallback(
     (task: Task, column: Column) => {
       const moved = placeOn(task, column, now())
-      if (moved === task) return 0
-      saveTask(moved)
+      if (moved === task || !saveTask(moved)) return 0
       haptic()
 
       if (moved.doneAt && !task.doneAt) {
@@ -257,7 +262,7 @@ function LoadedDay({ snapshot, children }: { snapshot: Snapshot; children: React
       const after = before + amountMl
       const glasses = snapshot.waterLogs.filter((log) => log.date === date).length
 
-      saveWaterLog({ id: newId(), date, amountMl, loggedAt: now() })
+      if (!saveWaterLog({ id: newId(), date, amountMl, loggedAt: now() })) return
       haptic()
 
       if (before >= settings.goalMl || after < settings.goalMl) {

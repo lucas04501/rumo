@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { Snapshot } from '../data/types'
 import type { PlanInfo } from './plan'
-import { activityOf, hasInvoices, initialsOf, planSummary } from './profile'
+import { activityOf, hasInvoices, initialsOf, planSummary, planWord } from './profile'
 import { complete } from './snapshot'
 
 const snapshotOf = (fields: Partial<Snapshot> = {}): Snapshot => ({
@@ -69,7 +69,14 @@ describe('planSummary', () => {
   it('grátis oferece o teste só a quem nunca assinou', () => {
     expect(planSummary(plan({})).action).toBe('Teste 7 dias grátis')
     expect(planSummary(plan({ trialAvailable: false })).action).toBe('Ver o Pro')
-    expect(planSummary(plan({})).line).toBe('Até 3 hábitos ativos.')
+    expect(planSummary(plan({})).line).toBe('Hoje, Metas e até 3 hábitos ativos.')
+  })
+
+  it('a palavra do plano diz grátis, Pro ou até quando vai o teste', () => {
+    expect(planWord(plan({}))).toBe('Grátis')
+    expect(planWord(plan({ tier: 'pro', trialAvailable: false }))).toBe('Pro')
+    expect(planWord(plan({ tier: 'pro', trialEndsAt: '2026-11-12T15:00:00.000Z' }))).toBe('Teste até 12/11')
+    expect(planWord(plan({ billing: false, tier: 'pro' }))).toBe('Pro')
   })
 
   it('Pro em teste, ativo e cancelado dizem a data certa', () => {

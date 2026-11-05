@@ -1,5 +1,5 @@
 import { newId } from '../lib/ids'
-import { currentPlanView, refuseTreinos } from './planGate'
+import { currentPlanView, refusePro } from './planGate'
 import { commit, type Write } from './store'
 import type {
   CustomExercise,
@@ -14,8 +14,8 @@ const now = () => new Date().toISOString()
 
 /** Treinos fica em leitura fora do Pro. Excluir e desfazer continuam livres. */
 function open(): boolean {
-  if (currentPlanView().treinos) return true
-  refuseTreinos()
+  if (currentPlanView().pro) return true
+  refusePro()
   return false
 }
 

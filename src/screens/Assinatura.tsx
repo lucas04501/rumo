@@ -77,7 +77,10 @@ export function Assinatura() {
           <div className="mt-4 grid gap-3">
             <p className="font-display text-2xl font-semibold">Rumo Pro</p>
             <p className="text-[17px]/snug">
-              Hábitos sem limite (o grátis tem {FREE_MAX_HABITS} ativos) e a área de Treinos completa. {PRICE}.
+              Tudo do Rumo: hábitos sem limite, Plano e tarefas, Foco, Rotina, Notas, Água, Evolução, Conquistas e Treinos. {PRICE}.
+            </p>
+            <p className="text-[15px] text-mist">
+              No grátis, você tem Hoje, Metas e até {FREE_MAX_HABITS} hábitos ativos. O que já criou nas outras áreas continua guardado, para ver, exportar e excluir.
             </p>
             {back ? (
               <p role="status" className="text-[15px] text-mist">Confirmando sua assinatura…</p>

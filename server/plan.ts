@@ -4,7 +4,8 @@
  *
  * - Pro: assinatura na Stripe em `trialing`, `active` ou `past_due`. Os 7 dias grátis são
  *   da própria assinatura: só começam com o cartão informado, e a cobrança vem depois.
- * - Grátis: o resto. Mantém tudo o que já tem, mas não cria além do limite.
+ * - Grátis: o resto. Só Hoje, Metas e até 3 hábitos ativos. Mantém tudo o que já tem,
+ *   para ver, exportar e excluir, mas não cria nem edita nas áreas do Pro.
  */
 
 export const TRIAL_DAYS = 7
@@ -29,7 +30,36 @@ export type PlanInfo = {
 export type Limits = {
   /** `null` é sem limite. */
   maxHabits: number | null
-  treinos: boolean
+  /** Plano, tarefas, Foco, Rotina, Notas, Água, Evolução, Conquistas e Treinos. */
+  proAreas: boolean
+}
+
+/**
+ * Rotas da API das áreas do Pro. Nelas, o grátis só lê e exclui. O registro diário em
+ * texto vive em `/days`, junto do dia concluído, e é tratado à parte (`routes/days.ts`).
+ */
+export const PRO_PATHS = [
+  '/tasks',
+  '/task-rules',
+  '/subtasks',
+  '/focus-sessions',
+  '/routine-steps',
+  '/routine-checks',
+  '/notes',
+  '/water-settings',
+  '/water-logs',
+  '/workout-plans',
+  '/plan-exercises',
+  '/workout-sessions',
+  '/session-sets',
+  '/custom-exercises',
+]
+
+/** Se esta escrita da fila precisa do Pro. Espelha os guards do servidor, só para a tela avisar antes. */
+export function needsPro(write: { method: string; path: string; body?: unknown }): boolean {
+  if (write.method !== 'PUT') return false
+  if (write.path.startsWith('/days/')) return Boolean((write.body as { note?: unknown } | undefined)?.note)
+  return PRO_PATHS.some((path) => write.path.startsWith(`${path}/`))
 }
 
 export type Subscription = {
@@ -43,7 +73,7 @@ export type Subscription = {
 export const PAYING = new Set(['active', 'trialing', 'past_due'])
 
 export function limitsOf(tier: Tier): Limits {
-  return tier === 'free' ? { maxHabits: FREE_MAX_HABITS, treinos: false } : { maxHabits: null, treinos: true }
+  return tier === 'free' ? { maxHabits: FREE_MAX_HABITS, proAreas: false } : { maxHabits: null, proAreas: true }
 }
 
 export function resolvePlan(input: {

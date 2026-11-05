@@ -16,11 +16,13 @@ import { Link } from 'react-router'
 import { authClient } from '../data/authClient'
 import { exportMyData } from '../data/exportData'
 import { openLayer } from '../data/layers'
+import { usePlanView } from '../data/planGate'
 import { clearDevice, useSnapshot } from '../data/store'
 import { settleUndo } from '../data/undo'
 import { useAvatar } from '../data/useAvatar'
 import { Avatar } from '../ui/Avatar'
 import { DeleteAccountSheet } from '../ui/DeleteAccountSheet'
+import { ProMark } from '../ui/ProGate'
 import { Screen } from '../ui/Screen'
 
 type Area = { to: string; label: string; icon: LucideIcon }
@@ -52,6 +54,8 @@ export function Mais() {
   const email = session?.user.email ?? ''
   const name = snapshot?.user.name || session?.user.name || ''
   const avatar = useAvatar(session?.user.id)
+  // Todas as áreas desta lista são do Pro.
+  const { pro } = usePlanView()
 
   return (
     <Screen>
@@ -88,6 +92,7 @@ export function Mais() {
                 <Link to={to} className="flex min-h-14 items-center gap-3 text-[17px]">
                   <Icon size={20} strokeWidth={1.75} className="shrink-0 text-mist" aria-hidden />
                   <span className="min-w-0 flex-1">{label}</span>
+                  {!pro && <ProMark />}
                   <ChevronRight size={18} strokeWidth={1.75} className="text-mist" aria-hidden />
                 </Link>
               </li>

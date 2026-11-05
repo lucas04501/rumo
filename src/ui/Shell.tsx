@@ -21,15 +21,23 @@ import {
 } from 'lucide-react'
 import { useEffect, useSyncExternalStore } from 'react'
 import { NavLink, Outlet, useLocation } from 'react-router'
+import { authClient } from '../data/authClient'
 import { useDay } from '../data/DayProvider'
 import { useFocusTimer } from '../data/focusTimer'
 import { openLayer, useLayer } from '../data/layers'
+import { usePlanView } from '../data/planGate'
+import { useSnapshot } from '../data/store'
+import { useAvatar } from '../data/useAvatar'
 import { useNow } from '../data/useNow'
 import { tideLevel } from '../lib/focus'
+import { isProScreen } from '../lib/planView'
+import { planWord } from '../lib/profile'
 import { Tide } from '../voyage/Tide'
 import { WaveWash } from '../voyage/WaveWash'
+import { Avatar } from './Avatar'
 import { Creator } from './Creator'
 import { FocusWatcher } from './FocusWatcher'
+import { ProMark } from './ProGate'
 import { RewardToast } from './RewardToast'
 import { SearchDialog } from './SearchDialog'
 import { UndoToast } from './UndoToast'
@@ -62,9 +70,11 @@ const WIDE_TABS: Tab[] = [
   { to: '/foco', label: 'Foco', icon: Timer },
   { to: '/treinos', label: 'Treinos', icon: Dumbbell },
   { to: '/agua', label: 'Água', icon: GlassWater },
-  { to: '/perfil', label: 'Perfil', icon: UserRound, also: ['/assinatura'] },
   { to: '/mais', label: 'Ajustes', icon: Settings },
 ]
+
+// No computador, o Perfil fica no rodapé da barra lateral, fora da lista. A busca ainda o acha.
+const PROFILE_TAB: Tab = { to: '/perfil', label: 'Perfil', icon: UserRound, also: ['/assinatura'] }
 
 const WIDE_QUERY = '(min-width: 64rem)'
 const FOCUS_TIDE_INTERVAL_MS = 5000
@@ -130,7 +140,7 @@ export function Shell() {
         </button>
       )}
       {layer?.kind === 'criar' && <Creator key={layer.draft} draft={layer.draft} />}
-      {layer?.kind === 'buscar' && <SearchDialog places={WIDE_TABS} />}
+      {layer?.kind === 'buscar' && <SearchDialog places={[...WIDE_TABS, PROFILE_TAB]} />}
       <RewardToast reward={reward} onDone={dismissReward} />
       <UndoToast />
       <WaveWash celebration={celebration} onDone={dismissCelebration} />
@@ -160,7 +170,7 @@ function Navigation({ hidden }: { hidden: boolean }) {
       aria-label="Principal"
       className={`relative z-20 border-t border-line bg-abyss pb-[env(safe-area-inset-bottom,0px)] lg:col-start-1 lg:row-start-1 lg:border-t-0 lg:border-r lg:px-3 lg:pt-[max(env(safe-area-inset-top,0px),24px)] ${
         hidden ? 'max-lg:hidden' : ''
-      } overflow-y-auto`}
+      } overflow-y-auto lg:flex lg:flex-col`}
     >
       <p className="hidden px-3 pb-5 font-display text-2xl font-semibold lg:block">Rumo</p>
       <div className="mb-3 hidden gap-1 lg:grid">
@@ -182,6 +192,7 @@ function Navigation({ hidden }: { hidden: boolean }) {
           </li>
         ))}
       </ul>
+      {wide && <ProfileBlock />}
     </nav>
   )
 }
@@ -189,6 +200,8 @@ function Navigation({ hidden }: { hidden: boolean }) {
 function TabLink({ tab: { to, label, icon: Icon, also = [] } }: { tab: Tab }) {
   const { pathname } = useLocation()
   const inside = also.some((path) => pathname === path || pathname.startsWith(`${path}/`))
+  const { pro } = usePlanView()
+  const marked = !pro && isProScreen(to)
 
   return (
     <NavLink
@@ -209,10 +222,50 @@ function TabLink({ tab: { to, label, icon: Icon, also = [] } }: { tab: Tab }) {
               transition={{ type: 'spring', duration: 0.3, bounce: 0.1 }}
             />
           )}
-          <Icon size={22} strokeWidth={1.75} aria-hidden />
-          {label}
+          <span className="relative">
+            <Icon size={22} strokeWidth={1.75} aria-hidden />
+            {marked && (
+              <span className="absolute -top-2 left-4 lg:hidden">
+                <ProMark />
+              </span>
+            )}
+          </span>
+          <span className="lg:flex-1">{label}</span>
+          {marked && (
+            <span className="max-lg:hidden">
+              <ProMark />
+            </span>
+          )}
         </>
       )}
     </NavLink>
+  )
+}
+
+/** O Perfil no rodapé da barra lateral do computador: avatar, nome e o plano em uma palavra. */
+function ProfileBlock() {
+  const { data: snapshot } = useSnapshot()
+  const { data: session } = authClient.useSession()
+  const avatar = useAvatar(session?.user.id)
+  const { pathname } = useLocation()
+  const name = snapshot?.user.name || session?.user.name || ''
+  const active = pathname === '/perfil' || pathname === '/assinatura'
+
+  return (
+    <div className="mt-auto border-t border-line pt-3 pb-4">
+      <NavLink
+        to="/perfil"
+        className={`flex min-h-14 items-center gap-3 rounded-xl px-3 transition-colors duration-150 ${
+          active ? 'bg-sea-2' : 'hover:bg-sea-2'
+        }`}
+      >
+        <Avatar name={name} avatar={avatar} size={32} />
+        <span className="min-w-0 flex-1">
+          {name && <span className="sr-only">Perfil: </span>}
+          <span className="block truncate text-[15px] font-medium">{name || 'Perfil'}</span>
+          {snapshot && <span className="block truncate text-sm text-mist">{planWord(snapshot.plan)}</span>}
+        </span>
+      </NavLink>
+    </div>
   )
 }

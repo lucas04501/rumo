@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { effectiveTier, FREE_MAX_HABITS, limitsOf, resolvePlan, type PlanInfo, type Subscription } from './plan'
+import { effectiveTier, FREE_MAX_HABITS, limitsOf, needsPro, PRO_PATHS, resolvePlan, type PlanInfo, type Subscription } from './plan'
 
 const on = { enabled: true }
 const end = new Date('2026-12-17T12:00:00Z')
@@ -52,12 +52,12 @@ describe('resolvePlan', () => {
 })
 
 describe('limitsOf', () => {
-  it('o grátis tem limite de hábitos e não tem treinos', () => {
-    expect(limitsOf('free')).toEqual({ maxHabits: FREE_MAX_HABITS, treinos: false })
+  it('o grátis tem limite de hábitos e não tem as áreas do Pro', () => {
+    expect(limitsOf('free')).toEqual({ maxHabits: FREE_MAX_HABITS, proAreas: false })
   })
 
   it('o Pro não tem limite', () => {
-    expect(limitsOf('pro')).toEqual({ maxHabits: null, treinos: true })
+    expect(limitsOf('pro')).toEqual({ maxHabits: null, proAreas: true })
   })
 })
 
@@ -78,5 +78,29 @@ describe('effectiveTier', () => {
 
   it('mantém um Pro que renova, mesmo com a data velha na foto', () => {
     expect(effectiveTier({ ...pro, cancelAtPeriodEnd: false }, new Date('2027-03-01T00:00:00Z'))).toBe('pro')
+  })
+})
+
+describe('needsPro', () => {
+  it('criar ou editar nas áreas do Pro precisa do Pro; excluir, não', () => {
+    for (const path of PRO_PATHS) {
+      expect(needsPro({ method: 'PUT', path: `${path}/abc`, body: {} })).toBe(true)
+      expect(needsPro({ method: 'DELETE', path: `${path}/abc` })).toBe(false)
+    }
+  })
+
+  it('hábitos, checks, metas, marcos e pausas ficam livres', () => {
+    for (const path of ['/habits/a', '/checks/a/2026-11-05', '/goals/a', '/milestones/a', '/pauses/a', '/achievements/a']) {
+      expect(needsPro({ method: 'PUT', path, body: {} })).toBe(false)
+    }
+  })
+
+  it('no dia, só escrever no registro diário precisa do Pro', () => {
+    const day = '/days/2026-11-05'
+    expect(needsPro({ method: 'PUT', path: day, body: { completedAt: '2026-11-05T20:00:00Z' } })).toBe(false)
+    expect(needsPro({ method: 'PUT', path: day, body: { note: 'Hoje foi bom' } })).toBe(true)
+    // Apagar o texto é excluir.
+    expect(needsPro({ method: 'PUT', path: day, body: { note: '' } })).toBe(false)
+    expect(needsPro({ method: 'PUT', path: day, body: { note: null } })).toBe(false)
   })
 })

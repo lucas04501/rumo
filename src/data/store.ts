@@ -1,12 +1,15 @@
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister'
 import { MutationCache, MutationObserver, QueryClient, useQuery } from '@tanstack/react-query'
 import { del, get, set } from 'idb-keyval'
+import { needsPro } from '../lib/plan'
+import { PLAN_MESSAGES, planView } from '../lib/planView'
 import { complete } from '../lib/snapshot'
 import { ApiError, request } from './api'
 import { forgetFocusTimer } from './focusTimer'
 import { forgetRankSeen } from './rankSeen'
 import { forgetRestTimer } from './restTimer'
 import type { Snapshot } from './types'
+import { offerUndo } from './undo'
 
 const SNAPSHOT_KEY = ['snapshot']
 const WRITE_KEY = ['escrita']
@@ -103,7 +106,12 @@ let localEdits = 0
 export const localEditCount = () => localEdits
 
 /** Muda a tela na hora e coloca as escritas na fila, que envia em ordem. */
-export function commit(update: (snapshot: Snapshot) => Snapshot, writes: Write[]) {
+export function commit(update: (snapshot: Snapshot) => Snapshot, writes: Write[]): boolean {
+  // Área do Pro no grátis: o servidor recusaria com 402. Nada muda, e a tela diz por quê.
+  if (writes.some(needsPro) && !planView(currentSnapshot()).pro) {
+    offerUndo({ message: PLAN_MESSAGES.pro })
+    return false
+  }
   localEdits += 1
   void store.cancelQueries({ queryKey: SNAPSHOT_KEY })
   store.setQueryData<Snapshot>(SNAPSHOT_KEY, (current) => current && update(complete(current)))
@@ -112,6 +120,7 @@ export function commit(update: (snapshot: Snapshot) => Snapshot, writes: Write[]
     const observer = new MutationObserver<void, Error, Write>(store, { mutationKey: WRITE_KEY })
     observer.mutate(write).catch(() => {})
   }
+  return true
 }
 
 /** Ao sair da conta, nada deste usuário pode ficar no aparelho. */

@@ -39,14 +39,14 @@ const MAX_LOAD_KG = 2000
 /** Modo treino: uma mão, com sinal ruim. A série da vez ocupa a tela, e o resto fica em uma linha. */
 export function Treino() {
   const { data: snapshot } = useSnapshot()
-  const { treinos } = usePlanView()
+  const { pro } = usePlanView()
   const session = snapshot ? runningSession(snapshot) : null
 
-  useWakeLock(session !== null && treinos)
+  useWakeLock(session !== null && pro)
 
   if (!snapshot) return null
   // Sem o Pro, não dá para registrar séries: elas seriam recusadas pelo servidor.
-  if (!session || !treinos) return <Navigate to="/treinos" replace />
+  if (!session || !pro) return <Navigate to="/treinos" replace />
   return <Running key={session.id} session={session} snapshot={snapshot} />
 }
 

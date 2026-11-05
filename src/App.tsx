@@ -5,6 +5,7 @@ import { LEGAL_PAGES } from './content/legal'
 import { DayProvider } from './data/DayProvider'
 import { persistOptions, resumeWrites, store } from './data/store'
 import { AuthGate } from './ui/AuthGate'
+import { ProArea } from './ui/ProGate'
 import { Agua } from './screens/Agua'
 import { Assinatura } from './screens/Assinatura'
 import { Shell } from './ui/Shell'
@@ -48,20 +49,23 @@ export function App() {
                   <Route path="habitos" element={<Habitos />} />
                   <Route path="metas" element={<Metas />} />
                   <Route path="metas/:id" element={<Meta />} />
-                  <Route path="mes" element={<Mes />} />
-                  <Route path="semana" element={<Mes />} />
-                  <Route path="quadro" element={<Mes />} />
-                  <Route path="notas" element={<Notas />} />
-                  <Route path="rotina" element={<Rotina />} />
-                  <Route path="evolucao" element={<Evolucao />} />
-                  <Route path="conquistas" element={<Conquistas />} />
-                  <Route path="foco" element={<Foco />} />
-                  <Route path="treinos" element={<Treinos />} />
-                  <Route path="treinos/biblioteca" element={<Biblioteca />} />
-                  <Route path="treinos/:id" element={<Ficha />} />
-                  <Route path="treino" element={<Treino />} />
+                  {/* As mesmas de `PRO_SCREENS`, em `src/lib/planView.ts`. */}
+                  <Route element={<ProArea />}>
+                    <Route path="mes" element={<Mes />} />
+                    <Route path="semana" element={<Mes />} />
+                    <Route path="quadro" element={<Mes />} />
+                    <Route path="notas" element={<Notas />} />
+                    <Route path="rotina" element={<Rotina />} />
+                    <Route path="evolucao" element={<Evolucao />} />
+                    <Route path="conquistas" element={<Conquistas />} />
+                    <Route path="foco" element={<Foco />} />
+                    <Route path="treinos" element={<Treinos />} />
+                    <Route path="treinos/biblioteca" element={<Biblioteca />} />
+                    <Route path="treinos/:id" element={<Ficha />} />
+                    <Route path="treino" element={<Treino />} />
+                    <Route path="agua" element={<Agua />} />
+                  </Route>
                   <Route path="mais" element={<Mais />} />
-                  <Route path="agua" element={<Agua />} />
                   <Route path="perfil" element={<Perfil />} />
                   <Route path="assinatura"element={<Assinatura />} />
                 </Route>

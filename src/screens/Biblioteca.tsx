@@ -1,7 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
-import { refuseTreinos, usePlanView } from '../data/planGate'
+import { refusePro, usePlanView } from '../data/planGate'
 import { useSnapshot } from '../data/store'
 import type { Exercise } from '../lib/workouts'
 import { ExerciseList } from '../ui/ExerciseList'
@@ -12,7 +12,7 @@ export function Biblioteca() {
   const { data: snapshot } = useSnapshot()
   const [opened, setOpened] = useState<Exercise | null>(null)
   const [creating, setCreating] = useState(false)
-  const { treinos } = usePlanView()
+  const { pro } = usePlanView()
 
   if (!snapshot) return null
 
@@ -31,7 +31,7 @@ export function Biblioteca() {
           <button
             type="button"
             className="ghost"
-            onClick={() => (treinos ? setCreating(true) : refuseTreinos())}
+            onClick={() => (pro ? setCreating(true) : refusePro())}
           >
             Novo
           </button>
