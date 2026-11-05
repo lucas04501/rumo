@@ -1,0 +1,195 @@
+/* A landing é a única página que rola. O app continua com a tela fixa. */
+html.landing-page,
+html.landing-page body,
+html.landing-page #root {
+  height: auto;
+}
+
+html.landing-page body {
+  overflow-x: clip;
+  overflow-y: auto;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html.landing-page {
+    scroll-behavior: smooth;
+  }
+}
+
+.landing-anchor {
+  scroll-margin-top: 88px;
+}
+
+/* .action e .ghost ficam fora das camadas do Tailwind, então o tamanho da landing vem daqui */
+.landing .action,
+.landing .ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.landing-cta {
+  min-height: 48px;
+  padding-inline: 24px;
+  font-size: 17px;
+}
+
+.landing .landing-demo-button {
+  display: grid;
+  min-height: 56px;
+  place-items: center;
+}
+
+/* Navbar solta: uma pílula acima da página, longe das bordas */
+.landing-nav {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 12px);
+  left: max(12px, env(safe-area-inset-left, 0px));
+  right: max(12px, env(safe-area-inset-right, 0px));
+  z-index: 40;
+  max-width: 1040px;
+  margin-inline: auto;
+  padding: 6px;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  /* Opaca: com transparência, o botão que passa por baixo aparece atrás do nome */
+  background: var(--color-abyss);
+}
+
+.landing-nav .action {
+  border-radius: 999px;
+}
+
+.landing-nav-link {
+  position: relative;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  padding-inline: 14px;
+  border-radius: 999px;
+  color: var(--color-mist);
+  font-size: 15px;
+  font-weight: 500;
+  transition: color 160ms var(--ease-out);
+}
+
+.landing-nav-link[aria-current='true'] {
+  color: var(--color-foam);
+}
+
+.landing-nav-mark {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 6px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--color-tide);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .landing-nav-link:hover,
+  .landing-footer-link:hover {
+    color: var(--color-foam);
+  }
+}
+
+/* Topo: o sol no canto e a maré embaixo do texto, nunca atrás dele */
+.landing-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 100svh;
+}
+
+.landing-hero .sun-glow {
+  top: -260px;
+  right: -260px;
+  width: 520px;
+  height: 520px;
+}
+
+.landing-hero-sea {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 20svh;
+}
+
+.landing-final {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  min-height: max(92svh, 760px);
+}
+
+.landing-final-sea {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 34%;
+}
+
+.landing-footer-link {
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  color: var(--color-foam);
+  font-size: 15px;
+  transition: color 160ms var(--ease-out);
+}
+
+.landing-caret {
+  display: inline-block;
+  width: 2px;
+  height: 22px;
+  margin-left: 1px;
+  background: var(--color-tide);
+  animation: landing-caret 1s steps(1) infinite;
+}
+
+@keyframes landing-caret {
+  50% {
+    opacity: 0;
+  }
+}
+
+.landing-question summary {
+  list-style: none;
+}
+
+.landing-question summary::-webkit-details-marker {
+  display: none;
+}
+
+.landing-question-icon {
+  transition: transform 200ms var(--ease-out);
+}
+
+.landing-question[open] .landing-question-icon {
+  transform: rotate(45deg);
+}
+
+/* Convite para tocar: o primeiro check pulsa uma vez. Teal, porque é ação. */
+.landing-invite .check {
+  border-color: var(--color-tide);
+  animation: landing-invite 600ms var(--ease-in-out) 1;
+}
+
+@keyframes landing-invite {
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+/* O botão da demo de treino é apertado como um dedo apertaria */
+.landing .landing-pressed {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-caret,
+  .landing-invite .check {
+    animation: none;
+  }
+}
