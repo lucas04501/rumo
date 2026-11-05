@@ -1,0 +1,13 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "24"
+
+# A API é a função em netlify/functions/api.ts, que responde em /api/*.
+# Esta regra só vale para o que não é arquivo nem função: o app é uma SPA.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

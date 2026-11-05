@@ -17,6 +17,7 @@
     "src",
     "server",
     "api",
+    "netlify",
     "vite.config.ts",
     "vitest.server.config.ts",
     "pwa-assets.config.ts",

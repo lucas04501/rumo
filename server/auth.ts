@@ -19,6 +19,8 @@ const baseURL = process.env.BETTER_AUTH_URL ?? (productionHost && `https://${pro
 export const auth = betterAuth({
   baseURL,
   secret: process.env.BETTER_AUTH_SECRET,
+  // O limite de tentativas conta por IP. A Netlify manda o do cliente neste cabeçalho; sem ele, vale o padrão.
+  advanced: { ipAddress: { ipAddressHeaders: ['x-nf-client-connection-ip', 'x-forwarded-for'] } },
   database: drizzleAdapter(db, {
     provider: 'pg',
     schema: { user, session, account, verification, rateLimit },
