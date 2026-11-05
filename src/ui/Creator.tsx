@@ -10,6 +10,7 @@ import {
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useDay } from '../data/DayProvider'
 import { closeLayer } from '../data/layers'
+import { refuseHabits, refuseTreinos, usePlanView } from '../data/planGate'
 import { useSnapshot } from '../data/store'
 import { weekdayOf } from '../lib/dates'
 import { newId } from '../lib/ids'
@@ -34,14 +35,28 @@ const KINDS: { kind: Kind; label: string; icon: LucideIcon }[] = [
   { kind: 'plan', label: 'Ficha de treino', icon: Dumbbell },
 ]
 
+function leave(notice: () => void) {
+  closeLayer()
+  notice()
+}
+
 /** Ponto único de criar. O campo é a adição rápida; o resto abre a folha certa com o texto já escrito. */
 export function Creator({ draft = '' }: { draft?: string }) {
   const { date } = useDay()
   const { data: snapshot } = useSnapshot()
   const [form, setForm] = useState<{ kind: Kind; title: string } | null>(null)
+  const { habitRoom, treinos } = usePlanView()
 
   if (!snapshot) return null
-  if (!form) return <QuickSheet draft={draft} onPick={(kind, title) => setForm({ kind, title })} />
+  if (!form) {
+    // Fora do plano, avisa já na escolha: ninguém preenche uma folha que não vai ser aceita.
+    const pick = (kind: Kind, title: string) => {
+      if (kind === 'habit' && !habitRoom) return leave(refuseHabits)
+      if (kind === 'plan' && !treinos) return leave(refuseTreinos)
+      setForm({ kind, title })
+    }
+    return <QuickSheet draft={draft} onPick={pick} />
+  }
 
   const { kind, title } = form
   const shared = { today: date, onClosed: closeLayer }

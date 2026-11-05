@@ -2,6 +2,7 @@ import { Minus, Plus, X } from 'lucide-react'
 import { useMemo, useState, type FormEvent } from 'react'
 import { useDay } from '../data/DayProvider'
 import { saveHabit } from '../data/habitActions'
+import { usePlanView } from '../data/planGate'
 import { useSnapshot } from '../data/store'
 import type { Snapshot, WaterSettings } from '../data/types'
 import { saveWaterSettings } from '../data/waterActions'
@@ -209,6 +210,8 @@ function Setup({
   onDone: () => void
 }) {
   const { date } = useDay()
+  // No plano grátis, sem vaga para um hábito novo, a água só se liga a um hábito que já existe.
+  const { habitRoom } = usePlanView()
   const habits = snapshot.habits.filter((habit) => !habit.archivedAt)
   const linked = habits.find((habit) => habit.id === current?.habitId)
 
@@ -216,7 +219,9 @@ function Setup({
   const [weight, setWeight] = useState('')
   const [goalMl, setGoalMl] = useState(current?.goalMl ?? DEFAULT_GOAL_ML)
   const [cupMl, setCupMl] = useState(current?.cupMl ?? DEFAULT_CUP_ML)
-  const [habitChoice, setHabitChoice] = useState(linked?.id ?? (current ? NO_HABIT : NEW_HABIT))
+  const [habitChoice, setHabitChoice] = useState(
+    linked?.id ?? (current || !habitRoom ? NO_HABIT : NEW_HABIT),
+  )
 
   const kg = Number(weight.replace(',', '.'))
   const validWeight = kg >= 20 && kg <= 300
@@ -364,7 +369,7 @@ function Setup({
           </p>
           <ul className="mt-2 divide-y divide-line">
             {[
-              { id: NEW_HABIT, title: 'Criar o hábito Beber água' },
+              ...(habitRoom ? [{ id: NEW_HABIT, title: 'Criar o hábito Beber água' }] : []),
               ...habits.map((habit) => ({ id: habit.id, title: habit.title })),
               { id: NO_HABIT, title: 'Não ligar a um hábito' },
             ].map((option) => (

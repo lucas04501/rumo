@@ -53,11 +53,20 @@ describe('complete', () => {
   it('completa uma foto da versão com treinos, mas sem água', () => {
     const exercise = { id: 'c', name: 'Remada', muscle: 'Costas', instructions: '' }
     const previous = complete({ ...base, tasks: [] })
-    const { waterSettings: _settings, waterLogs: _logs, ...withoutWater } = previous
+    const { waterSettings: _settings, waterLogs: _logs, plan: _plan, ...withoutWater } = previous
     const snapshot = complete({ ...withoutWater, customExercises: [exercise] })
     expect(snapshot.customExercises).toEqual([exercise])
     expect(snapshot.waterSettings).toEqual([])
     expect(snapshot.waterLogs).toEqual([])
+  })
+
+  it('completa uma foto da versão com água, mas sem plano, sem apagar os copos', () => {
+    const log = { id: 'l', date: '2026-11-03', amountMl: 250, loggedAt: '2026-11-03T12:00:00Z' }
+    const previous = { ...complete({ ...base, tasks: [] }), waterLogs: [log] }
+    const { plan: _plan, ...withoutPlan } = previous
+    const snapshot = complete(withoutPlan)
+    expect(snapshot.waterLogs).toEqual([log])
+    expect(snapshot.plan.tier).toBe('pro')
   })
 
   it('mantém os dados de uma foto parcial', () => {

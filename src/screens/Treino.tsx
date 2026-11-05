@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router'
 import { useDay } from '../data/DayProvider'
 import { setRestTimer, useRestTimer } from '../data/restTimer'
+import { usePlanView } from '../data/planGate'
 import { useSnapshot } from '../data/store'
 import { markSet, removeSession, saveSession, unmarkSet } from '../data/workoutActions'
 import type { Snapshot, WorkoutSession } from '../data/types'
@@ -38,12 +39,14 @@ const MAX_LOAD_KG = 2000
 /** Modo treino: uma mão, com sinal ruim. A série da vez ocupa a tela, e o resto fica em uma linha. */
 export function Treino() {
   const { data: snapshot } = useSnapshot()
+  const { treinos } = usePlanView()
   const session = snapshot ? runningSession(snapshot) : null
 
-  useWakeLock(session !== null)
+  useWakeLock(session !== null && treinos)
 
   if (!snapshot) return null
-  if (!session) return <Navigate to="/treinos" replace />
+  // Sem o Pro, não dá para registrar séries: elas seriam recusadas pelo servidor.
+  if (!session || !treinos) return <Navigate to="/treinos" replace />
   return <Running key={session.id} session={session} snapshot={snapshot} />
 }
 

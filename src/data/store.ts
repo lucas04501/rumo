@@ -89,6 +89,12 @@ export function useSnapshot() {
   return useQuery({ queryKey: SNAPSHOT_KEY, queryFn: fetchSnapshot, select: complete })
 }
 
+/** A foto que está na tela agora, para as ações decidirem sem ser componentes. */
+export const currentSnapshot = (): Snapshot | undefined => {
+  const current = store.getQueryData<Snapshot>(SNAPSHOT_KEY)
+  return current && complete(current)
+}
+
 let localEdits = 0
 
 /** Quantas mudanças saíram deste aparelho, para separá-las das que chegam na foto. */

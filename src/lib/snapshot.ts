@@ -15,6 +15,7 @@ type AddedLater =
   | 'customExercises'
   | 'waterSettings'
   | 'waterLogs'
+  | 'plan'
 
 type OldSnapshot = Omit<Snapshot, AddedLater | 'tasks'> &
   Partial<Pick<Snapshot, AddedLater>> & {
@@ -26,7 +27,7 @@ type OldSnapshot = Omit<Snapshot, AddedLater | 'tasks'> &
  * que abre o app até a próxima busca, então os campos novos precisam existir.
  */
 export function complete(snapshot: OldSnapshot): Snapshot {
-  if (snapshot.waterLogs) return snapshot as Snapshot
+  if (snapshot.plan) return snapshot as Snapshot
 
   return {
     ...snapshot,
@@ -50,6 +51,8 @@ export function complete(snapshot: OldSnapshot): Snapshot {
     sessionSets: snapshot.sessionSets ?? [],
     customExercises: snapshot.customExercises ?? [],
     waterSettings: snapshot.waterSettings ?? [],
-    waterLogs: [],
+    waterLogs: snapshot.waterLogs ?? [],
+    // Foto de antes dos planos: sem internet, vale o mais generoso. A trava de verdade é do servidor.
+    plan: { tier: 'pro', trialEndsAt: null, periodEnd: null, cancelAtPeriodEnd: false },
   }
 }

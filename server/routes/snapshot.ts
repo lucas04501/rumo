@@ -1,5 +1,6 @@
 import { and, asc, desc, eq, isNotNull, isNull } from 'drizzle-orm'
 import { Hono } from 'hono'
+import { planFrom } from '../billing.js'
 import { claim, db } from '../db/client.js'
 import {
   achievementsSeen,
@@ -16,6 +17,7 @@ import {
   routineChecks,
   routineSteps,
   sessionSets,
+  subscriptions,
   subtasks,
   taskRules,
   tasks,
@@ -36,7 +38,10 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
   const userId = c.get('userId')
 
   // `user` é do Better Auth e fica fora da RLS, então vem antes da transação do usuário.
-  const owner = await db.select({ name: user.name }).from(user).where(eq(user.id, userId))
+  const owner = await db
+    .select({ name: user.name, createdAt: user.createdAt })
+    .from(user)
+    .where(eq(user.id, userId))
 
   const [
     ,
@@ -61,6 +66,7 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
     customRows,
     waterSettingRows,
     waterLogRows,
+    subscriptionRows,
   ] = await db.batch([
     claim(userId),
     db
@@ -165,6 +171,7 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
       .from(waterLogs)
       .where(and(eq(waterLogs.userId, userId), isNull(waterLogs.deletedAt)))
       .orderBy(asc(waterLogs.loggedAt)),
+    db.select().from(subscriptions).where(eq(subscriptions.userId, userId)),
   ])
 
   return c.json({
@@ -190,5 +197,6 @@ export const snapshot = new Hono<AuthedEnv>().get('/', async (c) => {
     customExercises: customRows,
     waterSettings: waterSettingRows,
     waterLogs: waterLogRows,
+    plan: planFrom(owner[0]?.createdAt ?? new Date(), subscriptionRows[0]),
   })
 })

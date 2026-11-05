@@ -50,6 +50,7 @@ const snapshot: Snapshot = complete({
   customExercises: [],
   waterSettings: [],
   waterLogs: [],
+  plan: { tier: 'pro', trialEndsAt: null, periodEnd: null, cancelAtPeriodEnd: false },
 })
 
 describe('searchAll', () => {

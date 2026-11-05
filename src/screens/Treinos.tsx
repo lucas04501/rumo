@@ -2,6 +2,7 @@ import { BookOpen, ChevronRight, Plus } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router'
 import { useDay } from '../data/DayProvider'
+import { refuseTreinos, usePlanView } from '../data/planGate'
 import { useSnapshot } from '../data/store'
 import { startSession } from '../data/workoutActions'
 import type { Snapshot, WorkoutPlan, WorkoutSession } from '../data/types'
@@ -41,6 +42,7 @@ export function Treinos() {
   const [creating, setCreating] = useState(false)
   const [session, setSession] = useState<WorkoutSession | null>(null)
   const [exercise, setExercise] = useState<Exercise | null>(null)
+  const { treinos } = usePlanView()
 
   if (!snapshot) return null
   const plans = activePlans(snapshot)
@@ -53,12 +55,17 @@ export function Treinos() {
         <button
           type="button"
           className="action flex items-center gap-1.5"
-          onClick={() => setCreating(true)}
+          onClick={() => (treinos ? setCreating(true) : refuseTreinos())}
         >
           <Plus size={18} strokeWidth={2} aria-hidden />
           Nova ficha
         </button>
       </div>
+      {!treinos && (
+        <p className="mt-3 max-w-prose text-[15px] text-mist">
+          Treinos é do plano Pro. O seu histórico continua aqui, só para ver.
+        </p>
+      )}
 
       <div className="mt-4 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,4fr)] lg:gap-16">
         <div>
@@ -132,10 +139,12 @@ export function Treinos() {
 /** Abre direto no que importa hoje: continuar, começar ou nada a fazer. */
 function TodayLine({ snapshot, today }: { snapshot: Snapshot; today: string }) {
   const navigate = useNavigate()
+  const { treinos } = usePlanView()
   const running = runningSession(snapshot)
   const plan = plansOn(snapshot, today)[0]
 
-  if (running) {
+  // Sem o Pro, o treino em andamento e o de hoje ficam só para ver: não dá para continuar nem começar.
+  if (running && treinos) {
     const title = snapshot.workoutPlans.find((item) => item.id === running.planId)?.title
     return (
       <div className="panel-line">
@@ -156,7 +165,7 @@ function TodayLine({ snapshot, today }: { snapshot: Snapshot; today: string }) {
   if (activePlans(snapshot).length === 0) return null
   if (!plan) return <p className="text-[17px] text-mist">Hoje é dia de recuperação.</p>
 
-  const ready = exercisesOf(snapshot, plan.id).length > 0
+  const ready = treinos && exercisesOf(snapshot, plan.id).length > 0
 
   return (
     <div className="panel-line">

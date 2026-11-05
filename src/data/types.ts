@@ -1,5 +1,7 @@
 // Formato da foto entregue por GET /api/snapshot.
 
+import type { PlanInfo } from '../lib/plan'
+
 export type Goal = {
   id: string
   title: string
@@ -192,6 +194,8 @@ export type Snapshot = {
   /** Vale a mais recente: dois aparelhos sem internet podem criar uma cada. */
   waterSettings: WaterSettings[]
   waterLogs: WaterLog[]
+  /** Só para a tela: quem recusa o que passa do limite é o servidor. */
+  plan: PlanInfo
 }
 
 /** O peso da calculadora não fica aqui: só a meta que saiu dele. */

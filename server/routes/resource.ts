@@ -5,6 +5,7 @@ import { z } from 'zod'
 import { claim, db } from '../db/client.js'
 import type { AuthedEnv } from '../session.js'
 import { editedAt, parse, readJson, resolveEditTime, uuid } from '../validation.js'
+import type { Guard } from './limits.js'
 
 type OwnedTable = PgTable & {
   id: AnyPgColumn
@@ -23,7 +24,7 @@ const notFound = { error: 'not_found' }
  *   excluídas e mais antigas que esta edição. Fora disso, nada muda e a
  *   resposta é 404, sem revelar se o ID existe.
  */
-export function resource<T extends z.ZodObject>(table: OwnedTable, fields: T) {
+export function resource<T extends z.ZodObject>(table: OwnedTable, fields: T, guard?: Guard) {
   const body = fields.extend({ editedAt })
 
   return new Hono<AuthedEnv>()
@@ -44,6 +45,8 @@ export function resource<T extends z.ZodObject>(table: OwnedTable, fields: T) {
       const { editedAt: edited, ...data } = await readJson(c, body)
       const updatedAt = resolveEditTime(edited as string | undefined)
       const userId = c.get('userId')
+      // Limites do plano. Só o PUT: excluir e listar nunca dependem do plano.
+      await guard?.({ userId, id, data })
 
       const [, [row]] = await db.batch([
         claim(userId),

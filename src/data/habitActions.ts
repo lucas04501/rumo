@@ -1,10 +1,15 @@
 import { newId } from '../lib/ids'
-import { commit } from './store'
+import { currentPlanView, refuseHabits } from './planGate'
+import { commit, currentSnapshot } from './store'
 import type { Habit, Pause } from './types'
 
 const editedAt = () => new Date().toISOString()
 
 export function saveHabit(habit: Habit) {
+  // Hábito novo, ou arquivado que volta a ficar ativo, só entra se houver vaga. O servidor confere de novo.
+  const wasActive = currentSnapshot()?.habits.some((item) => item.id === habit.id && !item.archivedAt)
+  if (!habit.archivedAt && !wasActive && !currentPlanView().habitRoom) return refuseHabits()
+
   commit(
     (current) => ({
       ...current,

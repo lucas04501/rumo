@@ -42,6 +42,7 @@ function snapshot(overrides: Partial<Snapshot> = {}): Snapshot {
     customExercises: [],
     waterSettings: [],
     waterLogs: [],
+    plan: { tier: 'pro', trialEndsAt: null, periodEnd: null, cancelAtPeriodEnd: false },
     notes: [],
     days: [],
     ...overrides,

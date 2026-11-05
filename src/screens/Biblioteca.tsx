@@ -1,6 +1,7 @@
 import { ArrowLeft } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router'
+import { refuseTreinos, usePlanView } from '../data/planGate'
 import { useSnapshot } from '../data/store'
 import type { Exercise } from '../lib/workouts'
 import { ExerciseList } from '../ui/ExerciseList'
@@ -11,6 +12,7 @@ export function Biblioteca() {
   const { data: snapshot } = useSnapshot()
   const [opened, setOpened] = useState<Exercise | null>(null)
   const [creating, setCreating] = useState(false)
+  const { treinos } = usePlanView()
 
   if (!snapshot) return null
 
@@ -26,7 +28,11 @@ export function Biblioteca() {
         </Link>
         <div className="mt-1 mb-4 flex items-center justify-between gap-4">
           <h1 className="font-display text-4xl font-semibold tracking-[-0.02em]">Exercícios</h1>
-          <button type="button" className="ghost" onClick={() => setCreating(true)}>
+          <button
+            type="button"
+            className="ghost"
+            onClick={() => (treinos ? setCreating(true) : refuseTreinos())}
+          >
             Novo
           </button>
         </div>

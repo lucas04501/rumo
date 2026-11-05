@@ -25,6 +25,7 @@ import {
 import { achievements } from './routes/achievements.js'
 import { checks } from './routes/checks.js'
 import { days } from './routes/days.js'
+import { habitRoom, treinosOpen } from './routes/limits.js'
 import { resource } from './routes/resource.js'
 import {
   customExerciseFields,
@@ -64,7 +65,7 @@ const data = new Hono<AuthedEnv>()
   .route('/goals', resource(goals, goalFields))
   .route('/milestones', resource(milestones, milestoneFields))
   .route('/snapshot', snapshot)
-  .route('/habits', resource(habits, habitFields))
+  .route('/habits', resource(habits, habitFields, habitRoom))
   .route('/pauses', resource(habitPauses, pauseFields))
   .route('/tasks', resource(tasks, taskFields))
   .route('/task-rules', resource(taskRules, taskRuleFields))
@@ -73,11 +74,11 @@ const data = new Hono<AuthedEnv>()
   .route('/routine-steps', resource(routineSteps, routineStepFields))
   .route('/routine-checks', resource(routineChecks, routineCheckFields))
   .route('/notes', resource(notes, noteFields))
-  .route('/workout-plans', resource(workoutPlans, workoutPlanFields))
-  .route('/plan-exercises', resource(planExercises, planExerciseFields))
-  .route('/workout-sessions', resource(workoutSessions, workoutSessionFields))
-  .route('/session-sets', resource(sessionSets, sessionSetFields))
-  .route('/custom-exercises', resource(customExercises, customExerciseFields))
+  .route('/workout-plans', resource(workoutPlans, workoutPlanFields, treinosOpen))
+  .route('/plan-exercises', resource(planExercises, planExerciseFields, treinosOpen))
+  .route('/workout-sessions', resource(workoutSessions, workoutSessionFields, treinosOpen))
+  .route('/session-sets', resource(sessionSets, sessionSetFields, treinosOpen))
+  .route('/custom-exercises', resource(customExercises, customExerciseFields, treinosOpen))
   .route('/water-settings', resource(waterSettings, waterSettingsFields))
   .route('/water-logs', resource(waterLogs, waterLogFields))
   .route('/checks', checks)

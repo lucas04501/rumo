@@ -1,4 +1,5 @@
 import { newId } from '../lib/ids'
+import { currentPlanView, refuseTreinos } from './planGate'
 import { commit, type Write } from './store'
 import type {
   CustomExercise,
@@ -10,6 +11,13 @@ import type {
 import { offerUndo } from './undo'
 
 const now = () => new Date().toISOString()
+
+/** Treinos fica em leitura fora do Pro. Excluir e desfazer continuam livres. */
+function open(): boolean {
+  if (currentPlanView().treinos) return true
+  refuseTreinos()
+  return false
+}
 
 const put = <T extends { id: string }>(path: string, item: T, editedAt = now()): Write => ({
   method: 'PUT',
@@ -23,12 +31,14 @@ const upsert = <T extends { id: string }>(list: T[], item: T) =>
     : [...list, item]
 
 export function savePlan(plan: WorkoutPlan) {
+  if (!open()) return
   commit((current) => ({ ...current, workoutPlans: upsert(current.workoutPlans, plan) }), [
     put('/workout-plans', plan),
   ])
 }
 
 export function savePlanExercise(exercise: PlanExercise) {
+  if (!open()) return
   commit((current) => ({ ...current, planExercises: upsert(current.planExercises, exercise) }), [
     put('/plan-exercises', exercise),
   ])
@@ -56,6 +66,7 @@ export function removePlanExercise(exercise: PlanExercise) {
 }
 
 export function swapPlanExercises(first: PlanExercise, second: PlanExercise) {
+  if (!open()) return
   const editedAt = now()
   const moved = [
     { ...first, position: second.position },
@@ -68,6 +79,7 @@ export function swapPlanExercises(first: PlanExercise, second: PlanExercise) {
 }
 
 export function saveCustomExercise(exercise: CustomExercise) {
+  if (!open()) return
   commit(
     (current) => ({ ...current, customExercises: upsert(current.customExercises, exercise) }),
     [put('/custom-exercises', exercise)],
@@ -88,6 +100,7 @@ export function startSession(planId: string, date: string): WorkoutSession {
 }
 
 export function saveSession(session: WorkoutSession) {
+  if (!open()) return
   commit(
     (current) => ({ ...current, workoutSessions: upsert(current.workoutSessions, session) }),
     [put('/workout-sessions', session)],
@@ -95,6 +108,7 @@ export function saveSession(session: WorkoutSession) {
 }
 
 export function markSet(fields: Omit<SessionSet, 'id' | 'doneAt'>) {
+  if (!open()) return
   const set: SessionSet = { ...fields, id: newId(), doneAt: now() }
   commit((current) => ({ ...current, sessionSets: [...current.sessionSets, set] }), [
     put('/session-sets', set),

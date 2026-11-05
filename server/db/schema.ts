@@ -553,3 +553,15 @@ export const waterLogs = pgTable(
   },
   (table) => [index('water_logs_user_date_idx').on(table.userId, table.date)],
 )
+
+// Assinatura na Stripe. Quem escreve é o webhook, com o papel dono do banco: o usuário só lê.
+// A linha nasce quando a pessoa abre o Checkout pela primeira vez, ainda sem assinatura.
+export const subscriptions = pgTable('subscriptions', {
+  userId: owner().primaryKey(),
+  stripeCustomerId: text('stripe_customer_id').notNull().unique(),
+  stripeSubscriptionId: text('stripe_subscription_id').unique(),
+  status: text('status').notNull().default('incomplete'),
+  currentPeriodEnd: moment('current_period_end'),
+  cancelAtPeriodEnd: boolean('cancel_at_period_end').notNull().default(false),
+  updatedAt: moment('updated_at').notNull().defaultNow(),
+})

@@ -259,6 +259,8 @@ describe('isolamento entre usuários', () => {
     for (const key of lists.filter((name) => name !== 'days')) {
       expect(ofBia[key], key).toHaveLength(0)
     }
+    // Com a cobrança desligada, que é o padrão nos testes, a foto traz o plano mais generoso.
+    expect((ofAna as unknown as { plan: { tier: string } }).plan.tier).toBe('pro')
   })
 
   it('conquista vista é de cada usuário, e repetir o envio não muda nada', async () => {
@@ -338,7 +340,8 @@ describe('isolamento entre usuários', () => {
       where c.table_schema = 'public' and c.column_name = 'user_id'
         and c.table_name not in ('session', 'account')
     `)
-    expect(rows.length).toBeGreaterThanOrEqual(19)
+    // 21 tabelas do app mais `subscriptions`.
+    expect(rows.length).toBeGreaterThanOrEqual(22)
     expect(rows.filter((row) => !row.rls || row.politicas === 0)).toEqual([])
   })
 

@@ -2,6 +2,7 @@ import { ArrowLeft, ChevronDown, ChevronUp, Pencil } from 'lucide-react'
 import { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router'
 import { useDay } from '../data/DayProvider'
+import { refuseTreinos, usePlanView } from '../data/planGate'
 import { useSnapshot } from '../data/store'
 import { savePlanExercise, startSession, swapPlanExercises } from '../data/workoutActions'
 import type { PlanExercise } from '../data/types'
@@ -31,6 +32,7 @@ export function Ficha() {
   const { date } = useDay()
   const { data: snapshot } = useSnapshot()
   const navigate = useNavigate()
+  const { treinos } = usePlanView()
   const [editing, setEditing] = useState(false)
   const [adding, setAdding] = useState(false)
   const [opened, setOpened] = useState<PlanExercise | null>(null)
@@ -99,6 +101,7 @@ export function Ficha() {
           className="action mt-5 min-h-12 w-full"
           disabled={exercises.length === 0 && !running}
           onClick={() => {
+            if (!treinos) return refuseTreinos()
             if (!running) startSession(plan.id, date)
             void navigate('/treino')
           }}

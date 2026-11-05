@@ -2,6 +2,7 @@ import { Anchor, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useDay } from '../data/DayProvider'
 import { setCheck } from '../data/habitActions'
+import { refuseHabits, usePlanView } from '../data/planGate'
 import { useSnapshot } from '../data/store'
 import type { Habit, Snapshot, TaskRule } from '../data/types'
 import { formatLongDate, formatShortDate, weekOf } from '../lib/dates'
@@ -23,6 +24,7 @@ export function Habitos() {
   const { date } = useDay()
   const { data: snapshot } = useSnapshot()
   const [editing, setEditing] = useState<Editing>(null)
+  const { habitRoom } = usePlanView()
 
   if (!snapshot) return null
   const habits = snapshot.habits.filter((habit) => !habit.archivedAt)
@@ -31,7 +33,11 @@ export function Habitos() {
     <Screen>
       <div className="flex max-w-2xl items-center justify-between gap-4 pt-3 lg:pt-8">
         <h1 className="font-display text-4xl font-semibold tracking-[-0.02em]">Hábitos</h1>
-        <button type="button" className="action flex items-center gap-1.5" onClick={() => setEditing('novo')}>
+        <button
+          type="button"
+          className="action flex items-center gap-1.5"
+          onClick={() => (habitRoom ? setEditing('novo') : refuseHabits())}
+        >
           <Plus size={18} strokeWidth={2} aria-hidden />
           Novo hábito
         </button>
