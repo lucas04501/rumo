@@ -4,6 +4,8 @@
 
 [build.environment]
   NODE_VERSION = "24"
+  # Com NODE_ENV=production o npm pula as devDependencies, e o build precisa do tsc e do vite.
+  NPM_FLAGS = "--include=dev"
 
 # A API é a função em netlify/functions/api.ts, que responde em /api/*.
 # Esta regra só vale para o que não é arquivo nem função: o app é uma SPA.
