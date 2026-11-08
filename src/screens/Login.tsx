@@ -16,6 +16,7 @@ const LINK = 'min-h-11 text-[15px] text-mist underline underline-offset-4'
 const MIN_PASSWORD = 8
 
 function messageFor(status: number, mode: Mode): string {
+  if (status === 403 && mode === 'entrar') return 'Confirme seu e-mail para entrar. Mandamos um novo link: confira também o spam.'
   if (status === 429) return 'Muitas tentativas. Aguarde um minuto e tente de novo.'
   if (status === 0 || status >= 500) return 'Não foi possível conectar. Confira a internet e tente de novo.'
   if (mode === 'criar') return 'Não foi possível criar a conta. Confira os dados e tente de novo.'
@@ -25,6 +26,7 @@ function messageFor(status: number, mode: Mode): string {
 
 export function Login() {
   const [signupOpen, setSignupOpen] = useState(false)
+  const [verify, setVerify] = useState(false)
   // A landing manda para cá com ?conta=criar ou ?conta=entrar.
   const [mode, setMode] = useState<Mode>(() =>
     new URLSearchParams(window.location.search).get('conta') === 'criar' ? 'criar' : 'entrar',
@@ -35,12 +37,14 @@ export function Login() {
   const [error, setError] = useState<string | null>(null)
   const [sending, setSending] = useState(false)
   const [linkSent, setLinkSent] = useState(false)
+  const [confirmSent, setConfirmSent] = useState(false)
 
   useEffect(() => {
     fetch('/api/signup-status')
       .then((response) => response.json())
-      .then((status: { open: boolean }) => {
+      .then((status: { open: boolean; verify?: boolean }) => {
         setSignupOpen(status.open)
+        setVerify(Boolean(status.verify))
         if (!status.open) setMode((current) => (current === 'criar' ? 'entrar' : current))
       })
       .catch(() => setSignupOpen(false))
@@ -53,6 +57,7 @@ export function Login() {
     setMode(next)
     setError(null)
     setLinkSent(false)
+    setConfirmSent(false)
   }
 
   const submit = async (event: FormEvent) => {
@@ -68,6 +73,7 @@ export function Login() {
           : await authClient.signIn.email({ email: email.trim(), password })
       if (result.error) setError(messageFor(result.error.status, mode))
       else if (forgot) setLinkSent(true)
+      else if (creating && verify) setConfirmSent(true)
     } catch {
       setError(messageFor(0, mode))
     }
@@ -133,6 +139,12 @@ export function Login() {
           {linkSent && (
             <p role="status" className="text-[15px]">
               Se houver uma conta com esse e-mail, o link chega em alguns minutos. Confira também o spam.
+            </p>
+          )}
+
+          {confirmSent && (
+            <p role="status" className="text-[15px]">
+              Quase lá. Mandamos um link para {email.trim()}: abra para ativar a conta. Confira também o spam.
             </p>
           )}
 

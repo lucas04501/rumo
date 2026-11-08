@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { HTTPException } from 'hono/http-exception'
-import { auth, signupOpen } from './auth.js'
+import { auth, signupOpen, verifyEmail } from './auth.js'
 import { claim, db } from './db/client.js'
 import {
   customExercises,
@@ -96,7 +96,7 @@ export const app = new Hono()
     const [, rows] = await db.batch([claim('ninguem'), db.select({ id: goals.id }).from(goals).limit(1)])
     return c.json({ ok: rows.length === 0 })
   })
-  .get('/signup-status', (c) => c.json({ open: signupOpen }))
+  .get('/signup-status', (c) => c.json({ open: signupOpen, verify: verifyEmail }))
   .on(['GET', 'POST'], '/auth/*', (c) => auth.handler(c.req.raw))
   // Antes de `data`, que exige login em tudo o que vem depois dele.
   .route('/stripe/webhook', stripeWebhook)

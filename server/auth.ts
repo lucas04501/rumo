@@ -14,6 +14,9 @@ const ONE_HOUR = 60 * 60
 // Cadastro fechado por padrão. Só abre com `ALLOW_SIGNUP=true` no ambiente.
 export const signupOpen = process.env.ALLOW_SIGNUP === 'true'
 
+// Confirmação de e-mail: desligada por padrão. Quem já tem conta e não confirmou recebe o link ao tentar entrar.
+export const verifyEmail = process.env.REQUIRE_EMAIL_VERIFICATION === 'true'
+
 // Na Vercel o endereço vem do ambiente, então um domínio próprio não exige mudança aqui.
 const productionHost = process.env.VERCEL_PROJECT_PRODUCTION_URL
 export const baseURL = process.env.BETTER_AUTH_URL ?? (productionHost && `https://${productionHost}`)
@@ -36,6 +39,7 @@ export const auth = betterAuth({
       '/sign-up/email': { window: ONE_HOUR, max: 5 },
       '/delete-user': { window: FIVE_MINUTES, max: 5 },
       '/request-password-reset': { window: ONE_HOUR, max: 5 },
+      '/send-verification-email': { window: ONE_HOUR, max: 5 },
       '/reset-password': { window: FIVE_MINUTES, max: 8 },
       // Roda a cada abertura do app e não testa senha.
       '/get-session': false,
@@ -61,6 +65,7 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     disableSignUp: !signupOpen,
+    requireEmailVerification: verifyEmail,
     // O link vale 1 hora e serve uma vez. Trocar a senha encerra as outras sessões.
     resetPasswordTokenExpiresIn: ONE_HOUR,
     revokeSessionsOnPasswordReset: true,
@@ -69,6 +74,18 @@ export const auth = betterAuth({
         user.email,
         'Redefinir sua senha do Rumo',
         `Olá, ${user.name}.\n\nPara criar uma senha nova, abra o link abaixo. Ele vale por 1 hora e funciona uma vez.\n\n${url}\n\nSe você não pediu isso, ignore este e-mail. Sua senha continua a mesma.`,
+      ),
+  },
+  emailVerification: {
+    sendOnSignUp: verifyEmail,
+    sendOnSignIn: verifyEmail,
+    autoSignInAfterVerification: true,
+    expiresIn: ONE_DAY,
+    sendVerificationEmail: ({ user, url }) =>
+      sendEmail(
+        user.email,
+        'Confirme seu e-mail no Rumo',
+        `Olá, ${user.name}.\n\nPara ativar sua conta, abra o link abaixo. Ele vale por 24 horas.\n\n${url}\n\nSe você não criou uma conta no Rumo, ignore este e-mail.`,
       ),
   },
   // Sessão longa: o app instalado não deve pedir senha com frequência.

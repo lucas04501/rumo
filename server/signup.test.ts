@@ -10,7 +10,7 @@ const { app } = await import('./app.js')
 describe('cadastro fechado', () => {
   it('informa que o cadastro está fechado', async () => {
     const response = await app.request('/api/signup-status')
-    expect(await response.json()).toEqual({ open: false })
+    expect(await response.json()).toEqual({ open: false, verify: false })
   })
 
   it('recusa criar conta', async () => {
