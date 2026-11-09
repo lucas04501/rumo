@@ -11,6 +11,7 @@ PWA de metas, hábitos, planner e treinos, em português do Brasil. Multi-usuár
 - `npm run preview`: serve o build, com service worker ativo
 - `npm run icons`: gera os ícones a partir de `public/logo.svg`
 - `npm run db:generate`: gera a migração SQL a partir de `server/db/schema.ts`
+- `npm run backup`: copia o banco do `DATABASE_URL` do ambiente para `../rumo-backups/` (JSON comprimido, sem `session` e `verification`, guarda os 30 últimos). Com o `.env`, copia a `dev`. Na principal, a conexão passa só pelo ambiente e a autorização do Lucas é pedida a cada vez. O arquivo tem dados reais: nunca o versione.
 - `npm run db:migrate`: aplica as migrações na branch do `.env`, que é sempre a `dev`
 
 ## Regras do projeto

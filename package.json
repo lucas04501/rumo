@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:server": "vitest run --config vitest.server.config.ts",
     "typecheck": "tsc --noEmit",
+    "backup": "node scripts/backup.mjs",
     "icons": "pwa-assets-generator",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate"
